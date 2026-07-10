@@ -27,29 +27,39 @@ inflated by memorized sequences.
 
 - Cross-lab AUROC 0.80 at predicting which designs fail wet-lab specificity. Trivial
   baselines on the same task: GC-content 0.51, sequence-length 0.50, random 0.50.
+- The 0.80 is per-sequence signal, not just a shared cell-line prior. Within each target
+  cell (the cell prior removed) the gate still separates failures at macro-AUROC 0.75; a
+  cell-prior-only baseline (the target cell's base fail-rate, no sequence at all) reaches
+  0.68. So the pooled 0.80 does benefit from cross-cell and cross-generator base-rate
+  separation, but real per-sequence discrimination survives (cell_prior_baseline.py).
 - Matched apples-to-apples (both 3-cell, both out-of-fold), the in-distribution gate
   scores 0.896 and the cross-lab gate 0.801, about a 0.10 generalization gap, reported
   honestly.
 - The operating point that matters is triage, not a hard gate. As a uniform abort-gate it
   is weak (PPV 0.24 at recall 0.5). As triage it is strong: flag the riskiest 2% of a
   batch and 49% of those truly fail, a 7.8x enrichment over the 6.29% base rate. On a
-  200-design batch that averts an estimated $1,700 to $6,400 in synthesis and validation
-  spend, net of a cheap orthogonal recheck.
+  200-design batch, under a full-committed-spend assumption of roughly $950 to $3,500 per
+  pursued design (assumptions in docs/cisfalcon_triage_economics.csv), that averts an
+  estimated $1,700 to $6,400, net of a cheap orthogonal recheck on the flags.
 
 ## Grounded diagnosis, and a closed loop
 
 Every label is measured wet-lab activity from public MPRA assays, never a model's opinion.
 A design fails when it is not most-active in its own intended target cell. That transparent
-label agrees with the atlas's own published specificity score at r=0.82.
+label is internally consistent with the atlas's own specificity score at r=0.82; both derive
+from the same measured activity, so this is a consistency check, not independent validation.
 
 The tool goes past a score. It scans the sequence against real JASPAR transcription-factor
 motifs, so the diagnosis names the driver motifs that are actually present. On the real
 failing example, it shows the sequence carries the K562 erythroid motifs (GATA1, TAL1,
 KLF1, GATA2) and none of the HepG2 hepatocyte motifs. Then it closes the loop: it applies
 the prescribed motif edit (remove the off-target grammar, install the target grammar) and
-re-scores with the same external model, moving the predicted specificity gap from failing
-(K562, -3.0) to passing (HepG2, +1.0). That is AI grounded in measured biology fixing the
-design, not a model narrating a score.
+re-scores, moving the model's predicted specificity gap from failing (K562 -3.0) to passing
+(HepG2 +1.0). This is a proposed fix, not wet-lab validation: the same model that flagged the
+design re-scores the edit, so it is an in-silico consistency check that the diagnosis is
+specific and the model responds sensibly, shown on one example, not proof the redesign works
+in cells. What it demonstrates is that the diagnosis names a concrete, mechanistically grounded
+edit, which a bare risk score cannot.
 
 ## Generality
 
@@ -58,7 +68,10 @@ ground truth, plus a self-correcting agent layer) transfers to a second, disjoin
 ScreenAudit re-derives the hit calls of published CRISPR screens on live BioGRID ORCS data:
 independent same-context essentiality screens agree on only a fraction of their hit calls
 (mean Jaccard 0.39, range 0.14 to 0.69), and it flags which published hit lists are fragile.
-One architecture, two independent biological domains, both with a real computed number.
+The claim here is narrow and honest: the same audit pattern (a domain gate checked against
+external measured ground truth, plus agent diagnosis) applies in a second, disjoint domain.
+The Jaccard 0.39 is a measured concordance of published hit lists, not a second predictive
+model; it shows the architecture generalizes, not that a second predictor was validated.
 
 ## What it is not, and how Claude built it
 
@@ -72,11 +85,15 @@ Built with the full Claude stack. Claude Code built and deployed the tool: the g
 JASPAR motif grounding, the parallel-agent verifier (independent mechanism, precedent, and
 adversary lenses plus a synthesizer), and the closed loop. Claude Science built the analysis
 deliverables (this summary, the economics figure, the demo, the prepared Q&A) with a full
-provenance chain, and its reviewer independently audited the claims.
+provenance chain, and a separate reviewer agent audited the claims (both are the builder's own
+Claude stack, not a third party; the value is the fresh-context second pass, not external
+independence).
 
 On reproducibility, the two verification claims are kept distinct. The in-distribution pipeline
-was independently reimplemented from scratch on separate infrastructure and reproduced its
-out-of-fold number (AUROC 0.911) exactly, so that result is a property of the model and data,
-not of one implementation. The flagship cross-lab 0.80 is a single held-out scoring run on the
-93,435 independent designs; its credibility rests on being leakage-immune (zero training
-overlap, a different lab's model, unseen generators), not on a second reimplementation.
+was reimplemented from scratch by a separate implementation on separate infrastructure and
+reproduced its full-panel out-of-fold number (AUROC 0.911, n=1876, a different configuration
+from the 0.896 matched-3-cell comparison) exactly, so the pipeline is deterministic and
+reproducible, not an artifact of one codebase. The flagship cross-lab 0.80 is a single held-out
+scoring run on the 93,435 independent designs; it was NOT reimplemented, and its credibility
+rests on being leakage-immune (no sequence overlap with training, a different lab's model, unseen
+generators), not on a second reimplementation.

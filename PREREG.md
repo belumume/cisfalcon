@@ -18,8 +18,8 @@ At the real deployment base rate (6.3% of an independent lab's designs fail), a 
 precision (PPV 0.24 at recall 0.5). Its genuine value is triage:
 - **Rank and make the safest first**: synthesizing the safest-ranked 50% cuts the specificity
   failure rate from 6.3% to 1.9% (70% fewer failures in what you make).
-- **Flag the riskiest**: the flagged riskiest 2% are enriched 8x for real failures (PPV 0.49 vs
-  6.3% base); riskiest 10% captures 43% of all failures.
+- **Flag the riskiest**: the flagged riskiest 2% are enriched 7.8x for real failures (PPV 0.49 vs
+  6.3% base); riskiest 10% captures 43% of all failures (4.3x).
 Report the operating point and the triage value, never a base-rate-blind AUROC alone.
 
 ## 3. Predictor (PRE-COMMITTED, frozen)
@@ -52,7 +52,10 @@ sequence overlap with atlas training, which is the decisive reason it is the fla
 Frozen atlas ensemble scored on an INDEPENDENT lab, model, and generators: Gosai et al. 2024
 (Nature 10.1038/s41586-024-08070-z; Zenodo 10698014), OL46 validation MPRA, 93,435 BODA/Malinois
 designs (AdaLead / Simulated Annealing / Hamiltonian MC / FastSeqProp) measured in K562/HepG2/SKNSH.
-Zero sequence overlap with atlas training (confirmed). Specificity computed over the 3 shared cells.
+No sequence overlap with atlas training: an exact-sequence match against the atlas design set finds
+none, and the two design sets come from independent labs, activity models, and generators, so any
+overlap could only be coincidental (near-duplicate collision across independent processes is
+implausible, though not exhaustively excluded by alignment). Specificity computed over the 3 shared cells.
 - **AUROC 0.801, AUPRC 0.293** (n=93,435; base fail 6.29%; random AUPRC = 0.063, so 4.6x lift).
 - Beats trivial baselines decisively: GC-content 0.51, sequence-length 0.50, random 0.50.
 - EXPLORATORY/POST-HOC per generator: strong where failures are common (hmc AUROC 0.92, 22% fail),
@@ -61,6 +64,12 @@ Zero sequence overlap with atlas training (confirmed). Specificity computed over
   separation, so the honest summary is a heterogeneous ranker, strong on failure-prone designs and
   weak on already-well-optimized ones, not a uniform gate. Subgroup AUROCs at low positive counts
   (fsp n_pos=183, al n_pos=340) are noisy; do not rank generators whose CIs overlap.
+- EXPLORATORY/POST-HOC, cell-prior control: the pooled 0.801 is per-SEQUENCE signal, not just a
+  shared cell-line prior. A cell-prior-only baseline (score = the target cell's base fail-rate, no
+  sequence at all) reaches AUROC 0.678; WITHIN each target cell (cell prior removed) the gate still
+  separates failures at macro-AUROC 0.747 (HepG2 0.833, SKNSH 0.731, K562 0.678). So per-sequence
+  discrimination survives removing the cell prior; the pooled 0.801 additionally benefits from
+  base-rate separation across cells and generators (`cisfalcon/cell_prior_baseline.py`).
 
 ## 7. In-distribution (SANITY CHECK, not the flagship, carries the leakage caveat)
 Matched apples-to-apples to the cross-lab number (same 3 cells, same fail label, OOF), n=587 atlas
@@ -68,7 +77,11 @@ designs targeting the 3 shared cells: **AUROC 0.896, AUPRC 0.688** (base fail 16
 generalization loss in-dist -> cross-lab is ~0.10 AUROC (0.896 -> 0.801); base-rate-corrected
 precision lift is comparable (4.1x vs 4.6x). The often-cited 0.921 is over the 10-cell panel at 48%
 base rate and is NOT comparable to the cross-lab number; do not present 0.921 vs 0.801 as a drop.
-Accessibility-only baseline over the 10-cell panel = 0.79.
+Accessibility-only baseline over the 10-cell panel = 0.79. A from-scratch second implementation
+(`cisfalcon/molab_verify_port.py`, separate infrastructure) reproduced the full-panel OOF number
+exactly (AUROC 0.911, n=1876), a third in-distribution configuration, distinct from both the 0.896
+matched-3-cell number and the 0.921 10-cell number; it confirms the pipeline is deterministic and
+reproducible, and is separate from the flagship cross-lab 0.801 (a single run, not reimplemented).
 
 ## 8. What would have falsified the claim (and did not)
 - Cross-lab AUROC near 0.5, or not beating trivial baselines: NOT observed (0.80 vs ~0.50 baselines).
@@ -83,7 +96,7 @@ Code: `cisfalcon/gate.py` (frozen encoder + ensemble), `build_benchmark.py`, `sc
 `score_designed.py`, `matched_indist_3cell.py`, `operating_point.py`, `dollar_table.py`,
 `verifier.py` (agent harness). Cross-lab GPU run: Kaggle kernel
 `ubaidullahshuaib/cisfalcon-gosai-crosslab` (P100), which reads its inputs from the Kaggle dataset
-`ubaidullahshuaib/cisfalcon-designed-benchmark` — that dataset ships BOTH `designed_benchmark.csv` AND the
+`ubaidullahshuaib/cisfalcon-designed-benchmark`; that dataset ships BOTH `designed_benchmark.csv` AND the
 three MPRA fold models in-dataset (models bundled there rather than fetched from Zenodo mid-kernel because
 Zenodo 504s flakily on Kaggle). Per-design scores in
 `cisfalcon/data/gosai_designed/designed_scored.csv`. All numbers and exact commands:

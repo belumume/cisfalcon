@@ -30,18 +30,22 @@ fires 6.5-fold in K562. See `demo.py`.
 ## Results (independently reproducible)
 
 Cross-lab validation is the flagship: a frozen published activity model, scored on **93,435 designs from
-a different lab, a different design model, and generators it never saw** (Gosai et al. 2024; BODA/Malinois
-via AdaLead, Simulated Annealing, Hamiltonian MC, FastSeqProp), with zero sequence overlap with the
-model's training data.
+a different lab, a different design process, and generators it never saw** (Gosai et al. 2024; the BODA
+design framework built on the Malinois activity model, via AdaLead, Simulated Annealing, Hamiltonian MC,
+FastSeqProp), with no sequence overlap with the model's training data.
 
 - **Cross-lab AUROC 0.8013, AUPRC 0.293** (n=93,435; base failure rate 6.29%). Beats trivial baselines
   decisively (GC-content 0.51, sequence-length 0.50, random 0.50).
+- **The signal is per-sequence, not just a cell-line prior.** Within each target cell (the cell prior
+  removed) the gate still separates failures at macro-AUROC 0.75; a cell-prior-only baseline (target-cell
+  base rate, no sequence) reaches 0.68. The pooled 0.80 also benefits from base-rate separation across
+  cells and generators, but per-sequence discrimination survives (`cell_prior_baseline.py`).
 - **Triage value (the operating point that matters):** rank designs by CisFalcon and synthesize the
   safest half first, and the specificity-failure rate in what you make drops from 6.29% to 1.91%, a
   **70% reduction in failures**. Flag the riskiest 10% for redesign and you capture 43% of all failures
-  at 4.3x the base rate.
-- Every headline number re-derives to 4 decimals directly from the committed per-design scores
-  (`data/gosai_designed/designed_scored.csv`) with a plain rank-sum AUROC; it is not a pipeline artifact.
+  at 4.3x the base rate; tighten to the riskiest 2% and 49% of those truly fail (7.8x).
+- Every cross-lab headline number here re-derives to 4 decimals directly from the committed per-design
+  scores (`data/gosai_designed/designed_scored.csv`) with a plain rank-sum AUROC; it is not a pipeline artifact.
 
 Honest boundaries, stated up front:
 
@@ -81,7 +85,7 @@ python demo.py            # full run incl. the agent layer (needs an Anthropic A
 python demo.py --no-agents # gate-only, no API
 ```
 
-- The 12 fold models and the designed benchmark are large. The full cross-lab GPU run is the Kaggle
+- The 3 fold models and the designed benchmark are large. The full cross-lab GPU run is the Kaggle
   kernel `ubaidullahshuaib/cisfalcon-gosai-crosslab`, reading the Kaggle dataset
   `ubaidullahshuaib/cisfalcon-designed-benchmark` (ships the benchmark CSV + the 3 MPRA fold models).
 - Source data: atlas models (Zenodo 17410822), Gosai et al. cross-lab MPRA (Zenodo 10698014).

@@ -82,11 +82,19 @@ implausible, though not exhaustively excluded by alignment). Specificity compute
   trustworthy. Held-out reliability is near-diagonal across bins (predicted 0.03/0.14/0.42/0.95 vs observed
   0.03/0.13/0.42/0.93). Fit + honesty check: `cisfalcon/fit_calibration.py`; the map ships as
   `data/calibration.csv` and the live tool is confirmed serving it (gap -1.19 -> P 0.70, not the sigmoid 0.97).
-- Accessibility-only cross-lab baseline (HONEST GAP, stated not hidden): NOT yet computed at 93k scale. It
-  needs an off-machine GPU pass to score the designs with the DHS64 accessibility heads
-  (`cisfalcon/accessibility_baseline.py` is the ready script). In-distribution the accessibility-only AUROC
-  is 0.79 vs the activity gate's ~0.90 (activity adds ~0.11 there); the cross-lab activity gate is 0.801.
-  Reported as pending, not as a number we hold.
+- Accessibility-only cross-lab baseline (COMPUTED, strong-baseline check): the same 93,435 designs scored with
+  the cheaper DHS64 chromatin-accessibility model (`cisfalcon/accessibility_baseline.py`; Kaggle GPU kernel
+  `ubaidullahshuaib/cisfalcon-accessibility-crosslab`), specificity gap over the SAME 3 cells. The accessibility
+  head is 64 DHS biosamples in a different order than the 12 MPRA cells, so K562/HepG2/SKNSH are read at atlas
+  biosample indices 57/49/30 (NOT the MPRA indices 7/6/3, a cell-index bug we found and fixed), and the model is
+  multi-head (logsignal + binary). Result on the full 93,435: activity gate **0.8016** (independently re-confirms
+  the flagship 0.8013 on a fresh run and fresh code path) vs accessibility **0.789** (binary head) / **0.768**
+  (logsignal head). So cross-lab, the MPRA-activity model is the best single predictor but adds only **+0.01 to
+  +0.03** over the cheaper accessibility model, far smaller than the ~0.11 activity advantage in-distribution
+  (activity 0.90 vs accessibility 0.79). This is consistent with part of the in-dist activity edge being the
+  near-duplicate leakage of Section 5, which the leakage-immune cross-lab test removes; both models are far above
+  the 0.50 trivial baselines. Honest read: chromatin accessibility already captures most of the cross-lab
+  specificity-failure signal, and the activity model is the deployed best by a modest, real margin.
 
 ## 7. In-distribution (SANITY CHECK, not the flagship, carries the leakage caveat)
 Matched apples-to-apples to the cross-lab number (same 3 cells, same fail label, OOF), n=587 atlas

@@ -75,30 +75,37 @@ MPRA_IDX = {"K562": 7, "HepG2": 6, "SKNSH": 3}  # == gate.CELL_IDX for these cel
 DHS64_IDX = {"K562": 57, "HepG2": 49, "SKNSH": 30}
 
 
-def gaps_for(kind):
-    idxmap = MPRA_IDX if kind == "mpra" else DHS64_IDX
-    pred = np.squeeze(np.asarray(gate.score_sequences(seqs, kind=kind)))
-    if pred.ndim > 2:  # collapse any trailing (fold/head) axis to (N, C)
-        pred = pred.reshape(pred.shape[0], pred.shape[1], -1).mean(axis=-1)
-    need = max(idxmap.values())
-    assert pred.shape[1] > need, (
-        f"{kind} output width {pred.shape[1]} <= {need}; index map invalid"
-    )
+def gap_of(pred2d, idxmap):
     out = []
     for i, t in enumerate(targets):
-        sub = {c: float(pred[i, idxmap[c]]) for c in SHARED}
+        sub = {c: float(pred2d[i, idxmap[c]]) for c in SHARED}
         out.append(sub[t] - max(v for c, v in sub.items() if c != t))
     return out
 
 
 print("scoring with ACTIVITY (dhs64_mpra)...")
-act_gaps = gaps_for("mpra")
-print("scoring with ACCESSIBILITY (dhs64)...")
-acc_gaps = gaps_for("acc")
+p_act = np.asarray(gate.score_sequences(seqs, kind="mpra"))
+assert p_act.ndim == 2 and p_act.shape[1] == 12, f"activity shape {p_act.shape}"
+act_auroc = auroc(labels, [-g for g in gap_of(p_act, MPRA_IDX)])
 
-act_auroc = auroc(labels, [-g for g in act_gaps])
-acc_auroc = auroc(labels, [-g for g in acc_gaps])
+print("scoring with ACCESSIBILITY (dhs64)...")
+p_acc = np.asarray(gate.score_sequences(seqs, kind="acc"))
+# The accessibility model is MULTI-HEAD: score_sequences returns (n_heads, N, 64) =
+# [logsignal, binary] over the 64 DHS biosamples. Report each head separately; logsignal is
+# the continuous accessibility analogue of the activity log2FC. Averaging the heads (the earlier
+# bug) collapses the wrong axis and mis-indexes the cells.
 print("\n=== CROSS-LAB, matched subset ===")
 print(f"ACTIVITY gate AUROC (dhs64-mpra):     {act_auroc:.4f}")
-print(f"ACCESSIBILITY-only AUROC (dhs64):     {acc_auroc:.4f}")
-print(f"activity adds over accessibility:     {act_auroc - acc_auroc:+.4f}")
+if p_acc.ndim == 3:
+    names = {0: "logsignal", 1: "binary"}
+    for h in range(p_acc.shape[0]):
+        assert p_acc[h].shape[1] > max(DHS64_IDX.values())
+        a_h = auroc(labels, [-g for g in gap_of(p_acc[h], DHS64_IDX)])
+        print(
+            f"ACCESSIBILITY head {h} ({names.get(h, '?')}) AUROC: {a_h:.4f}   activity adds {act_auroc - a_h:+.4f}"
+        )
+else:
+    a = auroc(labels, [-g for g in gap_of(np.squeeze(p_acc), DHS64_IDX)])
+    print(
+        f"ACCESSIBILITY-only AUROC (dhs64):     {a:.4f}   activity adds {act_auroc - a:+.4f}"
+    )

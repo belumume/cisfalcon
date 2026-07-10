@@ -74,6 +74,14 @@ implausible, though not exhaustively excluded by alignment). Specificity compute
   binarization, not an artifact of the pre-committed gap<=0 cutoff. AUROC ranges 0.85 (fail := gap<=-0.5,
   the decisive failures) to 0.73 (fail := gap<=1.0, including marginal near-boundary calls), with 0.801 at
   gap<=0; far above the 0.50 baselines at every threshold (`cisfalcon/threshold_robustness.py`).
+- EXPLORATORY/POST-HOC, emitted-probability calibration: the tool's `calibrated_fail_probability` is fit by
+  isotonic regression on the 93,435 cross-lab (pred_gap, measured_fail) pairs. Held-out calibration error
+  (fit on a random half, evaluate the ECE on the other half, both directions averaged) is 0.0031, versus
+  0.1671 for the documented sigmoid the tool shipped before this fix, a 54x reduction in probability error.
+  Isotonic is monotonic, so the ranking AUROC 0.801 is unchanged; only the emitted probability becomes
+  trustworthy. Held-out reliability is near-diagonal across bins (predicted 0.03/0.14/0.42/0.95 vs observed
+  0.03/0.13/0.42/0.93). Fit + honesty check: `cisfalcon/fit_calibration.py`; the map ships as
+  `data/calibration.csv` and the live tool is confirmed serving it (gap -1.19 -> P 0.70, not the sigmoid 0.97).
 - Accessibility-only cross-lab baseline (HONEST GAP, stated not hidden): NOT yet computed at 93k scale. It
   needs an off-machine GPU pass to score the designs with the DHS64 accessibility heads
   (`cisfalcon/accessibility_baseline.py` is the ready script). In-distribution the accessibility-only AUROC

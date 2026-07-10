@@ -66,18 +66,28 @@ print(
     f"measured failures: {sum(labels)} / {len(labels)} ({sum(labels) / len(labels):.3f})"
 )
 
-# gap over the 3 shared cells for a given kind
-IDX = [gate.CELL_IDX[c] for c in SHARED] if hasattr(gate, "CELL_IDX") else None
+# CORRECT per-kind column indices. The activity (dhs64_mpra) head is 12 MPRA cells;
+# the accessibility (dhs64) head is 64 DHS biosamples in a DIFFERENT order (atlas
+# selected_biosample_metadata). Indexing the 64-wide accessibility output with the
+# 12-cell MPRA CELL_IDX (the earlier bug) reads the wrong cells and gives a garbage
+# accessibility number. The DHS64 indices below are verified from the atlas metadata.
+MPRA_IDX = {"K562": 7, "HepG2": 6, "SKNSH": 3}  # == gate.CELL_IDX for these cells
+DHS64_IDX = {"K562": 57, "HepG2": 49, "SKNSH": 30}
 
 
 def gaps_for(kind):
-    pred = gate.score_sequences(seqs, kind=kind)  # (N, 12)
+    idxmap = MPRA_IDX if kind == "mpra" else DHS64_IDX
+    pred = np.squeeze(np.asarray(gate.score_sequences(seqs, kind=kind)))
+    if pred.ndim > 2:  # collapse any trailing (fold/head) axis to (N, C)
+        pred = pred.reshape(pred.shape[0], pred.shape[1], -1).mean(axis=-1)
+    need = max(idxmap.values())
+    assert pred.shape[1] > need, (
+        f"{kind} output width {pred.shape[1]} <= {need}; index map invalid"
+    )
     out = []
     for i, t in enumerate(targets):
-        p = pred[i]
-        sub = {c: p[gate.CELL_IDX[c]] for c in SHARED}
-        gap = sub[t] - max(v for c, v in sub.items() if c != t)
-        out.append(gap)
+        sub = {c: float(pred[i, idxmap[c]]) for c in SHARED}
+        out.append(sub[t] - max(v for c, v in sub.items() if c != t))
     return out
 
 

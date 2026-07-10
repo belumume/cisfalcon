@@ -50,6 +50,10 @@ inflated by memorized sequences.
   200-design batch, under a full-committed-spend assumption of roughly $950 to $3,500 per
   pursued design (assumptions in docs/cisfalcon_triage_economics.csv), that averts an
   estimated $1,700 to $6,400, net of a cheap orthogonal recheck on the flags.
+- The failure-risk probability the tool emits is genuinely calibrated, not asserted: it is fit by isotonic
+  regression on the cross-lab (predicted-gap, measured-failure) pairs, with held-out calibration error
+  (ECE) 0.0031, so a design shown "70% risk" fails close to 70% of the time. The live tool is serving this
+  map (`fit_calibration.py`; held-out reliability diagram in `docs/cisfalcon_calibration.png`).
 
 ## Grounded diagnosis, and a closed loop
 

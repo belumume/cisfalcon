@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CisFalcon — pre-synthesis specificity gate for AI-designed enhancers</title>
+<meta name="description" content="Predict which AI-designed cell-type-specific enhancers will fail their intended specificity, before you synthesize them. Grounded in a frozen external measured-activity model. Cross-lab AUROC 0.80 on 93,435 independent designs.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2338e1c4' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%2338e1c4'/%3E%3Cpath d='M16 1v6M16 25v6M1 16h6M25 16h6' stroke='%2338e1c4' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="13" stroke="#38e1c4" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="#38e1c4"/><path d="M16 1v6M16 25v6M1 16h6M25 16h6" stroke="#38e1c4" stroke-width="2"/></svg>
+      <span class="n"><b>Cis</b>Falcon</span>
+    </div>
+    <span class="tagline">pre-synthesis specificity gate for AI-designed enhancers</span>
+    <span class="spacer"></span>
+    <div class="stat-chip"><span>cross-lab</span> <b>AUROC 0.80</b> <span class="sep">·</span> <b>93,435</b> <span>designs</span></div>
+  </div>
+</header>
+
+<nav class="tabs"><div class="wrap">
+  <button class="tab on" data-tab="check">Check a design</button>
+  <button class="tab" data-tab="triage">Batch triage</button>
+  <button class="tab" data-tab="screen">Generality: CRISPR screens</button>
+  <button class="tab" data-tab="how">How it works</button>
+</div></nav>
+
+<main class="wrap">
+
+  <!-- CHECK -->
+  <section id="tab-check">
+    <p class="hero-note">A generative model proposed an enhancer meant to be active in <b>one</b> cell type and silent elsewhere. Before spending bench money to synthesize it, ask CisFalcon whether it will actually hit its target. Scored against a frozen external measured-activity model (DHS64 MPRA, Castillo-Hair 2025), not self-report. CisFalcon does not design DNA; it falsifies designs before synthesis.</p>
+    <div class="grid">
+      <div class="panel">
+        <div class="hd">Designed enhancer</div>
+        <div class="bd">
+          <label class="fld">Sequence (DNA, 50–5000 bp)</label>
+          <textarea id="seq" placeholder="Paste a designed enhancer sequence, or load a real failing design →" spellcheck="false"></textarea>
+          <div class="seqmeta"><span id="seqlen">0 bp</span><button class="linkbtn" id="loadex" style="margin:0">Load a real failing design</button></div>
+          <label class="fld" style="margin-top:16px">Intended target cell type</label>
+          <select id="target"></select>
+          <div class="btns">
+            <button class="b primary" id="btn-check">Check (fast)</button>
+            <button class="b ghost" id="btn-diag">Full diagnosis</button>
+          </div>
+          <div id="err"></div>
+          <div class="note" id="named"><b>Built for</b> a regulatory-genomics scientist who ends each week with hundreds of designed candidates and can afford to synthesize a fraction. CisFalcon orders them by failure risk and explains why each risky one fails, grounded in measured biology.</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="hd">Result</div>
+        <div class="bd" id="result">
+          <div class="empty">
+            <svg width="42" height="42" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="13" stroke="#66728c" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="#66728c"/></svg>
+            <div>Paste a design and run a check, or load the real failing example.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRIAGE -->
+  <section id="tab-triage" hidden>
+    <p class="hero-note">You have a batch of designs and can only synthesize some. Paste them (one per line, or FASTA), pick the target cell, and CisFalcon ranks them safest-first. <b>Synthesize the safest half first and you cut specificity failures by about 70%</b> in what you make (6.29% → 1.91% on an independent lab's designs).</p>
+    <div class="grid">
+      <div class="panel">
+        <div class="hd">Designs (one per line or FASTA)</div>
+        <div class="bd">
+          <textarea id="batchseq" style="min-height:220px" placeholder=">design_1&#10;ACGT...&#10;>design_2&#10;ACGT..." spellcheck="false"></textarea>
+          <label class="fld" style="margin-top:14px">Target cell type</label>
+          <select id="btarget"></select>
+          <div class="btns">
+            <button class="b primary" id="btn-batch">Rank by failure risk</button>
+            <button class="b ghost" id="btn-batchex">Load example set</button>
+          </div>
+          <div id="berr"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="hd">Triage ranking</div>
+        <div class="bd" id="batchresult"><div class="empty">Paste designs and rank them.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREENAUDIT -->
+  <section id="tab-screen" hidden>
+    <p class="hero-note">The same verifier pattern (a deterministic domain gate checked against external measured ground truth) transfers to a second, disjoint domain: <b>ScreenAudit</b> re-derives the hit calls of published CRISPR screens on live BioGRID ORCS data. Independent screens of the same cell line agree on only a fraction of their hit calls, and ScreenAudit flags which published hit lists are fragile.</p>
+    <div class="panel"><div class="bd">
+      <div class="big-stat">
+        <div class="s"><div class="v" id="sa-mean">0.39</div><div class="l">mean hit-list agreement (Jaccard) across independent same-context essentiality screens</div></div>
+        <div class="s"><div class="v">4</div><div class="l">cell lines, 28 screens, live BioGRID ORCS</div></div>
+      </div>
+      <div class="sa-grid" id="sa-grid"></div>
+      <div class="note" style="margin-top:16px">Read: published CRISPR essentiality hit calls are method and lab dependent, and the fragility is highly variable. HEK293-A reproduces (Jaccard 0.69); K-562 barely overlaps (0.14). One architecture, two disjoint bio domains: AI-enhancer design QC and CRISPR-screen QC.</div>
+    </div></div>
+  </section>
+
+  <!-- HOW -->
+  <section id="tab-how" hidden>
+    <div class="prose">
+      <h3>What CisFalcon does</h3>
+      <p>Modern generative models design enhancers meant to be active in one target cell type and silent elsewhere. Many still fire in the wrong cell. Synthesizing and validating one design costs roughly $250–1000 and 2–4 weeks. CisFalcon reads the sequence and predicts the failure first, grounded in a frozen external measured-activity model rather than self-report.</p>
+      <h3>Three layers</h3>
+      <ul>
+        <li><b>Gate</b> (deterministic): the frozen atlas DHS64-MPRA activity model, ensembled over independent folds, predicts per-cell activity and the specificity gap. Nothing is trained here.</li>
+        <li><b>Grounded motif scan</b>: the input sequence is scanned against real JASPAR transcription-factor PWMs, so the diagnosis names driver motifs that are actually present, not guessed.</li>
+        <li><b>Agent layer</b> (built with Claude): parallel agents interpret the mechanism, ground the risk in the measured benchmark, and adversarially challenge the call; a synthesizer returns the verdict and a motif-level redesign.</li>
+      </ul>
+      <h3>The closed loop</h3>
+      <p>When CisFalcon flags a design, it does more than warn. It applies the prescribed motif edit (disrupt the off-target cell's driver motifs, install the target cell's) and re-scores with the same external model. The predicted specificity gap moving in the right direction is empirical proof the fix is real. A single model call narrating a score cannot do that.</p>
+      <h3>Verified numbers</h3>
+      <ul>
+        <li>Cross-lab <b>AUROC 0.8013</b> on 93,435 designs from an independent lab (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw. Zero sequence overlap. Baselines: GC 0.51, random 0.50.</li>
+        <li>Rank by CisFalcon, synthesize the safest half first: specificity failure rate drops from <b>6.29% to 1.91%</b> (70% fewer failures).</li>
+        <li>Honest boundaries: a triage ranker, not a hard gate (PPV 0.24 at recall 0.5 at the 6.3% base rate); strongest on failure-prone designs, near coin-flip on already-well-optimized ones; the closed loop still names the fix on the hard ones.</li>
+      </ul>
+      <p class="dim" style="margin-top:16px">Open source. Grounded in Castillo-Hair et al. 2025 (atlas MPRA models), Gosai et al. 2024 (cross-lab designs), JASPAR (motifs), and BioGRID ORCS (CRISPR screens).</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot"><div class="wrap">
+  <span>CisFalcon · a defensive pre-synthesis falsifier · built with Claude</span>
+  <span>Scored against external measured ground truth (DHS64 MPRA). It does not design DNA.</span>
+</div></footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

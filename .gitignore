@@ -1,0 +1,30 @@
+# models + large data (see DATA.md for sources)
+models/
+data/
+*.h5
+*.csv
+!screenaudit/screenaudit_result.json
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.venv-tf/
+.pytest_cache/
+.ruff_cache/
+
+# env / secrets
+.env
+.env.*
+*.key
+*.pem
+
+# runtime caches (regenerable)
+webapp/backend/jaspar_cache/_new/
+screenaudit/cache/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

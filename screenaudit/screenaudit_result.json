@@ -1,0 +1,46 @@
+[
+  {
+    "cell_line": "HEK293-A",
+    "phenotype": "cell proliferation",
+    "selection": "Negative Selection",
+    "n_screens": 12,
+    "nonreplication_raw": 0.1833,
+    "jaccard_raw": 0.6887,
+    "jaccard_matched": 0.5968,
+    "gene_identity_discordance": 0.4032,
+    "n_pairs": 66
+  },
+  {
+    "cell_line": "K-562",
+    "phenotype": "cell proliferation",
+    "selection": "Negative Selection",
+    "n_screens": 8,
+    "nonreplication_raw": 0.763,
+    "jaccard_raw": 0.1359,
+    "jaccard_matched": 0.1367,
+    "gene_identity_discordance": 0.8633,
+    "n_pairs": 28
+  },
+  {
+    "cell_line": "HT-29",
+    "phenotype": "cell proliferation",
+    "selection": "Negative Selection",
+    "n_screens": 4,
+    "nonreplication_raw": 0.2704,
+    "jaccard_raw": 0.5742,
+    "jaccard_matched": 0.5779,
+    "gene_identity_discordance": 0.4221,
+    "n_pairs": 6
+  },
+  {
+    "cell_line": "T-47D",
+    "phenotype": "cell proliferation",
+    "selection": "Negative Selection",
+    "n_screens": 4,
+    "nonreplication_raw": 0.6629,
+    "jaccard_raw": 0.1761,
+    "jaccard_matched": 0.2066,
+    "gene_identity_discordance": 0.7934,
+    "n_pairs": 6
+  }
+]

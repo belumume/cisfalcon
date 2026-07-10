@@ -8,6 +8,7 @@ data/gosai_designed/*.csv
 data/gosai_designed/*.parquet
 data/**/*.csv
 data/**/*.parquet
+!data/calibration.csv
 screenaudit/cache/
 atlas_ref/
 *.md

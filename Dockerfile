@@ -18,6 +18,8 @@ COPY webapp/backend/ ./webapp/backend/
 COPY screenaudit/screenaudit_result.json ./screenaudit/screenaudit_result.json
 COPY data/gosai_designed/hero.json ./data/gosai_designed/hero.json
 COPY data/gosai_designed/batch_example.json ./data/gosai_designed/batch_example.json
+# the isotonic failure-probability calibration (held-out ECE 0.0031); absent = sigmoid fallback
+COPY data/calibration.csv ./data/calibration.csv
 
 ENV CISFALCON_DIAGNOSE_CAP=200
 EXPOSE 8080

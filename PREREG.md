@@ -70,6 +70,15 @@ implausible, though not exhaustively excluded by alignment). Specificity compute
   separates failures at macro-AUROC 0.747 (HepG2 0.833, SKNSH 0.731, K562 0.678). So per-sequence
   discrimination survives removing the cell prior; the pooled 0.801 additionally benefits from
   base-rate separation across cells and generators (`cisfalcon/cell_prior_baseline.py`).
+- EXPLORATORY/POST-HOC, failure-threshold robustness: the 0.801 is stable across the fail-label
+  binarization, not an artifact of the pre-committed gap<=0 cutoff. AUROC ranges 0.85 (fail := gap<=-0.5,
+  the decisive failures) to 0.73 (fail := gap<=1.0, including marginal near-boundary calls), with 0.801 at
+  gap<=0; far above the 0.50 baselines at every threshold (`cisfalcon/threshold_robustness.py`).
+- Accessibility-only cross-lab baseline (HONEST GAP, stated not hidden): NOT yet computed at 93k scale. It
+  needs an off-machine GPU pass to score the designs with the DHS64 accessibility heads
+  (`cisfalcon/accessibility_baseline.py` is the ready script). In-distribution the accessibility-only AUROC
+  is 0.79 vs the activity gate's ~0.90 (activity adds ~0.11 there); the cross-lab activity gate is 0.801.
+  Reported as pending, not as a number we hold.
 
 ## 7. In-distribution (SANITY CHECK, not the flagship, carries the leakage caveat)
 Matched apples-to-apples to the cross-lab number (same 3 cells, same fail label, OOF), n=587 atlas

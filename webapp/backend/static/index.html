@@ -64,17 +64,19 @@
 
   <!-- TRIAGE -->
   <section id="tab-triage" hidden>
-    <p class="hero-note">You have a batch of designs and can only synthesize some. Paste them (one per line, or FASTA), pick the target cell, and CisFalcon ranks them safest-first. <b>Synthesize the safest half first and you cut specificity failures by about 70%</b> in what you make (6.29% → 1.91% on an independent lab's designs).</p>
+    <p class="hero-note">You have a batch of designs and can only synthesize some. Paste them (one per line or FASTA), or upload a CSV of your design library, pick the target cell, and CisFalcon ranks them safest-first (any size; it chunks and gives you a ranked CSV back). <b>Synthesize the safest half first and you cut specificity failures by about 70%</b> in what you make (6.29% → 1.91% on an independent lab's designs).</p>
     <div class="grid">
       <div class="panel">
         <div class="hd">Designs (one per line or FASTA)</div>
         <div class="bd">
           <textarea id="batchseq" style="min-height:220px" placeholder=">design_1&#10;ACGT...&#10;>design_2&#10;ACGT..." spellcheck="false"></textarea>
+          <div class="seqmeta"><input type="file" id="batchfile" accept=".csv,.tsv,.txt,.fa,.fasta" style="display:none"><button class="linkbtn" id="btn-upload" style="margin:0">or upload a CSV / FASTA library (id, sequence columns)</button></div>
           <label class="fld" style="margin-top:14px">Target cell type</label>
           <select id="btarget"></select>
           <div class="btns">
             <button class="b primary" id="btn-batch">Rank by failure risk</button>
             <button class="b ghost" id="btn-batchex">Load example set</button>
+            <button class="b ghost" id="btn-download" style="display:none">Download ranked CSV</button>
           </div>
           <div id="berr"></div>
         </div>

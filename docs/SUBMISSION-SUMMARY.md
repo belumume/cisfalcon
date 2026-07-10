@@ -16,7 +16,16 @@ before synthesis. It is a triage ranker: it tells you which designs in a batch a
 so you spend a cheap orthogonal check on those before committing synthesis dollars to the
 whole set. The deployed web tool takes a pasted design (or a whole batch), scores it, and
 returns the verdict, a per-cell activity chart, and a motif scan, in one click, with no
-install. A scientist uses it without the author in the room.
+install. Upload a whole CSV library of any size and it hands back a ranked CSV. A scientist
+uses it without the author in the room.
+
+Who it is for: labs that design cell-type-specific enhancers and currently have no pre-synthesis
+QC step. That is the documented workflow of, for example, Sebastian Castillo-Hair's group at the
+University of Washington, which built the atlas of AI-designed enhancers CisFalcon scores against,
+and Sager Gosai and Ryan Tewhey's at the Jackson Laboratory, whose 93,435 published designs are
+the validation set below. CisFalcon is built for that need and validated on their real published
+data. It does not claim any of them has endorsed it; the endorsement is a conversation, the need
+is already on the record.
 
 ## The number (leakage-immune, cross-lab)
 

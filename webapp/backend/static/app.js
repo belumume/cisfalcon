@@ -162,7 +162,83 @@ async function runRedesign() {
 $("#btn-check").addEventListener("click", runCheck);
 $("#btn-diag").addEventListener("click", async () => { await runCheck(); $("#r-diag")?.click(); });
 
-// ---------- batch ----------
+// ---------- batch (paste OR upload a CSV/FASTA library; chunks large sets; CSV download) ----------
+let _lastBatch = null; // { rows:[{rank,id,seq,gap,cell,fail}], target }
+
+function _validSeq(s) {
+  const c = (s || "").replace(/\s+/g, "").toUpperCase().replace(/U/g, "T");
+  return /^[ACGTN]+$/.test(c) && c.length >= 50 && c.length <= 5000 ? c : null;
+}
+
+// parse a pasted/uploaded blob into [{id, seq}]: CSV with id/sequence columns, FASTA, or one-per-line
+function _parseSeqFile(text) {
+  const lines = (text || "").split(/\r?\n/);
+  const head = (lines[0] || "").toLowerCase();
+  if (head.includes(",") && head.includes("seq")) {
+    const cols = lines[0].split(",").map((c) => c.trim().toLowerCase());
+    const si = cols.findIndex((c) => c === "sequence" || c === "seq");
+    const ii = cols.findIndex((c) => c === "id" || c === "name" || c === "design");
+    const out = [];
+    for (let k = 1; k < lines.length; k++) {
+      if (!lines[k].trim()) continue;
+      const parts = lines[k].split(",");
+      const seq = (parts[si] || "").trim();
+      if (seq) out.push({ id: ii >= 0 ? (parts[ii] || "").trim() || `design_${out.length + 1}` : `design_${out.length + 1}`, seq });
+    }
+    return out;
+  }
+  const out = []; let cur = null, id = null;
+  for (const ln of lines) {
+    const t = ln.trim(); if (!t) continue;
+    if (t.startsWith(">")) { if (cur !== null) out.push({ id, seq: cur }); id = t.slice(1).trim() || `design_${out.length + 1}`; cur = ""; }
+    else if (cur !== null) cur += t;
+    else out.push({ id: `design_${out.length + 1}`, seq: t });
+  }
+  if (cur !== null) out.push({ id, seq: cur });
+  return out;
+}
+
+// score any number of designs by chunking under the per-request cap, then re-rank globally
+async function _scoreChunked(items, target_cell, R) {
+  const CHUNK = 64, rows = [];
+  for (let i = 0; i < items.length; i += CHUNK) {
+    const chunk = items.slice(i, i + CHUNK);
+    R.innerHTML = `<div class="empty"><span class="spin" style="border-top-color:var(--brand)"></span><div style="margin-top:10px">scoring ${Math.min(i + CHUNK, items.length)} / ${items.length} designs…</div></div>`;
+    const d = await api("/batch", { sequences: chunk.map((x) => x.seq), target_cell });
+    for (const r of d.ranking) {
+      const it = chunk[r.input_index];
+      if (it) rows.push({ id: it.id, seq: it.seq, gap: r.predicted_gap, cell: r.predicted_most_active_cell, fail: r.predicted_fail });
+    }
+  }
+  rows.sort((a, b) => b.gap - a.gap);
+  rows.forEach((r, i) => (r.rank = i + 1));
+  return rows;
+}
+
+function _renderBatch(rows, R) {
+  const n = rows.length, nfail = rows.filter((r) => r.fail).length;
+  const half = rows.slice(0, Math.max(1, Math.floor(n / 2)));
+  const halfFail = half.filter((r) => r.fail).length / half.length;
+  const overall = n ? nfail / n : 0;
+  const reduction = overall > 0 ? Math.round(100 * (1 - halfFail / overall)) : 0;
+  let h = `<div class="big-stat">
+    <div class="s"><div class="v">${reduction}%</div><div class="l">fewer failures if you synthesize the safest half first</div></div>
+    <div class="s"><div class="v">${nfail}/${n}</div><div class="l">predicted to miss their target cell</div></div>
+  </div><table><thead><tr><th>rank</th><th>design</th><th>gap</th><th>most-active</th><th>call</th></tr></thead><tbody>`;
+  h += rows.slice(0, 200).map((r) => `<tr><td>${r.rank}</td><td>${esc(r.id)}</td><td>${r.gap >= 0 ? "+" : ""}${r.gap}</td><td>${r.cell}</td><td><span class="pill ${r.fail ? "FAIL" : "PASS"}">${r.fail ? "fail" : "pass"}</span></td></tr>`).join("");
+  h += `</tbody></table><div class="dim" style="font-size:11px;margin-top:8px">ranked safest-first by predicted specificity gap. Synthesize from the top.${n > 200 ? ` Showing 200 of ${n}; download the full ranked CSV.` : ""}</div>`;
+  R.innerHTML = h;
+}
+
+$("#btn-upload").addEventListener("click", () => $("#batchfile").click());
+$("#batchfile").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const items = _parseSeqFile(await f.text());
+  $("#batchseq").value = items.slice(0, 500).map((x) => `>${x.id}\n${x.seq}`).join("\n");
+  $("#berr").innerHTML = `<div class="dim" style="font-size:12px">loaded ${items.length} designs from ${esc(f.name)}. Pick the target cell and rank.</div>`;
+  e.target.value = "";
+});
+
 $("#btn-batchex").addEventListener("click", async () => {
   const ex = await api("/example-batch");
   $("#batchseq").value = (ex.sequences || []).map((s, i) => `>design_${i + 1}\n${s}`).join("\n");
@@ -170,21 +246,28 @@ $("#btn-batchex").addEventListener("click", async () => {
 });
 
 $("#btn-batch").addEventListener("click", async () => {
-  const raw = $("#batchseq").value, target_cell = $("#btarget").value;
-  const seqs = raw.split(/\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith(">"));
-  $("#berr").innerHTML = "";
+  const target_cell = $("#btarget").value;
+  const items = _parseSeqFile($("#batchseq").value).map((x) => ({ id: x.id, seq: _validSeq(x.seq) })).filter((x) => x.seq);
   const R = $("#batchresult");
-  R.innerHTML = `<div class="empty"><span class="spin" style="border-top-color:var(--brand)"></span><div style="margin-top:10px">scoring ${seqs.length} designs…</div></div>`;
+  $("#berr").innerHTML = ""; $("#btn-download").style.display = "none";
+  if (!items.length) { $("#berr").innerHTML = `<div class="err">No valid DNA sequences (need 50-5000 bp each).</div>`; return; }
   try {
-    const d = await api("/batch", { sequences: seqs, target_cell });
-    let h = `<div class="big-stat">
-      <div class="s"><div class="v">${d.failure_reduction_pct_safest_half}%</div><div class="l">fewer failures if you synthesize the safest half first</div></div>
-      <div class="s"><div class="v">${d.predicted_fail_count}/${d.n}</div><div class="l">predicted to miss their target cell</div></div>
-    </div><table><thead><tr><th>rank</th><th>design</th><th>gap</th><th>most-active</th><th>call</th></tr></thead><tbody>`;
-    h += d.ranking.map((r) => `<tr><td>${r.rank}</td><td>#${r.input_index + 1}</td><td class="${r.predicted_gap < 0 ? "" : ""}">${r.predicted_gap >= 0 ? "+" : ""}${r.predicted_gap}</td><td>${r.predicted_most_active_cell}</td><td><span class="pill ${r.predicted_fail ? "FAIL" : "PASS"}">${r.predicted_fail ? "fail" : "pass"}</span></td></tr>`).join("");
-    h += `</tbody></table><div class="dim" style="font-size:11px;margin-top:8px">ranked safest-first by predicted specificity gap. Synthesize from the top.</div>`;
-    R.innerHTML = h;
+    const rows = await _scoreChunked(items, target_cell, R);
+    _lastBatch = { rows, target: target_cell };
+    _renderBatch(rows, R);
+    $("#btn-download").style.display = "";
   } catch (e) { $("#berr").innerHTML = `<div class="err">${e.message}</div>`; R.innerHTML = `<div class="empty">Ranking failed.</div>`; }
+});
+
+$("#btn-download").addEventListener("click", () => {
+  if (!_lastBatch) return;
+  const csv = "rank,design_id,predicted_gap,predicted_most_active_cell,call,sequence\n" +
+    _lastBatch.rows.map((r) => `${r.rank},${JSON.stringify(r.id)},${r.gap},${r.cell},${r.fail ? "fail" : "pass"},${r.seq}`).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = `cisfalcon_ranked_${_lastBatch.target}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 });
 
 // ---------- screenaudit ----------

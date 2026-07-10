@@ -73,10 +73,16 @@ def _get_agent_verifier() -> verifier.CisFalconVerifier:
 _DNA = re.compile(r"^[ACGTUNacgtun]+$")
 
 
+def _strip_fasta(seq: str) -> str:
+    """Drop FASTA header line(s) BEFORE collapsing whitespace, so a pasted
+    `>header\nACGT...` record works (stripping whitespace first would delete the
+    newline that separates header from sequence). Also handles line-wrapped FASTA."""
+    lines = [ln for ln in (seq or "").splitlines() if not ln.lstrip().startswith(">")]
+    return re.sub(r"\s+", "", "\n".join(lines))
+
+
 def _clean_seq(seq: str) -> str:
-    seq = re.sub(r"\s+", "", seq or "")
-    if seq.startswith(">"):  # tolerate a single FASTA header pasted in
-        seq = "".join(seq.split("\n")[1:])
+    seq = _strip_fasta(seq)
     if not seq:
         raise HTTPException(400, "empty sequence")
     if len(seq) < 50:
@@ -352,12 +358,23 @@ def redesign(req: PredictReq):
     }
 
 
+MAX_BATCH = (
+    64  # scores well within the request timeout on shared-cpu-8x; larger = split
+)
+
+
 @app.post("/api/batch")
 def batch(req: BatchReq):
     cell = _check_target(req.target_cell)
+    if len(req.sequences) > MAX_BATCH:
+        raise HTTPException(
+            400,
+            f"batch too large ({len(req.sequences)} designs); max {MAX_BATCH} per "
+            f"request so each check stays fast. Split into smaller batches.",
+        )
     seqs = []
-    for s in req.sequences[:500]:
-        s2 = re.sub(r"\s+", "", s or "")
+    for s in req.sequences:
+        s2 = _strip_fasta(s)
         if s2 and _DNA.match(s2) and 50 <= len(s2) <= 5000:
             seqs.append(s2.upper().replace("U", "T"))
     if not seqs:

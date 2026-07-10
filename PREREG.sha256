@@ -1,0 +1,5 @@
+# Pre-registration integrity record
+# SHA-256 of PREREG.md (the locked methodology: fail label gap<=0, out-of-fold scoring,
+# operating threshold, metrics). The git commit that adds these two files is the immutable
+# timestamp; recompute with: sha256sum PREREG.md  (must equal the hash below).
+PREREG.md  fcdec08651aa82e47f3a2bdcdef97dd7a15d5c70c1b0b414cb884e4aa35d5fc7

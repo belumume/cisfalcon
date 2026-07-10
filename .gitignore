@@ -1,8 +1,17 @@
-# models + large data (see DATA.md for sources)
+# models + large benchmark data (see DATA.md for sources)
 models/
-data/
 *.h5
+
+# exclude data/ contents but keep the small curated demo JSONs the Dockerfile needs
+data/*
+!data/gosai_designed/
+data/gosai_designed/*
+!data/gosai_designed/hero.json
+!data/gosai_designed/batch_example.json
+
+# exclude big benchmark CSVs, keep the small curated result/economics files
 *.csv
+!docs/cisfalcon_triage_economics.csv
 !screenaudit/screenaudit_result.json
 
 # python

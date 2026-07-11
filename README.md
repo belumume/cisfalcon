@@ -123,6 +123,21 @@ high- from low-impact variants well, the same triage signal; it does not calibra
 bit-identical to the flagship scorer, and the K562 headline reproduces from the committed per-SNV data
 with one command. See [`docs/variant-effect-extension.md`](docs/variant-effect-extension.md) and [`satmut/`](satmut/).
 
+### A finding: a reliability map of AI enhancer-design methods
+
+Using the same committed data, CisFalcon produces a systematic result the scattered dataset does not give
+on its own. Today's AI enhancer-design methods vary about **30x** in specificity-failure rate (FastSeqProp
+0.7% to Hamiltonian MC 22.3%), and the disease-relevant targets are the hardest: brain (SK-N-SH, **10.1%**)
+and liver (HepG2, 8.2%) designs fail 10 to 15 times more often than blood (K562, 0.6%), and the worst
+single combination, Hamiltonian-MC brain enhancers, fails **1 in 3**. CisFalcon's discrimination is highest
+exactly where the failures cluster (AUROC 0.92 on the worst generator). The failure labels are Gosai/Tewhey
+wet-lab measurements; the systematic map and the frozen verifier that predicts it are the contribution.
+Reproduce with `python findings_failure_modes.py`.
+
+![Specificity-failure rate by AI design method and by target cell: brain and liver designs, and the Hamiltonian-MC and SA generators, fail most.](docs/failure_modes.png)
+
+See [`docs/failure-modes.md`](docs/failure-modes.md).
+
 Honest boundaries, stated up front:
 
 - CisFalcon is a **triage ranker**; it is not sold as a hard abort-gate. At the 6.29% base rate a hard

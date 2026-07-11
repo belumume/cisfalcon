@@ -43,7 +43,15 @@ $("#loadex").addEventListener("click", async () => {
   $("#seq").value = ex.sequence || "";
   $("#seq").dispatchEvent(new Event("input"));
   $("#target").value = ex.target_cell;
-  $("#result").innerHTML = `<div class="note">Loaded a real BODA/Malinois design optimized for <b>HepG2</b> specificity. Measured in the wet lab: HepG2 −0.1, K562 +6.5 — it barely touches its target and fires 6.5-fold in the wrong cell. Run a check and watch CisFalcon call it from sequence alone.</div>`;
+  $("#result").innerHTML = `<div class="note">Loaded a real BODA/Malinois design optimized for <b>HepG2</b> specificity. Measured in the wet lab: HepG2 log2FC −0.1, K562 log2FC +6.5 (about 90x on a linear scale) — it barely touches its target and fires strongly in the wrong cell. Run a check and watch CisFalcon call it from sequence alone.</div>`;
+});
+
+$("#loadbrain")?.addEventListener("click", async () => {
+  const ex = await api("/example-brain");
+  $("#seq").value = ex.sequence || "";
+  $("#seq").dispatchEvent(new Event("input"));
+  $("#target").value = ex.target_cell;
+  $("#result").innerHTML = `<div class="note">Loaded a real design optimized for the brain-derived <b>SKNSH</b> line (a neuroblastoma cell). Measured in the wet lab: SKNSH log2FC +0.5, K562 log2FC +5.8 — it barely touches its brain target and fires in a blood cell instead. Enhancer specificity like this is the targeting element of brain enhancer-AAV gene therapy. Run a check and watch CisFalcon flag it from sequence alone.</div>`;
 });
 
 // ---------- rendering ----------

@@ -426,6 +426,22 @@ def example():
     }
 
 
+@app.get("/api/example-brain")
+def example_brain():
+    """A real brain-cell (SKNSH neuroblastoma) failure: a Gosai/Malinois design optimized
+    for the brain-derived SKNSH line that instead fires in K562. Grounds the Gladstone
+    brain-disease angle in a live, shown example, not just the cross-lab 0.73 number."""
+    hero = CISFALCON / "data" / "gosai_designed" / "brain_hero.json"
+    if hero.exists():
+        return json.loads(hero.read_text())
+    return {
+        "id": "20211213_142237__606687__146::hmc__sknsh__0",
+        "target_cell": "SKNSH",
+        "measured": {"K562": 5.75, "HepG2": 0.79, "SKNSH": 0.53},
+        "note": "A real design optimized for the brain-derived SKNSH line; measured, it fires in K562, not its brain target.",
+    }
+
+
 @app.get("/api/example-batch")
 def example_batch():
     """A real mixed batch of HepG2-targeted designs (measured pass + fail) so the triage

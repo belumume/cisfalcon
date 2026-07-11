@@ -17,6 +17,7 @@ COPY webapp/backend/ ./webapp/backend/
 # small runtime data (screenaudit result + the slim demo hero; NOT the 29MB benchmark csv)
 COPY screenaudit/screenaudit_result.json ./screenaudit/screenaudit_result.json
 COPY data/gosai_designed/hero.json ./data/gosai_designed/hero.json
+COPY data/gosai_designed/brain_hero.json ./data/gosai_designed/brain_hero.json
 COPY data/gosai_designed/batch_example.json ./data/gosai_designed/batch_example.json
 # the isotonic failure-probability calibration (held-out ECE 0.0031); absent = sigmoid fallback
 COPY data/calibration.csv ./data/calibration.csv

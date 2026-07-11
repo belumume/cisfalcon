@@ -88,6 +88,8 @@ FastSeqProp), with no sequence overlap with the model's training data.
   0.50 and every trivial baseline. So the pooled 0.80 is the deployment number for a mixed batch and 0.66
   is the fully-conditioned per-sequence signal; both are reported, not just the higher one
   (`cell_prior_baseline.py`).
+
+![Where the signal lives: the pooled 0.80 decomposed. Remove the cell base rate and per-sequence discrimination is 0.75; remove both cell and generator base rates and it is 0.66, still well above every trivial baseline.](docs/decomposition.png)
 - **The failure risk it prints is calibrated, not asserted.** The emitted probability is fit by isotonic
   regression on held-out cross-lab data: held-out calibration error (ECE) is 0.0031, so a design it labels
   70% risk fails close to 70% of the time across this design population (reliability diagram in

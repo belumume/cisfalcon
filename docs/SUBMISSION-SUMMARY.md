@@ -88,6 +88,20 @@ external measured ground truth, plus agent diagnosis) applies in a second, disjo
 The Jaccard 0.39 is a measured concordance of published hit lists, not a second predictive
 model; it shows the architecture generalizes, not that a second predictor was validated.
 
+## Why it matters for disease
+
+Cell-type-specific enhancers are the targeting element of enhancer-AAV gene therapy, one of the most
+active routes to reach a single cell type in the brain, heart, and immune system without disturbing the
+rest (2024-2025 toolkits target cortical interneurons, midbrain dopaminergic neurons, striatal cholinergic
+neurons, and brain endothelial cells). The field's own bottleneck, stated plainly in those papers, is that
+every novel enhancer-AAV combination needs detailed wet-lab validation and many designs fail specificity
+(off-target expression, cell- and species-specific silencing). That is exactly the spend CisFalcon triages
+away: it flags the risky designs from sequence alone, before synthesis, so a lab commits its assay budget to
+the designs most likely to hold up. It is a concrete instance of the compute-plus-wet-lab integration that
+shortens the distance from a design to a defensible answer, on the disease areas Gladstone works in. Two of
+its three validated target cells are brain lines (SKNSH neuroblastoma and, adjacently, the neural panel), so
+brain-relevant triage runs today, not as a promise.
+
 ## What it is not, and how Claude built it
 
 It flags risk and abstains. It does not design the enhancer, and a flag is not a guarantee.
@@ -100,9 +114,12 @@ Built with the full Claude stack. Claude Code built and deployed the tool: the g
 JASPAR motif grounding, the parallel-agent verifier (independent mechanism, precedent, and
 adversary lenses plus a synthesizer), and the closed loop. Claude Science built the analysis
 deliverables (this summary, the economics figure, the demo, the prepared Q&A) with a full
-provenance chain, and a separate reviewer agent audited the claims (both are the builder's own
-Claude stack, not a third party; the value is the fresh-context second pass, not external
-independence).
+provenance chain, and then, in a fresh session, cloned this public repo from scratch and
+re-derived every headline number to the decimal from the committed data alone (AUROC 0.8013,
+joint per-sequence 0.662, calibration ECE 0.0031, triage 7.75x, ScreenAudit 0.394), which is
+what surfaced the final reproducibility fixes. Both are the builder's own Claude stack, not a
+third party; the value is a fresh-context, separate-harness reproduction, not external
+independence.
 
 On reproducibility, the two verification claims are kept distinct. The in-distribution pipeline
 was reimplemented from scratch by a separate implementation on separate infrastructure and

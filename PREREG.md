@@ -37,10 +37,20 @@ only 63.7%); we report r=0.822 / 89% sign-agreement to the atlas score as corrob
 metric. EXPLORATORY caveat: both our label and the atlas score are functions of the same measured
 activity, so this is internal consistency, not independent validation; ~11% sign-disagreement sits
 near gap=0, an irreducible label-noise band at the decision boundary.
+REPRODUCIBILITY NOTE (surfaced by an independent Claude Science re-derivation of this repo): in the
+committed `designed_scored.csv`, `measured_fail` is the authoritative label computed from the UNROUNDED
+gap per `gap <= 0`; the `measured_gap` column is rounded for display, so ~20 designs round to
+`measured_gap == 0` yet are correctly labeled by their unrounded sign. Re-derive the label from
+`measured_fail`, not from the rounded `measured_gap` (recomputing from the rounded column shifts the base
+rate by 5e-5 and no reported metric by more than 1e-4).
 
 ## 5. Circularity control + the split caveat
 PRE-COMMITTED: the atlas models were fine-tuned on the atlas designs, so atlas designs are scored
-OUT-OF-FOLD (each by a fold whose held-out test set contains it, via `mpra_data_splits.json`).
+OUT-OF-FOLD (each by a fold whose held-out test set contains it, via the atlas's `mpra_data_splits.json`).
+That split map and the atlas `src/sequence.py` encoder are atlas-provided artifacts (atlas Zenodo 17410822),
+referenced not redistributed to respect the source's rights; they are needed only for the in-distribution
+sanity check (Section 7). The FLAGSHIP cross-lab result (Section 6) needs neither and re-derives fully from
+the committed `data/gosai_designed/designed_scored.csv`.
 HONEST CAVEAT (verified post-hoc from the atlas `make_data_splits.ipynb`): the atlas CV split is a
 random per-sequence split with EXACT-duplicate removal only, with NO sequence-similarity / design-
 family clustering. Generative optimizers emit families of near-identical sequences, so near-
@@ -134,3 +144,13 @@ three MPRA fold models in-dataset (models bundled there rather than fetched from
 Zenodo 504s flakily on Kaggle). Per-design scores in
 `cisfalcon/data/gosai_designed/designed_scored.csv`. All numbers and exact commands:
 `build-readiness/DAY1-RESULTS.md` (Results 3, 4, 5, 5b, 5c, 5d).
+
+INDEPENDENT REPRODUCTION (fresh harness): a separate Claude Science session cloned this public repo from
+scratch and re-derived every headline number to the decimal from the committed data alone: pooled cross-lab
+AUROC 0.8013, AUPRC 0.2929, the joint within-(cell x generator) per-sequence macro 0.662, cell-prior 0.678,
+within-cell 0.747, triage 7.75x / PPV 0.487, safest-first 1.91% (70% fewer failures), per-generator hmc
+0.922 / macro 0.726, trivial baselines GC 0.51 / length 0.50, calibration ECE 0.0031 vs sigmoid 0.1671
+(54x), and ScreenAudit mean Jaccard 0.394. This is a fresh-context reproduction on separate infrastructure
+(a determinism/reproducibility property of the builder's own Claude stack, NOT third-party validation), and
+it is what surfaced the two fixes above: the `measured_gap` rounding note, and the previously-git-ignored
+`designed_scored.csv` / `designed_benchmark.csv` (now committed so any judge can re-derive the numbers).

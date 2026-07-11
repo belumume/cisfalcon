@@ -128,8 +128,11 @@ Full methodology, every caveat, and the pre-committed vs post-hoc labels are in 
 ## Brain-cell relevance, shown not argued
 
 Enhancer specificity is the targeting element of brain / heart / immune enhancer-AAV gene therapy,
-where the field's own stated bottleneck is that many designs fail specificity (Mich et al. 2025:
-about half of astrocyte / oligodendrocyte enhancers fail in vivo). CisFalcon already runs on a
+where the field's own stated bottleneck is that many designs fail specificity: Mich et al. 2025 report
+about half of astrocyte / oligodendrocyte enhancers fail in vivo, and Ben-Simon et al. 2024 tested 682
+enhancers selected for cortical-cell-type open-chromatin specificity and reached only ~30% success (so
+about 70% fail), as reported in the mammalian-cortex enhancer-prediction benchmark (bioRxiv
+2024.08.21.609075). CisFalcon already runs on a
 brain-derived line. Restricting the committed cross-lab scores to the SKNSH neuroblastoma designs
 (`python brain_triage.py`, no GPU): base failure rate 10.06%, cross-lab AUROC 0.73; synthesize the
 safest-ranked half and the brain-cell failure rate drops to 4.19% (**58% fewer**); the riskiest-2%

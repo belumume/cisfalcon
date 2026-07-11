@@ -58,6 +58,10 @@ FastSeqProp), with no sequence overlap with the model's training data.
   at 4.3x the base rate; tighten to the riskiest 2% and 49% of those truly fail (7.8x).
 - Every cross-lab headline number here re-derives to 4 decimals directly from the committed per-design
   scores (`data/gosai_designed/designed_scored.csv`) with a plain rank-sum AUROC; it is not a pipeline artifact.
+- **Independently reproduced.** A separate Claude Science session cloned this repo from scratch and re-derived
+  every number to the decimal from the committed data alone (AUROC 0.8013, joint per-sequence 0.662, calibration
+  ECE 0.0031, triage 7.75x, ScreenAudit 0.394). It is a fresh-harness reproduction on separate infrastructure,
+  and it is what surfaced the final reproducibility fixes in this repo.
 
 Honest boundaries, stated up front:
 

@@ -19,6 +19,7 @@
 **Try it, or reproduce it in one command:**
 - Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (paste a design, or click "Load a real failing design").
 - One-command reproduction, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the 7.8x triage straight from the committed per-design scores.
+- Uncertainty, in one command: `python bootstrap_ci.py` prints the 95% CIs (design-level and the honest cluster bootstrap over cell x generator strata) and the paired difference vs trivial baselines, all excluding zero (`docs/bootstrap_ci.png`).
 - Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md`.
 
 **Why it matters.** Enhancers are the targeting element of brain / heart / immune enhancer-AAV gene therapy, where the field's own stated bottleneck is that many designs fail specificity. That is the spend CisFalcon triages, and it already runs on a brain-derived cell (the SKNSH neuroblastoma line, cross-lab 0.73; a primary-neuron MPRA is the honest next step).
@@ -61,6 +62,12 @@ FastSeqProp), with no sequence overlap with the model's training data.
 
 - **Cross-lab AUROC 0.8013, AUPRC 0.293** (n=93,435; base failure rate 6.29%). Beats trivial baselines
   decisively (GC-content 0.51, sequence-length 0.50, random 0.50).
+- **The number carries its uncertainty** (`bootstrap_ci.py`, 2000 resamples): the design-level 95% CI is
+  [0.796, 0.807]; the honest cluster bootstrap over the 24 cell x generator strata is [0.614, 0.895], wide
+  by construction because the ranker is strong on failure-prone generators and near-chance on the
+  best-optimized ones. Triage enrichment 7.74x [7.39, 8.14]; safest-half reduction 70% [68%, 72%]. The
+  gap over every trivial baseline is +0.29 to +0.30 with each 95% CI excluding zero, so the separation is
+  statistically real, not a large-n artifact.
 - **The signal is per-sequence, not just a base-rate prior.** Within each target cell (the cell prior
   removed) the gate still separates failures at macro-AUROC 0.75; a cell-prior-only baseline (target-cell
   base rate, no sequence) reaches 0.68. Removing BOTH the cell and generator base-rates at once (the joint

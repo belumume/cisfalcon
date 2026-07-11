@@ -68,6 +68,15 @@ overlap could only be coincidental (near-duplicate collision across independent 
 implausible, though not exhaustively excluded by alignment). Specificity computed over the 3 shared cells.
 - **AUROC 0.801, AUPRC 0.293** (n=93,435; base fail 6.29%; random AUPRC = 0.063, so 4.6x lift).
 - Beats trivial baselines decisively: GC-content 0.51, sequence-length 0.50, random 0.50.
+- EXPLORATORY/POST-HOC, bootstrap 95% CIs (`cisfalcon/bootstrap_ci.py`, 2000 resamples, seed 0):
+  the design-level 95% CI on the pooled AUROC is **[0.796, 0.807]** (tight, as expected at n=93,435);
+  the honest **cluster** bootstrap that resamples the 24 cell x generator strata as blocks (respecting
+  effective sample size, not raw N) is **[0.614, 0.895]**, wide precisely because of the per-generator
+  heterogeneity above (near-chance on the best-optimized generators, strong on failure-prone ones).
+  Triage enrichment 7.74x [7.39x, 8.14x]; safest-half reduction 70% [67.9%, 71.5%]. The paired
+  difference of the pooled AUROC over each best-oriented trivial baseline (random / GC / length) is
+  +0.29 to +0.30, every 95% CI excluding zero, so the separation from a trivial predictor is
+  statistically real, not a large-n artifact.
 - EXPLORATORY/POST-HOC per generator: strong where failures are common (hmc AUROC 0.92, 22% fail),
   near coin-flip on the best-optimized generators (FastSeqProp 0.62, AdaLead 0.61, both <1-2% fail).
   Macro-average within-generator AUROC 0.726; the pooled 0.801 benefits from cross-generator

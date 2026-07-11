@@ -209,3 +209,15 @@ tr:hover td{background:rgba(255,255,255,.015)}
 .jdisease{font-size:12.5px;color:var(--mut);margin:0;max-width:920px;line-height:1.55}
 .jdisease b{color:var(--ink);font-weight:600}
 .jdisease .linkbtn{font-size:12.5px;padding:0}
+
+/* confidence by design regime */
+.regime{display:flex;flex-direction:column;gap:6px;margin:12px 0 8px;max-width:560px}
+.rg{display:flex;align-items:center;gap:10px;font-size:12.5px}
+.rgl{width:158px;color:var(--mut);text-align:right;font-family:var(--mono);font-size:11px}
+.rgb{flex:1;height:15px;background:var(--bg);border:1px solid var(--line);border-radius:4px;overflow:hidden;position:relative}
+.rgb::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--line2)}
+.rgb i{display:block;height:100%;position:relative;z-index:1}
+.rgb i.hi{background:var(--pass)}
+.rgb i.mid{background:var(--warn)}
+.rgb i.lo{background:var(--fail);opacity:.72}
+.rgv{width:32px;font-family:var(--mono);color:var(--ink);font-size:12px;text-align:right}

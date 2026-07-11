@@ -136,6 +136,16 @@
         <li>How the 0.80 conditions: it is the deployment number for a mixed batch. Remove the cell base-rate and the gate still separates failures at 0.75; remove the cell <i>and</i> generator base-rates at once and the genuine per-sequence signal is <b>0.66</b>, still well above 0.50. Matched in-distribution (3-cell, out-of-fold) it is <b>0.896</b>. All reported, never just the highest (<code>cell_prior_baseline.py</code>).</li>
         <li>Where to trust it (confidence by design regime): a triage ranker, not a hard gate (PPV 0.24 at recall 0.5 at the 6.3% base rate). It is strongest exactly where designs actually fail (Hamiltonian MC generator AUROC 0.92) and near coin-flip on already-well-optimized designs (FastSeqProp 0.62, AdaLead 0.61) that mostly already work. The value of a pre-synthesis falsifier concentrates out-of-distribution, on failure-prone designs and novel cell types, which is where a wrong design costs the most and where the closed loop still names the fix.</li>
       </ul>
+      <h3>Where to trust it, by generator</h3>
+      <p>Cross-lab AUROC per design method (the generator that produced the batch), on the 93,435 Gosai designs. CisFalcon is strongest exactly where designs fail, and near coin-flip on the best-optimized generators whose designs mostly already work. The dashed line is random (0.50). Lead with this range, not the pooled number.</p>
+      <div class="regime">
+        <div class="rg"><span class="rgl">Hamiltonian MC</span><div class="rgb"><i class="hi" style="width:92%"></i></div><span class="rgv">0.92</span></div>
+        <div class="rg"><span class="rgl">Simulated Annealing</span><div class="rgb"><i class="hi" style="width:78%"></i></div><span class="rgv">0.78</span></div>
+        <div class="rg"><span class="rgl">SA (repeat set)</span><div class="rgb"><i class="mid" style="width:70%"></i></div><span class="rgv">0.70</span></div>
+        <div class="rg"><span class="rgl">FastSeqProp</span><div class="rgb"><i class="lo" style="width:62%"></i></div><span class="rgv">0.62</span></div>
+        <div class="rg"><span class="rgl">AdaLead</span><div class="rgb"><i class="lo" style="width:61%"></i></div><span class="rgv">0.61</span></div>
+      </div>
+      <p class="dim">Within-generator macro-average 0.73; the pooled 0.80 benefits from cross-generator separation. Bars are cross-lab AUROC per method, re-derivable from the committed per-design scores.</p>
       <p class="dim" style="margin-top:16px">Open source. Grounded in Castillo-Hair et al. 2025 (atlas MPRA models), Gosai et al. 2024 (cross-lab designs), JASPAR (motifs), and BioGRID ORCS (CRISPR screens).</p>
     </div>
   </section>

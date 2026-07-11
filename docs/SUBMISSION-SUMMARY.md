@@ -98,9 +98,10 @@ every novel enhancer-AAV combination needs detailed wet-lab validation and many 
 (off-target expression, cell- and species-specific silencing). That is exactly the spend CisFalcon triages
 away: it flags the risky designs from sequence alone, before synthesis, so a lab commits its assay budget to
 the designs most likely to hold up. It is a concrete instance of the compute-plus-wet-lab integration that
-shortens the distance from a design to a defensible answer, on the disease areas Gladstone works in. Two of
-its three validated target cells are brain lines (SKNSH neuroblastoma and, adjacently, the neural panel), so
-brain-relevant triage runs today, not as a promise.
+shortens the distance from a design to a defensible answer, on the disease areas Gladstone works in. This is
+already validated on a brain cell, not promised: one of the three cross-lab target cells is the brain-derived
+SKNSH neuroblastoma line, and on it CisFalcon flags specificity failures at leakage-immune AUROC 0.73 across
+the 93,435 independent designs (K562 0.68, HepG2 0.83 are the other two). Brain-cell triage runs today.
 
 ## What it is not, and how Claude built it
 

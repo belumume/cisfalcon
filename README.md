@@ -4,6 +4,23 @@
 
 **Live tool: https://cisfalcon-lifesci.fly.dev/**
 
+## For judges (60 seconds)
+
+**The problem.** AI now designs synthetic enhancers: short DNA meant to switch a gene on in one cell type and stay silent everywhere else, the targeting step of gene therapy. About **1 in 16** of those designs is secretly broken and fires in the wrong cell. You only find out after you synthesize and assay it, weeks and hundreds of dollars later.
+
+**What it does.** CisFalcon reads a design and predicts that failure from sequence alone, before synthesis, so a lab spends its bench budget on the designs most likely to hold up.
+
+**The number, reported the honest way.** Cross-lab **AUROC 0.80 on 93,435 designs from a different lab** (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw, with zero sequence overlap. Rank safest-first and specificity failures in what you synthesize drop **70%** (6.29% to 1.91%); flag the riskiest 2% and about half truly fail (**7.8x** enrichment over the base rate). It is a triage ranker, not a hard gate, and every caveat is stated below and in `PREREG.md`.
+
+**Try it, or reproduce it in one command:**
+- Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (paste a design, or click "Load a real failing design").
+- One-command reproduction, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the 7.8x triage straight from the committed per-design scores.
+- Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md`.
+
+**Why it matters.** Enhancers are the targeting element of brain / heart / immune enhancer-AAV gene therapy, where the field's own stated bottleneck is that many designs fail specificity. That is the spend CisFalcon triages, and it already runs on a brain-derived cell (the SKNSH neuroblastoma line, cross-lab 0.73; a primary-neuron MPRA is the honest next step).
+
+---
+
 A pre-synthesis failure-risk triage for AI-designed cell-type-specific enhancers. It reads a designed
 DNA sequence and predicts, before any DNA is synthesized, whether the design will FAIL its intended
 cell-type specificity in a wet-lab MPRA. It is a triage ranker, not a hard abort gate: it ranks and

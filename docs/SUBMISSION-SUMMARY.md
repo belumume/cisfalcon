@@ -5,6 +5,10 @@
 
 ## What it does
 
+**In one line:** rank your AI-designed enhancers safest-first and cut wasted syntheses by about 70%,
+before any DNA is synthesized, validated on 93,435 designs from a different lab (leakage-immune cross-lab
+AUROC 0.80). It flags the risky designs so a lab spends its bench budget on the ones most likely to hold up.
+
 AI models now design synthetic enhancers, short pieces of DNA meant to switch a gene
 on in one cell type and stay silent everywhere else. The design step is cheap; finding
 out whether a design holds up is not. You synthesize the sequence, put it in cells, and
@@ -95,13 +99,18 @@ active routes to reach a single cell type in the brain, heart, and immune system
 rest (2024-2025 toolkits target cortical interneurons, midbrain dopaminergic neurons, striatal cholinergic
 neurons, and brain endothelial cells). The field's own bottleneck, stated plainly in those papers, is that
 every novel enhancer-AAV combination needs detailed wet-lab validation and many designs fail specificity
-(off-target expression, cell- and species-specific silencing). That is exactly the spend CisFalcon triages
+(off-target expression, cell- and species-specific silencing). The size of that gap is on the record: in a
+2025 enhancer-AAV screen only about half of candidate brain-cell enhancers (astrocyte 25 of 50, oligodendrocyte
+21 of 43) showed their intended specificity in vivo, and the authors note current predictors have limited power
+to forecast which will fail (Mich et al. 2025, eLife). That is exactly the spend CisFalcon triages
 away: it flags the risky designs from sequence alone, before synthesis, so a lab commits its assay budget to
 the designs most likely to hold up. It is a concrete instance of the compute-plus-wet-lab integration that
 shortens the distance from a design to a defensible answer, on the disease areas Gladstone works in. This is
 already validated on a brain cell, not promised: one of the three cross-lab target cells is the brain-derived
 SKNSH neuroblastoma line, and on it CisFalcon flags specificity failures at leakage-immune AUROC 0.73 across
-the 93,435 independent designs (K562 0.68, HepG2 0.83 are the other two). Brain-cell triage runs today.
+the 93,435 independent designs (K562 0.68, HepG2 0.83 are the other two). SKNSH is a neuroblastoma line,
+the nearest brain-derived cell in the external panel rather than a primary neuron, so triage on a
+neural-lineage design runs today and a primary-neuron MPRA is the honest next step.
 
 ## What it is not, and how Claude built it
 

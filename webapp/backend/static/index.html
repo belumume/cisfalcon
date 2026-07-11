@@ -32,7 +32,22 @@
 
   <!-- CHECK -->
   <section id="tab-check">
-    <p class="hero-note">A generative model proposed an enhancer meant to be active in <b>one</b> cell type and silent elsewhere. Before spending bench money to synthesize it, ask CisFalcon whether it will actually hit its target. Scored against a frozen external measured-activity model (DHS64 MPRA, Castillo-Hair 2025), not self-report. CisFalcon does not design DNA; it falsifies designs before synthesis.</p>
+    <!-- OUTCOME-FIRST HERO. Hook wording is a draft to voice in your own words before final submit; every number is verified against the repo. -->
+    <div class="jhero">
+      <p class="jlead">AI now designs synthetic DNA to switch a gene on in <b>one</b> cell type, the targeting step of gene therapy. About <b>1 in 16</b> of those designs is secretly broken: it fires in the wrong cell. CisFalcon flags the broken ones from sequence alone, <b>before</b> you spend $250-1000 and six weeks synthesizing them.</p>
+      <div class="jstats">
+        <div class="jstat"><b>70%</b><span>fewer wasted syntheses: rank safest-first, failures drop 6.3% to 1.9%</span></div>
+        <div class="jstat"><b>7.8&times;</b><span>enrichment: flag the riskiest 2%, about half of them truly fail</span></div>
+        <div class="jstat"><b>0.80</b><span>AUROC on <b>93,435</b> designs from a <i>different</i> lab, zero sequence overlap</span></div>
+      </div>
+      <div class="jloop">
+        <span class="jstep fail">a real flagged design &middot; most-active <b>K562</b> &middot; gap <b>&minus;3.0</b> &middot; FAIL</span>
+        <span class="jarrow">apply the named motif fix</span>
+        <span class="jstep pass">re-scored &middot; most-active <b>HepG2</b> &middot; gap <b>+1.0</b> &middot; PASS</span>
+      </div>
+      <p class="jdisease">Enhancers are the targeting element of brain / heart / immune <b>enhancer-AAV gene therapy</b>, where the field's own stated bottleneck is that many designs fail specificity: the exact spend CisFalcon triages. It already runs on a brain-derived cell (the SKNSH neuroblastoma line, cross-lab 0.73). <button class="linkbtn" id="jload">Load a real failing design &darr;</button> <button class="linkbtn" id="jmethods">how the 0.80 conditions &darr;</button></p>
+    </div>
+    <p class="hero-note">Scored against a frozen external measured-activity model (DHS64 MPRA, Castillo-Hair 2025), not self-report. CisFalcon does not design DNA; it falsifies designs before synthesis.</p>
     <div class="grid">
       <div class="panel">
         <div class="hd">Designed enhancer</div>
@@ -113,12 +128,13 @@
         <li><b>Agent layer</b> (built with Claude): parallel agents interpret the mechanism, ground the risk in the measured benchmark, and adversarially challenge the call; a synthesizer returns the verdict and a motif-level redesign.</li>
       </ul>
       <h3>The closed loop</h3>
-      <p>When CisFalcon flags a design, it does more than warn. It applies the prescribed motif edit (disrupt the off-target cell's driver motifs, install the target cell's) and re-scores with the same external model. The predicted specificity gap moving in the right direction is empirical proof the fix is real. A single model call narrating a score cannot do that.</p>
+      <p>When CisFalcon flags a design, it does more than warn. It applies the prescribed motif edit (disrupt the off-target cell's driver motifs, install the target cell's) and re-scores with the same external model. The predicted specificity gap moving in the right direction is an in-silico consistency check on one example, not wet-lab proof the redesign works. What it shows is that the diagnosis names a concrete, mechanistically grounded edit, which a bare score or a single model call narrating a score cannot.</p>
       <h3>Verified numbers</h3>
       <ul>
         <li>Cross-lab <b>AUROC 0.8013</b> on 93,435 designs from an independent lab (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw. Zero sequence overlap. Baselines: GC 0.51, random 0.50.</li>
         <li>Rank by CisFalcon, synthesize the safest half first: specificity failure rate drops from <b>6.29% to 1.91%</b> (70% fewer failures).</li>
-        <li>Honest boundaries: a triage ranker, not a hard gate (PPV 0.24 at recall 0.5 at the 6.3% base rate); strongest on failure-prone designs, near coin-flip on already-well-optimized ones; the closed loop still names the fix on the hard ones.</li>
+        <li>How the 0.80 conditions: it is the deployment number for a mixed batch. Remove the cell base-rate and the gate still separates failures at 0.75; remove the cell <i>and</i> generator base-rates at once and the genuine per-sequence signal is <b>0.66</b>, still well above 0.50. Matched in-distribution (3-cell, out-of-fold) it is <b>0.896</b>. All reported, never just the highest (<code>cell_prior_baseline.py</code>).</li>
+        <li>Where to trust it (confidence by design regime): a triage ranker, not a hard gate (PPV 0.24 at recall 0.5 at the 6.3% base rate). It is strongest exactly where designs actually fail (Hamiltonian MC generator AUROC 0.92) and near coin-flip on already-well-optimized designs (FastSeqProp 0.62, AdaLead 0.61) that mostly already work. The value of a pre-synthesis falsifier concentrates out-of-distribution, on failure-prone designs and novel cell types, which is where a wrong design costs the most and where the closed loop still names the fix.</li>
       </ul>
       <p class="dim" style="margin-top:16px">Open source. Grounded in Castillo-Hair et al. 2025 (atlas MPRA models), Gosai et al. 2024 (cross-lab designs), JASPAR (motifs), and BioGRID ORCS (CRISPR screens).</p>
     </div>
@@ -127,10 +143,14 @@
 </main>
 
 <footer class="foot"><div class="wrap">
-  <span>CisFalcon · a defensive pre-synthesis falsifier · built with Claude</span>
+  <span>CisFalcon · a defensive pre-synthesis falsifier · built with Claude · <a href="https://github.com/belumume/cisfalcon">open source</a> (reproduce every number: <code>python reproduce_flagship.py</code>)</span>
   <span>Scored against external measured ground truth (DHS64 MPRA). It does not design DNA.</span>
 </div></footer>
 
 <script src="/app.js"></script>
+<script>
+  document.getElementById('jload')?.addEventListener('click',()=>{document.querySelector('.tab[data-tab=check]').click();document.getElementById('loadex').click();document.getElementById('seq').scrollIntoView({behavior:'smooth',block:'center'});});
+  document.getElementById('jmethods')?.addEventListener('click',()=>{document.querySelector('.tab[data-tab=how]').click();window.scrollTo({top:0,behavior:'smooth'});});
+</script>
 </body>
 </html>

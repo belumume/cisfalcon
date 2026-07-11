@@ -190,3 +190,22 @@ tr:hover td{background:rgba(255,255,255,.015)}
 .note b{color:var(--info)}
 .err{background:rgba(251,113,133,.09);border:1px solid rgba(251,113,133,.3);color:var(--fail);
   padding:11px 13px;border-radius:var(--r2);font-size:12.5px;margin-top:12px}
+
+/* outcome-first judge hero */
+.jhero{border:1px solid var(--line2);border-radius:var(--r);background:linear-gradient(180deg,var(--panel2),var(--bg2));padding:18px 20px;margin-bottom:16px;box-shadow:var(--sh)}
+.jlead{font-size:15.5px;line-height:1.55;color:var(--ink);margin:0 0 14px;max-width:920px}
+.jlead b{color:var(--brand);font-weight:640}
+.jstats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.jstat{flex:1;min-width:172px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r2);padding:11px 13px}
+.jstat>b{display:block;font-family:var(--mono);font-size:25px;color:var(--brand);line-height:1.05}
+.jstat span{font-size:11.5px;color:var(--mut);display:block;margin-top:3px}
+.jstat span b{color:var(--brand);font-family:var(--mono);font-weight:600}
+.jloop{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:13px;font-size:12px;font-family:var(--mono)}
+.jstep{padding:8px 12px;border-radius:var(--r2);border:1px solid var(--line2)}
+.jstep.fail{background:rgba(251,113,133,.12);border-color:rgba(251,113,133,.4);color:var(--fail)}
+.jstep.pass{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.4);color:var(--pass)}
+.jstep b{color:var(--ink)}
+.jarrow{color:var(--brand);font-size:11.5px}
+.jdisease{font-size:12.5px;color:var(--mut);margin:0;max-width:920px;line-height:1.55}
+.jdisease b{color:var(--ink);font-weight:600}
+.jdisease .linkbtn{font-size:12.5px;padding:0}

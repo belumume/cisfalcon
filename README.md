@@ -4,6 +4,10 @@
 
 **Live tool: https://cisfalcon-lifesci.fly.dev/**
 
+![CisFalcon closes the loop on a real designed enhancer: it is predicted to FAIL (most-active in K562, specificity gap -3.017), CisFalcon names the off-target driver motifs to remove and the target motifs to install, and the same external model re-scores the edit to PASS (most-active in HepG2, gap +1.027).](docs/closed_loop_demo.png)
+
+*A real Gosai/Tewhey design that CisFalcon flags as off-target, diagnoses, and closes the loop on: disrupt the K562 driver motifs (GATA1, TAL1, GATA2), install the HepG2 grammar (HNF4A, HNF1A, CEBPA), and the same external model moves the predicted specificity gap from failing to passing. This is an in-silico consistency check on one design, not wet-lab validation, captured live from the tool.*
+
 ## For judges (60 seconds)
 
 **The problem.** AI now designs synthetic enhancers: short DNA meant to switch a gene on in one cell type and stay silent everywhere else, the targeting step of gene therapy. About **1 in 16** of those designs is secretly broken and fires in the wrong cell. You only find out after you synthesize and assay it, weeks and hundreds of dollars later.

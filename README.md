@@ -4,10 +4,11 @@
 
 **Live tool: https://cisfalcon-lifesci.fly.dev/**
 
-A pre-synthesis quality gate for AI-designed cell-type-specific enhancers. It reads a designed DNA
-sequence and predicts, before any DNA is synthesized, whether the design will FAIL its intended
-cell-type specificity in a wet-lab MPRA. Defensive use only: it ranks and flags designs so a lab can
-deprioritize or redesign the riskiest before spending on synthesis. It does not design DNA.
+A pre-synthesis failure-risk triage for AI-designed cell-type-specific enhancers. It reads a designed
+DNA sequence and predicts, before any DNA is synthesized, whether the design will FAIL its intended
+cell-type specificity in a wet-lab MPRA. It is a triage ranker, not a hard abort gate: it ranks and
+flags the riskiest designs so a lab can deprioritize or redesign them before spending on synthesis.
+Defensive use only; it does not design DNA.
 
 Paste a designed enhancer, pick a target cell, and the tool returns the specificity verdict, a
 per-cell activity chart, a JASPAR-grounded motif scan (which transcription-factor motifs are actually
@@ -18,9 +19,11 @@ passing. A batch mode ranks a whole set safest-first. No install, usable without
 ## What it does
 
 Modern generative models design enhancers meant to be active in one target cell type and silent
-elsewhere. Many still fire in the wrong cell. Synthesizing and validating one design costs roughly
-$250-1000 and 2-4 weeks. CisFalcon scores the sequence first and predicts the failure, grounded in an
-external measured-activity model rather than self-report.
+elsewhere. Many still fire in the wrong cell. Synthesizing and assaying one design costs roughly
+$250-1000 in direct materials and weeks of turnaround (a synthesis run plus the MPRA readout); the
+economics figures elsewhere use a larger full-committed-spend basis per pursued design (synthesis plus
+validation plus downstream follow-up, ~$950-3500, stated where cited). CisFalcon scores the sequence
+first and predicts the failure, grounded in an external measured-activity model rather than self-report.
 
 Concretely, on a real design from an independent lab optimized to be HepG2-specific, CisFalcon reads
 the sequence alone and predicts the most-active cell will be K562 (not the HepG2 target), a specificity
@@ -36,10 +39,18 @@ FastSeqProp), with no sequence overlap with the model's training data.
 
 - **Cross-lab AUROC 0.8013, AUPRC 0.293** (n=93,435; base failure rate 6.29%). Beats trivial baselines
   decisively (GC-content 0.51, sequence-length 0.50, random 0.50).
-- **The signal is per-sequence, not just a cell-line prior.** Within each target cell (the cell prior
+- **The signal is per-sequence, not just a base-rate prior.** Within each target cell (the cell prior
   removed) the gate still separates failures at macro-AUROC 0.75; a cell-prior-only baseline (target-cell
-  base rate, no sequence) reaches 0.68. The pooled 0.80 also benefits from base-rate separation across
-  cells and generators, but per-sequence discrimination survives (`cell_prior_baseline.py`).
+  base rate, no sequence) reaches 0.68. Removing BOTH the cell and generator base-rates at once (the joint
+  within-(cell x generator) stratum) leaves genuine per-sequence discrimination of 0.66, still well above
+  0.50 and every trivial baseline. So the pooled 0.80 is the deployment number for a mixed batch and 0.66
+  is the fully-conditioned per-sequence signal; both are reported, not just the higher one
+  (`cell_prior_baseline.py`).
+- **The failure risk it prints is calibrated, not asserted.** The emitted probability is fit by isotonic
+  regression on held-out cross-lab data: held-out calibration error (ECE) is 0.0031, so a design it labels
+  70% risk fails close to 70% of the time across this design population (reliability diagram in
+  `docs/cisfalcon_calibration.png`; `fit_calibration.py`). It is a population-level estimate, calibrated
+  marginally on the Gosai distribution and not conditioned per target cell.
 - **Triage value (the operating point that matters):** rank designs by CisFalcon and synthesize the
   safest half first, and the specificity-failure rate in what you make drops from 6.29% to 1.91%, a
   **70% reduction in failures**. Flag the riskiest 10% for redesign and you capture 43% of all failures

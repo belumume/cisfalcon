@@ -12,9 +12,11 @@ Two layers:
      mechanism, ground the risk in the measured benchmark, and adversarially challenge the
      call; a synthesizer returns the final verdict. This is the "built with Claude" layer.
 
-Ground truth (held-out, non-circular): out-of-fold AUROC ~0.92 discriminating measured
-specificity failures on the atlas benchmark; ~90% of the flagged riskiest quartile genuinely
-fail; generalization tested cross-lab on an independent dataset (Gosai et al 2024).
+Ground truth (leakage-immune, cross-lab): AUROC 0.80 discriminating measured specificity
+failures on 93,435 independent AI-designed enhancers (Gosai et al 2024, zero training overlap),
+vs 0.50 baselines. Triage ranker, not a hard gate: riskiest 2% -> 7.8x enrichment (PPV 0.49).
+The per-sequence signal with cell and generator base-rates removed is 0.66. In-distribution
+0.896 is a sanity check with a near-duplicate-leakage caveat; the cross-lab number is flagship.
 """
 
 from __future__ import annotations
@@ -89,12 +91,20 @@ def gate_report(
 
 # ------------------------------------------------------------------------- reasoning layer
 GROUND_TRUTH = (
-    "Held-out, non-circular validation of this gate: out-of-fold AUROC 0.92 discriminating "
-    "measured wet-lab specificity failures (n=567 held-out test designs); designs in the "
-    "flagged riskiest quartile of predicted specificity failed ~90% of the time vs a 36% base "
-    "rate; the underlying model generalizes cross-lab to an independent dataset (Gosai et al "
-    "2024, Nature). Failure is defined transparently: a design FAILS if it is not the most "
-    "active in its own intended target cell type (specificity gap <= 0)."
+    "Leakage-immune cross-lab validation of this gate: on 93,435 INDEPENDENT AI-designed enhancers "
+    "from a different lab, activity model, and generators the model never saw (Gosai et al 2024, "
+    "Nature; zero training overlap), it discriminates measured wet-lab specificity failures at AUROC "
+    "0.80, versus 0.50 for GC-content and length baselines. It is a triage RANKER, not a hard abort "
+    "gate: at the 6.3% base failure rate, flagging the riskiest 2% enriches for real failures 7.8x "
+    "(PPV 0.49) and the riskiest 10% captures 43% of all failures. The genuine per-sequence signal, "
+    "with both the target-cell and generator base-rates removed, is AUROC 0.66 (strong on failure-"
+    "prone designs, near chance on the best-optimized ones). An in-distribution sanity check scores "
+    "0.896 but carries a near-duplicate-leakage caveat, so the cross-lab number is the flagship. "
+    "Failure is defined transparently: a design FAILS if it is not most-active in its intended target "
+    "cell (specificity gap <= 0). The emitted failure probability is calibrated marginally on this "
+    "design population (a design it prints as 70% risk fails about 70% of the time across the "
+    "population), not conditioned per target cell, so treat its absolute value as a population-level "
+    "estimate."
 )
 
 LENSES = {

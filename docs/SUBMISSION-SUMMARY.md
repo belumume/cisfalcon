@@ -39,8 +39,10 @@ inflated by memorized sequences.
 - The 0.80 is per-sequence signal, not just a shared cell-line prior. Within each target
   cell (the cell prior removed) the gate still separates failures at macro-AUROC 0.75; a
   cell-prior-only baseline (the target cell's base fail-rate, no sequence at all) reaches
-  0.68. So the pooled 0.80 does benefit from cross-cell and cross-generator base-rate
-  separation, but real per-sequence discrimination survives (cell_prior_baseline.py).
+  0.68. Removing both the cell and generator base-rates at once (the joint within-stratum
+  AUROC) leaves genuine per-sequence discrimination of 0.66, still well above 0.50. So the
+  pooled 0.80 is the deployment number for a mixed batch and 0.66 is the fully-conditioned
+  per-sequence signal, both reported honestly (cell_prior_baseline.py).
 - Matched apples-to-apples (both 3-cell, both out-of-fold), the in-distribution gate
   scores 0.896 and the cross-lab gate 0.801, about a 0.10 generalization gap, reported
   honestly.

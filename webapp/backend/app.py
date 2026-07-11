@@ -282,9 +282,12 @@ def motif_scan(req: PredictReq):
 def redesign(req: PredictReq):
     """CLOSED LOOP: take a failing design, apply the mechanistic motif edit the diagnosis
     prescribes (disrupt the driver motifs of the predicted off-target cell, inject the
-    missing target-cell driver motifs), and RE-SCORE with the same gate. The gate's
-    predicted specificity gap moving in the right direction is empirical proof that the
-    fix is real - something a single model call narrating a score cannot do."""
+    missing target-cell driver motifs), and RE-SCORE with the same gate. This is an
+    IN-SILICO SELF-CONSISTENCY check on one example, NOT wet-lab validation: the same model
+    that flagged the design re-scores its own proposed edit. The predicted specificity gap
+    moving in the right direction shows the diagnosis names a specific, mechanistically
+    grounded edit that the model responds to sensibly; it is not proof the redesign works
+    in cells."""
     seq = _clean_seq(req.sequence)
     cell = _check_target(req.target_cell)
     before = verifier.gate_report(seq, cell, _verifier_rule.calib)

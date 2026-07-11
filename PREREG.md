@@ -69,7 +69,15 @@ implausible, though not exhaustively excluded by alignment). Specificity compute
   sequence at all) reaches AUROC 0.678; WITHIN each target cell (cell prior removed) the gate still
   separates failures at macro-AUROC 0.747 (HepG2 0.833, SKNSH 0.731, K562 0.678). So per-sequence
   discrimination survives removing the cell prior; the pooled 0.801 additionally benefits from
-  base-rate separation across cells and generators (`cisfalcon/cell_prior_baseline.py`).
+  base-rate separation across cells and generators. Removing BOTH base-rate axes at once (the joint
+  within-(target-cell x generator)-stratum macro-AUROC, 14 strata with >=10 pos and >=10 neg) gives the
+  genuine per-sequence discrimination = 0.662: heterogeneous (0.955 on failure-prone HepG2-hmc designs,
+  0.850 SKNSH-hmc, down to ~0.53-0.57 on the best-optimized al/sa_rep). So a substantial part of the
+  pooled 0.801 is base-rate separation across cells and generators; the honest per-sequence signal is
+  0.66 (well above 0.50 and every trivial baseline, but not 0.80). Report the pooled 0.801 as the
+  deployment number for a mixed batch (where knowing a design's target cell and generator IS usable
+  information) and the 0.66 as the fully-conditioned per-sequence discrimination
+  (`cisfalcon/cell_prior_baseline.py`, stratified over `data/gosai_designed/designed_scored.csv`).
 - EXPLORATORY/POST-HOC, failure-threshold robustness: the 0.801 is stable across the fail-label
   binarization, not an artifact of the pre-committed gap<=0 cutoff. AUROC ranges 0.85 (fail := gap<=-0.5,
   the decisive failures) to 0.73 (fail := gap<=1.0, including marginal near-boundary calls), with 0.801 at

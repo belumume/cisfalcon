@@ -60,6 +60,17 @@ a different lab, a different design process, and generators it never saw** (Gosa
 design framework built on the Malinois activity model, via AdaLead, Simulated Annealing, Hamiltonian MC,
 FastSeqProp), with no sequence overlap with the model's training data.
 
+| number | value | reproduce |
+|---|---|---|
+| cross-lab AUROC (n=93,435) | **0.8013**, 95% CI [0.796, 0.807] | `reproduce_flagship.py`, `bootstrap_ci.py` |
+| vs trivial baselines (GC / length / random) | 0.51 / 0.50 / 0.50 | `bootstrap_ci.py` |
+| fully-conditioned per-sequence signal | 0.66 | `cell_prior_baseline.py` |
+| safest-half failure reduction | **70%** (6.29% to 1.91%) | `triage_curve.py` |
+| riskiest-2% triage enrichment | **7.8x** (PPV 0.49) | `reproduce_flagship.py` |
+| held-out calibration error (ECE) | 0.0031 | `fit_calibration.py` |
+
+![Safest-first triage vs synthesizing blind](docs/triage_curve.png)
+
 - **Cross-lab AUROC 0.8013, AUPRC 0.293** (n=93,435; base failure rate 6.29%). Beats trivial baselines
   decisively (GC-content 0.51, sequence-length 0.50, random 0.50).
 - **The number carries its uncertainty** (`bootstrap_ci.py`, 2000 resamples): the design-level 95% CI is
@@ -106,6 +117,24 @@ Honest boundaries, stated up front:
 
 Full methodology, every caveat, and the pre-committed vs post-hoc labels are in `PREREG.md`.
 
+## Brain-cell relevance, shown not argued
+
+Enhancer specificity is the targeting element of brain / heart / immune enhancer-AAV gene therapy,
+where the field's own stated bottleneck is that many designs fail specificity (Mich et al. 2025:
+about half of astrocyte / oligodendrocyte enhancers fail in vivo). CisFalcon already runs on a
+brain-derived line. Restricting the committed cross-lab scores to the SKNSH neuroblastoma designs
+(`python brain_triage.py`, no GPU): base failure rate 10.06%, cross-lab AUROC 0.73; synthesize the
+safest-ranked half and the brain-cell failure rate drops to 4.19% (**58% fewer**); the riskiest-2%
+flag is 48% real failures (4.8x). These are softer than the pooled numbers and reported as-is (SKNSH
+is a brain-derived cancer line, an in-vitro stand-in; a primary cortical-neuron MPRA is the honest
+next step). And it works live on a real brain design:
+
+![CisFalcon flags a real brain-cell design as failing](docs/brain_fail_demo.png)
+
+A Gosai design built for the SKNSH brain line, flagged from sequence alone: predicted most-active in
+K562 (a blood cell), not its neuroblastoma target, specificity gap -2.17, calibrated failure
+probability 100%, with the off-target K562 driver motifs (TAL1 / KLF1 / GATA2) named in the sequence.
+
 ## How it works
 
 1. **Gate (`gate.py`)** - the frozen atlas DHS64-MPRA activity models (Castillo-Hair et al. 2025), three
@@ -134,6 +163,20 @@ python demo.py --no-agents # gate-only, no API
   `ubaidullahshuaib/cisfalcon-designed-benchmark` (ships the benchmark CSV + the 3 MPRA fold models).
 - Source data: atlas models (Zenodo 17410822), Gosai et al. cross-lab MPRA (Zenodo 10698014).
 - Per-design scores used for every headline number: `data/gosai_designed/designed_scored.csv`.
+
+Repository guide (the no-GPU scripts a reviewer can run straight from the committed data):
+
+| script | what it produces |
+|---|---|
+| `reproduce_flagship.py` | the flagship AUROC 0.80, triage 7.8x, and safest-half 70%, from committed scores |
+| `bootstrap_ci.py` | 95% CIs (design + cluster) and the paired difference vs trivial baselines |
+| `triage_curve.py` | the safest-first triage-value curve (`docs/triage_curve.png`) |
+| `brain_triage.py` | the SKNSH brain-cell triage operating point |
+| `cell_prior_baseline.py` | the fully-conditioned per-sequence signal 0.66 (cell/generator prior removed) |
+| `threshold_robustness.py` | AUROC stability across the fail-label threshold |
+| `fit_calibration.py` | isotonic calibration fit + held-out ECE 0.0031 |
+| `verifier.py` | the four-agent diagnosis harness; `gate.py` the frozen encoder + ensemble |
+| `PREREG.md` | frozen methodology, every caveat, pre-committed vs post-hoc labels |
 
 ## Generality
 

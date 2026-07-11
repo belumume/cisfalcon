@@ -456,14 +456,17 @@ if (FRONTEND / "assets").is_dir():
     app.mount("/assets", StaticFiles(directory=str(FRONTEND / "assets")), name="assets")
 
 if FRONTEND.exists():
+    # No-store so a redeploy is never masked by a browser's cached HTML/JS/CSS.
+    # The frontend is tiny; correctness (always the current code) beats micro-caching.
+    _NOCACHE = {"Cache-Control": "no-store, max-age=0"}
 
     @app.get("/")
     def index():
-        return FileResponse(str(FRONTEND / "index.html"))
+        return FileResponse(str(FRONTEND / "index.html"), headers=_NOCACHE)
 
     @app.get("/{path:path}")
     def spa(path: str):
         f = (FRONTEND / path).resolve()
         if str(f).startswith(str(FRONTEND.resolve())) and f.is_file():
-            return FileResponse(str(f))
-        return FileResponse(str(FRONTEND / "index.html"))
+            return FileResponse(str(f), headers=_NOCACHE)
+        return FileResponse(str(FRONTEND / "index.html"), headers=_NOCACHE)

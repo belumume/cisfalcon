@@ -110,6 +110,16 @@ FastSeqProp), with no sequence overlap with the model's training data.
   ECE 0.0031, triage 7.75x, ScreenAudit 0.394). It is a fresh-harness reproduction on separate infrastructure,
   and it is what surfaced the final reproducibility fixes in this repo.
 
+### Research-track extension: variant-effect prediction (a second, independent test)
+
+Beyond cell-type specificity, the same frozen model **ranks single-base variant effects** on a fully
+independent saturation-mutagenesis benchmark it never saw (Kircher et al. 2019, GSE126550; 11,005 SNVs):
+**K562 large-effect AUROC 0.88** (Pearson r = 0.58, n = 2,814), HepG2 0.64 (r = 0.29). It separates
+high- from low-impact variants well, the same triage signal; it does not calibrate absolute effect size
+(near-blind on LDLR, with an honest per-element breakdown in the doc). Model loading was confirmed
+bit-identical to the flagship scorer, and the K562 headline reproduces from the committed per-SNV data
+with one command. See [`docs/variant-effect-extension.md`](docs/variant-effect-extension.md) and [`satmut/`](satmut/).
+
 Honest boundaries, stated up front:
 
 - CisFalcon is a **triage ranker**; it is not sold as a hard abort-gate. At the 6.29% base rate a hard

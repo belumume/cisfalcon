@@ -34,7 +34,10 @@ Gosai et al. 2024 (Nature 10.1038/s41586-024-08070-z), Zenodo record **10698014*
 validation MPRA, BODA/Malinois designs. The built benchmark (`data/gosai_designed/*.csv`) is
 reproduced by `build_benchmark.py` + `score_designed.py`. The full 93,435-design cross-lab GPU
 scoring run is the Kaggle kernel `ubaidullahshuaib/cisfalcon-gosai-crosslab`, reading the Kaggle
-dataset `ubaidullahshuaib/cisfalcon-designed-benchmark`.
+dataset `ubaidullahshuaib/cisfalcon-designed-benchmark`. The per-design activity and accessibility
+specificity gaps used by the two-head ensemble (`data/gosai_designed/design_gaps.csv`, keyed by design
+id) come from the Kaggle kernel `ubaidullahshuaib/cisfalcon-ensemble-gaps`; once committed, `ensemble_ci.py`
+reproduces the ensemble and its paired CI with no GPU.
 
 ## Motifs
 

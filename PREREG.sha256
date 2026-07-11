@@ -2,4 +2,4 @@
 # SHA-256 of PREREG.md (the locked methodology: fail label gap<=0, out-of-fold scoring,
 # operating threshold, metrics). The git commit that adds/updates these two files is the
 # immutable timestamp; recompute with: sha256sum PREREG.md  (must equal the hash below).
-PREREG.md  b9d215e9ca51d66876e86fc39b65a8ecec23de306f57b3a499d7e9adc718687d
+PREREG.md  19f8c2a0cf39334608275fc9dd875b6d846b0ea01b7215535824a00f69c3f164

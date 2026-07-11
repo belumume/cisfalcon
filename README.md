@@ -92,6 +92,13 @@ FastSeqProp), with no sequence overlap with the model's training data.
   70% risk fails close to 70% of the time across this design population (reliability diagram in
   `docs/cisfalcon_calibration.png`; `fit_calibration.py`). It is a population-level estimate, calibrated
   marginally on the Gosai distribution and not conditioned per target cell.
+- **The deployed two-head combination beats either model alone, with nothing trained.** A cheaper
+  chromatin-accessibility model gets close cross-lab (0.789 vs the activity 0.802), a fair question for
+  any reviewer. A zero-parameter, a-priori rank-average of the two frozen heads, fixed before the number
+  was read, lifts the cross-lab AUROC to 0.806, above both single heads: the paired 95% CI on the
+  difference over the best single head is [+0.003, +0.007] (excludes zero), and it beats accessibility
+  alone by +0.018. The lift is small and reported as such, but it means neither single model is the
+  ceiling, and the combination is leakage-immune and un-tunable (`ensemble_ci.py`).
 - **Triage value (the operating point that matters):** rank designs by CisFalcon and synthesize the
   safest half first, and the specificity-failure rate in what you make drops from 6.29% to 1.91%, a
   **70% reduction in failures**. Flag the riskiest 10% for redesign and you capture 43% of all failures
@@ -173,6 +180,7 @@ Repository guide (the no-GPU scripts a reviewer can run straight from the commit
 | `bootstrap_ci.py` | 95% CIs (design + cluster) and the paired difference vs trivial baselines |
 | `triage_curve.py` | the safest-first triage-value curve (`docs/triage_curve.png`) |
 | `brain_triage.py` | the SKNSH brain-cell triage operating point |
+| `ensemble_ci.py` | the frozen two-head ensemble (activity + accessibility) and its paired CI vs the best single head |
 | `cell_prior_baseline.py` | the fully-conditioned per-sequence signal 0.66 (cell/generator prior removed) |
 | `threshold_robustness.py` | AUROC stability across the fail-label threshold |
 | `fit_calibration.py` | isotonic calibration fit + held-out ECE 0.0031 |

@@ -122,6 +122,16 @@ implausible, though not exhaustively excluded by alignment). Specificity compute
   near-duplicate leakage of Section 5, which the leakage-immune cross-lab test removes; both models are far above
   the 0.50 trivial baselines. Honest read: chromatin accessibility already captures most of the cross-lab
   specificity-failure signal, and the activity model is the deployed best by a modest, real margin.
+- EXPLORATORY, PRE-COMMITTED RULE, two-head ensemble (`cisfalcon/ensemble_ci.py`; per-design gaps in
+  `data/gosai_designed/design_gaps.csv` from Kaggle kernel `ubaidullahshuaib/cisfalcon-ensemble-gaps`):
+  a zero-parameter, a-priori rank-average of the two frozen heads (activity gap + accessibility-binary
+  gap), fixed before the number was read, evaluated on the same held-out 93,435 cross-lab designs with
+  frozen models. Ensemble AUROC **0.8064** vs the best single head (activity) 0.8016; the paired bootstrap
+  95% CI on the difference is **[+0.0031, +0.0066]** (2000 resamples, seed 0), which excludes zero, so the
+  lift is small but statistically real, and it beats accessibility alone by +0.018. Because the rule is
+  fixed a priori and the models are frozen, it is leakage-immune and un-tunable. Honest magnitude: a
+  ~+0.005 improvement, not a transformation. The point is that neither single head is the ceiling: the
+  free two-head combination is the best available cross-lab predictor, with nothing trained or tuned.
 
 ## 7. In-distribution (SANITY CHECK, not the flagship, carries the leakage caveat)
 Matched apples-to-apples to the cross-lab number (same 3 cells, same fail label, OOF), n=587 atlas

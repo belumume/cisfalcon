@@ -16,9 +16,10 @@
 
 **The number, reported the honest way.** Cross-lab **AUROC 0.80 on 93,435 designs from a different lab** (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw, with zero sequence overlap. Rank safest-first and specificity failures in what you synthesize drop **70%** (6.29% to 1.91%); flag the riskiest 2% and about half truly fail (**7.8x** enrichment over the base rate). It is a triage ranker, not a hard gate, and every caveat is stated below and in `PREREG.md`.
 
-**Try it, or reproduce it in one command:**
+**Try it, or reproduce it in one click:**
+- Reproduce the 0.80 in your browser, no install: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/belumume/cisfalcon/blob/main/reproduce_flagship.ipynb) fetches the committed scores from GitHub and prints AUROC 0.8013 in pure numpy.
 - Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (paste a design, or click "Load a real failing design").
-- One-command reproduction, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the 7.8x triage straight from the committed per-design scores.
+- Or locally, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the 7.8x triage straight from the committed per-design scores.
 - Uncertainty, in one command: `python bootstrap_ci.py` prints the 95% CIs (design-level and the honest cluster bootstrap over cell x generator strata) and the paired difference vs trivial baselines, all excluding zero (`docs/bootstrap_ci.png`).
 - Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md`.
 

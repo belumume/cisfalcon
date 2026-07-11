@@ -12,7 +12,10 @@ base = fail.mean()
 LO, HI = (
     250,
     1000,
-)  # $ per design synth+individual validation (80-PITCH-ANGLES cost model)
+)  # $ per design, DIRECT synthesis + individual validation only. This is a NARROWER basis than the
+# full-committed-spend model in docs/cisfalcon_triage_economics.csv ($950-$3,500 per pursued design,
+# which adds downstream follow-up); both are reported with their basis stated. This script uses the
+# direct-cost basis; the shipped economics figure uses the full-committed-spend basis.
 
 print(
     f"n={n}  base fail={base:.4f}  (~{base * 100:.1f} wasted syntheses per 100 designs if uncaught)"

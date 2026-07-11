@@ -27,8 +27,9 @@ first and predicts the failure, grounded in an external measured-activity model 
 
 Concretely, on a real design from an independent lab optimized to be HepG2-specific, CisFalcon reads
 the sequence alone and predicts the most-active cell will be K562 (not the HepG2 target), a specificity
-gap of -3.0 (predicted FAIL). The wet-lab measurement confirms it: that design barely touches HepG2 and
-fires 6.5-fold in K562. See `demo.py`.
+gap of -3.0 (predicted FAIL). The wet-lab measurement confirms it: that design barely touches its HepG2
+target (measured log2FC -0.1) and fires strongly in K562 (measured log2FC 6.5, roughly 90x on a linear
+scale). See `demo.py`.
 
 ## Results (independently reproducible)
 

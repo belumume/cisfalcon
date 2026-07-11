@@ -43,7 +43,7 @@ print(
     f"  HepG2 (its target): {measured['HepG2']:+.1f}    K562: {measured['K562']:+.1f}    SKNSH: {measured['SKNSH']:+.1f}"
 )
 print(
-    f"  It barely touches its HepG2 target and fires {measured['K562']:.1f}-fold in K562."
+    f"  It barely touches its HepG2 target and fires strongly in K562 (measured log2FC {measured['K562']:.1f}, about 90x on a linear scale)."
 )
 print(f"  A complete cell-type-specificity failure -- and CisFalcon predicted the K562")
 print(f"  off-target from sequence alone, before a cent was spent on synthesis.")

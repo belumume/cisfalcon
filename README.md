@@ -129,6 +129,15 @@ FastSeqProp), with no sequence overlap with the model's training data.
   ECE 0.0031, triage 7.75x, ScreenAudit 0.394). It is a fresh-harness reproduction on separate infrastructure,
   and it is what surfaced the final reproducibility fixes in this repo.
 
+### The benchmark is public
+
+The 93,435-design cross-lab set is packaged as a standalone, leakage-immune benchmark for the
+pre-synthesis specificity-QC task the field has no shared test for:
+`data/gosai_designed/designed_benchmark.csv` (designs, per-cell measured activity, a transparent
+gap and fail label) with reproducible stratified and leave-cell-out splits. Full schema, provenance,
+and citation live in [`BENCHMARK.md`](BENCHMARK.md). CisFalcon's 0.80 is the reference baseline; any
+model can be scored against it.
+
 ### Research-track extension: variant-effect prediction (a second, independent test)
 
 Beyond cell-type specificity, the same frozen model **ranks single-base variant effects** on a fully

@@ -60,6 +60,17 @@ inflated by memorized sequences.
   regression on the cross-lab (predicted-gap, measured-failure) pairs, with held-out calibration error
   (ECE) 0.0031, so a design shown "70% risk" fails close to 70% of the time. The live tool is serving this
   map (`fit_calibration.py`; held-out reliability diagram in `docs/cisfalcon_calibration.png`).
+- The signal does not rest on one model. A zero-parameter rank-average of the frozen activity head and a
+  cheaper chromatin-accessibility head lifts the cross-lab AUROC to 0.806, with the paired 95% CI on the
+  lift excluding zero (`ensemble_ci.py`). And a model of a completely different lineage agrees: DeepMind's
+  AlphaGenome, never trained on any MPRA, ranks the same designs' specificity in agreement with CisFalcon
+  at Spearman 0.80 and separates the wet-lab failures at AUROC 0.688 [95% CI 0.620, 0.752], even used far
+  outside its training distribution (`docs/independent-model-crosscheck.md`). Two independent-lineage models
+  agreeing is evidence the signal is not an artifact of one model family.
+- The 93,435-design set is released as a public, leakage-immune benchmark for the pre-synthesis
+  specificity-QC task the field has no shared test for (`BENCHMARK.md`): a transparent gap and fail label
+  reconstructable from the measured activities, with reproducible stratified and leave-cell-out splits.
+  CisFalcon's 0.80 is the reference baseline for other models to beat.
 
 ## Grounded diagnosis, and a closed loop
 

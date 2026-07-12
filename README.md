@@ -18,7 +18,7 @@
 
 **Try it, or reproduce it in one click:**
 - Reproduce the 0.80 in your browser, no install: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/belumume/cisfalcon/blob/main/reproduce_flagship.ipynb) fetches the committed scores from GitHub and prints AUROC 0.8013 in pure numpy.
-- Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (paste a design, or click "Load a real failing design").
+- Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (open Verify to see a real design batch scored and ranked live, click a flagged design to watch the closed-loop fix flip it, or paste your own sequence).
 - Or locally, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the 7.8x triage straight from the committed per-design scores.
 - Uncertainty, in one command: `python bootstrap_ci.py` prints the 95% CIs (design-level and the honest cluster bootstrap over cell x generator strata) and the paired difference vs trivial baselines, all excluding zero (`docs/bootstrap_ci.png`).
 - Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md`.

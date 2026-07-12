@@ -37,3 +37,6 @@ screenaudit/cache/
 Thumbs.db
 .vscode/
 .idea/
+webapp/backend/static/_pre-fable5-backup/
+.playwright-mcp/
+webapp/backend/_verify_proxy.py

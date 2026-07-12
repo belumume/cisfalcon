@@ -24,3 +24,5 @@ test_harness_gate.py
 real_designs.json
 webapp/backend/static/*.png
 .playwright-mcp/
+webapp/backend/static/_pre-fable5-backup
+webapp/backend/_verify_proxy.py

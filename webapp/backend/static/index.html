@@ -3,195 +3,547 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CisFalcon — pre-synthesis specificity gate for AI-designed enhancers</title>
-<meta name="description" content="Predict which AI-designed cell-type-specific enhancers will fail their intended specificity, before you synthesize them. Grounded in a frozen external measured-activity model. Cross-lab AUROC 0.80 on 93,435 independent designs.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2338e1c4' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%2338e1c4'/%3E%3Cpath d='M16 1v6M16 25v6M1 16h6M25 16h6' stroke='%2338e1c4' stroke-width='2'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/styles.css?v=20260712b">
+<title>CisFalcon · pre-synthesis specificity verifier for AI-designed enhancers</title>
+<meta name="description" content="Catch the AI-designed enhancers that will fail their target cell, before the lab synthesizes them. Scored against a frozen external measured-activity model. Cross-lab AUROC 0.80 on 93,435 independent designs.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Ccircle cx='13' cy='13' r='10.2' fill='none' stroke='%2314171B' stroke-width='1.3'/%3E%3Cpath d='M13 1.6V5.2M13 20.8v3.6M1.6 13H5.2M20.8 13h3.6' stroke='%2314171B' stroke-width='1.3'/%3E%3Crect x='10.4' y='10.4' width='5.2' height='5.2' transform='rotate(45 13 13)' fill='%23E5484D'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=20260712c">
 </head>
 <body>
-<header class="top">
-  <div class="wrap">
-    <div class="brand">
-      <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="13" stroke="#38e1c4" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="#38e1c4"/><path d="M16 1v6M16 25v6M1 16h6M25 16h6" stroke="#38e1c4" stroke-width="2"/></svg>
-      <span class="n"><b>Cis</b>Falcon</span>
-    </div>
-    <span class="tagline">pre-synthesis specificity gate for AI-designed enhancers</span>
-    <span class="spacer"></span>
-    <div class="stat-chip"><span>cross-lab</span> <b>AUROC 0.80</b> <span class="sep">·</span> <b>93,435</b> <span>designs</span></div>
-  </div>
-</header>
+<div class="app">
+  <div class="grain"></div>
 
-<nav class="tabs"><div class="wrap">
-  <button class="tab on" data-tab="check">Check a design</button>
-  <button class="tab" data-tab="triage">Batch triage</button>
-  <button class="tab" data-tab="screen">Generality: CRISPR screens</button>
-  <button class="tab" data-tab="how">How it works</button>
-</div></nav>
-
-<main class="wrap">
-
-  <!-- CHECK -->
-  <section id="tab-check">
-    <!-- OUTCOME-FIRST HERO. Hook wording is a draft to voice in your own words before final submit; every number is verified against the repo. -->
-    <div class="jhero">
-      <div class="jhero-left">
-        <div class="eyebrow">Pre-synthesis specificity gate</div>
-        <h1 class="jh">Every sixteenth AI-designed enhancer fires in the <b>wrong cell</b>.</h1>
-        <div class="tiles">
-          <div class="tile"><b>0.80</b><span>cross-lab AUROC</span><em>guess 0.50 &middot; N 93,435</em></div>
-          <div class="tile"><b>70%</b><span>less wasted synthesis</span></div>
-          <div class="tile"><b>$250-1k</b><span>+ weeks saved per design you don't waste</span></div>
-        </div>
-        <p class="jsub">CisFalcon reads the DNA sequence and ranks your batch <b>safest-first</b>, before you spend at the bench. It scores each design against a different lab's frozen activity model (AUROC 0.80 where guessing is 0.50), on 93,435 designs it never trained on. <button class="linkbtn" id="jload">Load a real failing design &darr;</button> <button class="linkbtn" id="jmethods">how the 0.80 conditions &darr;</button></p>
-        <p class="jdisease">Enhancers are the targeting element of brain / heart / immune <b>enhancer-AAV gene therapy</b>, the exact spend CisFalcon triages. It already runs on a brain-derived cell (the SKNSH neuroblastoma line, cross-lab 0.73).</p>
+  <!-- ============ NAV RAIL ============ -->
+  <aside class="rail">
+    <div class="rail-brand">
+      <svg width="24" height="24" viewBox="0 0 26 26" fill="none" style="display:block">
+        <circle cx="13" cy="13" r="10.2" stroke="#14171B" stroke-width="1.3"></circle>
+        <path d="M13 1.6V5.2M13 20.8v3.6M1.6 13H5.2M20.8 13h3.6" stroke="#14171B" stroke-width="1.3"></path>
+        <rect x="10.4" y="10.4" width="5.2" height="5.2" transform="rotate(45 13 13)" fill="#E5484D"></rect>
+      </svg>
+      <div class="bn">
+        <span class="t">CisFalcon</span>
+        <span class="s">enhancer verifier</span>
       </div>
-      <div class="jhero-right">
-        <div class="readout" id="readout">
-          <div class="ro-head"><span>How CisFalcon reads this design</span><span class="t">target = HepG2</span></div>
-          <div class="mlab">designed sequence, matched TF motifs:</div>
-          <div class="track">
-            <span class="motif on" style="left:24px">GATA1</span>
-            <span class="motif on" style="left:118px">TAL1</span>
-            <span class="motif on" style="left:208px">KLF1</span>
-            <span class="motif off" style="left:72px">HNF4A</span>
-            <span class="motif off" style="left:162px">FOXA2</span>
-            <div class="seq">ACGTGATAAGGTCACGTTATCACCGGTAGATAAGCTGACCTTATCAGGCACGTGGGT</div>
-          </div>
-          <div class="mcap">carries <b>blood-cell</b> grammar (GATA1/TAL1/KLF1), missing its liver grammar</div>
-          <div class="bars">
-            <div class="blab">measured activity (wet-lab log2FC):</div>
-            <div class="brow k562"><span class="bl">K562</span><div class="bt"><i></i></div><span class="bv">+6.5</span></div>
-            <div class="brow hepg2"><span class="bl">HepG2</span><div class="bt"><i></i></div><span class="bv">-0.1</span></div>
-          </div>
-          <div class="gatewrap">
-            <div class="axis">
-              <div class="zone fail">FAIL</div>
-              <div class="zone pass">PASS</div>
-              <div class="gate"></div>
-              <div class="marker" id="marker"></div>
+    </div>
+
+    <nav class="rail-nav">
+      <button class="nav-btn on" data-view="home">
+        <span class="bar"></span>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="5" height="5" rx="1"></rect><rect x="9" y="2" width="5" height="5" rx="1"></rect><rect x="2" y="9" width="5" height="5" rx="1"></rect><rect x="9" y="9" width="5" height="5" rx="1"></rect></svg>
+        <span>Overview</span>
+      </button>
+      <button class="nav-btn" data-view="verify">
+        <span class="bar"></span>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"></circle><path d="M8 1v3M8 12v3M1 8h3M12 8h3"></path><circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none"></circle></svg>
+        <span>Verify</span>
+      </button>
+      <button class="nav-btn" data-view="batch">
+        <span class="bar"></span>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4h12M2 8h12M2 12h12"></path></svg>
+        <span>Batch triage</span>
+      </button>
+      <button class="nav-btn" data-view="validation">
+        <span class="bar"></span>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 14V2M2 14h12"></path><path d="M4 11l3-4 3 2 3-6"></path></svg>
+        <span>Validation</span>
+      </button>
+      <button class="nav-btn" data-view="methods">
+        <span class="bar"></span>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="2" width="10" height="12" rx="1"></rect><path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3"></path></svg>
+        <span>Methods</span>
+      </button>
+    </nav>
+
+    <div class="rail-spacer"></div>
+
+    <div class="rail-status">
+      <div class="live">
+        <span class="dot"></span>
+        <span class="lbl">frozen · online</span>
+      </div>
+      <div class="meta">
+        <div>DHS64-MPRA activity</div>
+        <div>cross-lab AUROC <b>0.80</b></div>
+        <div>n = 93,435</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="pills">
+        <span class="pill">frozen measured-activity model</span>
+        <span class="pill">cross-lab AUROC <b>0.80</b> · chance 0.50</span>
+        <span class="pill">n = 93,435 · held-out lab</span>
+      </div>
+      <div class="actions">
+        <a class="link" href="https://github.com/belumume/cisfalcon" target="_blank" rel="noopener">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.6 0 0 3.6 0 8a8 8 0 0 0 5.5 7.6c.4.1.5-.2.5-.4v-1.4c-2 .4-2.5-.5-2.7-1 0-.1-.5-.9-.8-1-.3-.2-.7-.6 0-.6.6 0 1 .6 1.2.8.7 1.2 1.9.9 2.3.7 0-.5.3-.9.5-1-1.8-.2-3.6-.9-3.6-4 0-.9.3-1.6.8-2.1 0-.2-.3-1 .1-2.1 0 0 .7-.2 2.2.8a7.5 7.5 0 0 1 4 0c1.5-1 2.2-.8 2.2-.8.4 1.1.1 1.9.1 2.1.5.5.8 1.2.8 2.1 0 3.1-1.9 3.8-3.6 4 .3.2.5.7.5 1.4v2.1c0 .2.1.5.5.4A8 8 0 0 0 16 8c0-4.4-3.6-8-8-8Z"></path></svg>
+          GitHub
+        </a>
+        <button class="btn-dark" data-view="verify">Run verification
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 7h9M7 3l4 4-4 4"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="views">
+
+      <!-- ===== OVERVIEW ===== -->
+      <section id="view-home" class="view on flexcol">
+        <div class="ov-wrap">
+          <div>
+            <div class="ov-eyebrow"><span class="d"></span>PRE-SYNTHESIS FAILURE TRIAGE</div>
+            <h1 class="ov-h1">Catch the AI-designed enhancers that will <b>fail</b>, before the lab synthesizes them.</h1>
+            <p class="ov-sub">CisFalcon scores a designed DNA sequence against a frozen external measured-activity model and predicts whether it will misfire in the wrong cell type. It ranks a batch safest-first, so a lab spends its bench budget on the designs most likely to hold up.</p>
+
+            <div class="ov-stats">
+              <div class="ov-stat">
+                <div class="lhs">
+                  <div class="num">0.80</div>
+                  <div class="cap">CROSS-LAB AUROC</div>
+                </div>
+                <div class="body">
+                  <div class="aurbar">
+                    <div class="fill"></div>
+                    <div class="chance"></div>
+                    <div class="knob"></div>
+                  </div>
+                  <div class="aurbar-legend">
+                    <span class="c">chance 0.50</span>
+                    <span>0.8013 · n=93,435 · a different lab</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ov-stat">
+                <div class="lhs">
+                  <div class="num">70%</div>
+                  <div class="cap">FEWER FAILURES</div>
+                </div>
+                <div class="body">Rank safest-first and synthesize the safer half: specificity failures drop from 6.29% to 1.91%.</div>
+              </div>
             </div>
-            <div class="verdict-line"><span class="vgaplab">CisFalcon predicted gap</span><span class="vnum" id="vnum">&minus;3.0</span><span class="vword" id="vword">REJECT</span></div>
+
+            <div class="ov-clinical">
+              <div class="tx"><b>Clinical grounding.</b> The lineage-driver transcription factors it names are validated human disease genes: GATA1 (X-linked anemia), HNF4A (MODY1), TAL1 (T-ALL), KLF1, FOXA2. It reads the regulatory grammar whose disruption causes disease.</div>
+            </div>
+
+            <div class="ov-cta">
+              <button class="btn-dark lg" data-view="verify">Open the verifier
+                <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 7h9M7 3l4 4-4 4"></path></svg>
+              </button>
+              <button class="linkbtn" data-view="validation">See the validation</button>
+            </div>
+            <div class="ov-fine">Triage ranker, not a hard gate. The pooled 0.80 is the mixed-batch number; fully conditioned per-sequence it is 0.66, still above the 0.50 chance line.</div>
           </div>
-          <button class="flip" id="roflip">apply the named motif fix, re-score</button>
-          <p class="ro-caveat"><b>Predicted before synthesis; the measurement agrees.</b> The flip is an in-silico consistency check on one example, ahead of wet-lab validation.</p>
-        </div>
-      </div>
-    </div>
-    <p class="hero-note">Scored against a frozen external measured-activity model (DHS64 MPRA, Castillo-Hair 2025), not self-report. CisFalcon does not design DNA; it falsifies designs before synthesis.</p>
-    <div class="grid">
-      <div class="panel">
-        <div class="hd">Designed enhancer</div>
-        <div class="bd">
-          <label class="fld">Sequence (DNA, 50–5000 bp)</label>
-          <textarea id="seq" placeholder="Paste a designed enhancer sequence, or load a real failing design →" spellcheck="false"></textarea>
-          <div class="seqmeta"><span id="seqlen">0 bp</span><span><button class="linkbtn" id="loadbrain" style="margin:0 14px 0 0">Load a brain (SKNSH) design</button><button class="linkbtn" id="loadex" style="margin:0">Load a real failing design</button></span></div>
-          <label class="fld" style="margin-top:16px">Intended target cell type</label>
-          <select id="target"></select>
-          <div class="btns">
-            <button class="b primary" id="btn-check">Check (fast)</button>
-            <button class="b ghost" id="btn-diag">Full diagnosis</button>
+
+          <!-- LIVE PROOF CARD (scripted animation of the REAL hero's numbers) -->
+          <div class="instrument proof">
+            <div class="proof-head">
+              <div class="l">
+                <span class="pd" id="ov-dot" style="background:#FF5B4F;box-shadow:0 0 8px #FF5B4F"></span>
+                <span class="plbl">CLOSED-LOOP VERIFICATION</span>
+              </div>
+              <span class="pname" id="ov-pname" style="color:#FF5B4F">FLAG</span>
+            </div>
+
+            <div class="proof-sub">real hero · target HepG2 · a real BODA/Malinois design (Gosai/Tewhey 2024)</div>
+
+            <div class="hbars">
+              <div class="hbar">
+                <span class="name">HepG2 <span class="sub">target</span></span>
+                <div class="track"><div class="fill" id="ov-hep" style="width:18%;background:#FF5B4F;box-shadow:0 0 16px rgba(255,91,79,.5)"></div></div>
+              </div>
+              <div class="hbar">
+                <span class="name">K562 <span class="sub">off-target</span></span>
+                <div class="track"><div class="fill" id="ov-off" style="width:90%;background:#FF5B4F;box-shadow:0 0 16px rgba(255,91,79,.5)"></div></div>
+              </div>
+              <div class="winner-line">most-active cell: <b id="ov-winner" style="color:#FF5B4F">K562</b></div>
+            </div>
+
+            <div class="gapbox">
+              <div class="top">
+                <span class="glbl">SPECIFICITY GAP · log2FC(HepG2) − max off-target</span>
+                <span class="gval" id="ov-gapval" style="color:#FF5B4F">−3.0</span>
+              </div>
+              <div class="gapscale">
+                <div class="mid"></div>
+                <div class="needle" id="ov-needle" style="left:20%;background:#FF5B4F;box-shadow:0 0 10px #FF5B4F"></div>
+              </div>
+              <div class="gapscale-ax"><span>−4</span><span class="c">0 · fail line</span><span>+4</span></div>
+            </div>
+
+            <div class="proof-status" id="ov-statusbox">
+              <div class="tx" id="ov-status">Predicted to fail. Most-active cell is K562, not the HepG2 target. Specificity gap −3.0 (fail when gap ≤ 0). Wet-lab measured K562 +6.5, HepG2 −0.1 confirms it.</div>
+            </div>
+
+            <div class="proof-foot">
+              <span class="l">one model · one set of weights</span>
+              <button class="r" data-view="verify">open in verifier
+                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 7h9M7 3l4 4-4 4"></path></svg>
+              </button>
+            </div>
           </div>
-          <div id="err"></div>
-          <div class="note" id="named"><b>Built for</b> a regulatory-genomics scientist who ends each week with hundreds of designed candidates and can afford to synthesize a fraction. CisFalcon orders them by failure risk and explains why each risky one fails, grounded in measured biology.</div>
         </div>
-      </div>
-      <div class="panel">
-        <div class="hd">Result</div>
-        <div class="bd" id="result">
-          <div class="empty">
-            <svg width="42" height="42" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="13" stroke="#66728c" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="#66728c"/></svg>
-            <div>Paste a design and run a check, or load the real failing example.</div>
+      </section>
+
+      <!-- ===== VERIFY ===== -->
+      <section id="view-verify" class="view">
+
+        <!-- BATCH TABLE (real: /example-batch scored via /batch) -->
+        <div class="vf-list">
+          <div class="vf-head">
+            <div class="row">
+              <div class="ttl">
+                <span class="a">Example library</span>
+                <span class="b">target HepG2 · ranked by risk</span>
+              </div>
+            </div>
+            <div class="vf-counts">
+              <span class="vf-count all">All <span id="vf-all">·</span></span>
+              <span class="vf-count flag">Flagged <span id="vf-flagged">·</span></span>
+              <span class="vf-count clear">Clear <span id="vf-clear">·</span></span>
+            </div>
+          </div>
+          <div class="vf-colhead">
+            <span>DESIGN</span><span class="r">GAP</span><span>OFF-TARGET</span><span class="r">STATUS</span>
+          </div>
+          <div class="vf-rows" id="vf-rows">
+            <div class="empty" style="padding:24px 10px">loading designs…</div>
+          </div>
+          <div class="vf-foot">
+            <span class="l">base failure rate 6.29% · 1 in 16</span>
+            <span class="r">safest half → 1.91%</span>
+          </div>
+
+          <div class="vf-own">
+            <div class="lbl">OR CHECK YOUR OWN SEQUENCE</div>
+            <textarea id="vf-own-seq" placeholder="Paste a designed enhancer (DNA, ACGT/U, 50–5000 bp)" spellcheck="false"></textarea>
+            <div class="rowf">
+              <select id="vf-own-target"></select>
+              <button class="btn-dark" id="vf-own-btn">Check</button>
+            </div>
+            <div class="err" id="vf-own-err"></div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- TRIAGE -->
-  <section id="tab-triage" hidden>
-    <p class="hero-note">You have a batch of designs and can only synthesize some. Paste them (one per line or FASTA), or upload a CSV of your design library, pick the target cell, and CisFalcon ranks them safest-first (any size; it chunks and gives you a ranked CSV back). <b>Synthesize the safest half first and you cut specificity failures by about 70%</b> in what you make (6.29% → 1.91% on an independent lab's designs).</p>
-    <div class="grid">
-      <div class="panel">
-        <div class="hd">Designs (one per line or FASTA)</div>
-        <div class="bd">
-          <textarea id="batchseq" style="min-height:220px" placeholder=">design_1&#10;ACGT...&#10;>design_2&#10;ACGT..." spellcheck="false"></textarea>
-          <div class="seqmeta"><input type="file" id="batchfile" accept=".csv,.tsv,.txt,.fa,.fasta" style="display:none"><button class="linkbtn" id="btn-upload" style="margin:0">or upload a CSV / FASTA library (id, sequence columns)</button></div>
-          <label class="fld" style="margin-top:14px">Target cell type</label>
-          <select id="btarget"></select>
-          <div class="btns">
-            <button class="b primary" id="btn-batch">Rank by failure risk</button>
-            <button class="b ghost" id="btn-batchex">Load example set</button>
-            <button class="b ghost" id="btn-download" style="display:none">Download ranked CSV</button>
+        <!-- INSPECTOR SCOPE (real: /predict + /motifs; apply-fix: /redesign) -->
+        <div class="insp">
+          <div class="insp-scan" id="insp-scan"></div>
+          <div class="insp-stamp" id="insp-stamp"></div>
+
+          <div class="insp-body">
+            <div class="insp-top">
+              <div class="l">
+                <span class="pd" id="insp-dot" style="background:#5C6771"></span>
+                <span class="plbl">CLOSED-LOOP VERIFICATION</span>
+                <span class="pid" id="insp-id">/ select a design</span>
+              </div>
+            </div>
+
+            <div id="insp-content">
+              <div class="insp-empty">
+                <span class="spin"></span>
+                <div>scoring the example library…</div>
+              </div>
+            </div>
           </div>
-          <div id="berr"></div>
         </div>
-      </div>
-      <div class="panel">
-        <div class="hd">Triage ranking</div>
-        <div class="bd" id="batchresult"><div class="empty">Paste designs and rank them.</div></div>
-      </div>
+      </section>
+
+      <!-- ===== BATCH ===== -->
+      <section id="view-batch" class="view">
+        <div class="pad-wrap">
+          <div style="margin-bottom:22px">
+            <div class="eyebrow">BATCH TRIAGE</div>
+            <h2 class="sec-h">Spend the synthesis budget where it holds up</h2>
+            <p class="sec-p" style="max-width:66ch">Rank a batch of AI-designed enhancers safest-first, then synthesize down the ranked list. The specificity failures you actually make drop sharply, so a fixed bench budget buys more designs that work.</p>
+          </div>
+
+          <div class="stat-cards">
+            <div class="stat-card">
+              <div class="v">6.29%</div>
+              <div class="k">BASE FAILURE RATE</div>
+              <div class="d">about 1 in 16 designs misfires in the wrong cell type</div>
+            </div>
+            <div class="stat-card">
+              <div class="v green">70%</div>
+              <div class="k">FEWER FAILURES</div>
+              <div class="d">synthesize the safest half: 6.29% drops to 1.91%</div>
+            </div>
+            <div class="stat-card">
+              <div class="v">7.8&times;</div>
+              <div class="k">RISKIEST-2% ENRICHMENT</div>
+              <div class="d">of the flagged 2%, about half truly fail (PPV 0.49)</div>
+            </div>
+            <div class="stat-card">
+              <div class="v">43%</div>
+              <div class="k">FAILURES CAUGHT</div>
+              <div class="d">flag the riskiest 10% for redesign, capture 43% (4.3&times;)</div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="curve-card">
+              <div class="cap">SPECIFICITY FAILURES IN WHAT YOU SYNTHESIZE</div>
+              <div class="sub">safest-first, ranked by CisFalcon</div>
+              <svg width="100%" viewBox="0 0 440 210" style="display:block">
+                <line x1="44" y1="24" x2="44" y2="176" stroke="rgba(150,190,210,.28)" stroke-width="1"></line>
+                <line x1="44" y1="176" x2="418" y2="176" stroke="rgba(150,190,210,.28)" stroke-width="1"></line>
+                <text x="14" y="40" font-family="IBM Plex Mono, monospace" font-size="8" fill="#6C7783">7%</text>
+                <text x="20" y="141" font-family="IBM Plex Mono, monospace" font-size="8" fill="#6C7783">2%</text>
+                <text x="30" y="180" font-family="IBM Plex Mono, monospace" font-size="8" fill="#6C7783">0</text>
+                <line x1="44" y1="41" x2="418" y2="41" stroke="#E7B24A" stroke-width="1.2" stroke-dasharray="4 4" opacity=".75"></line>
+                <text x="330" y="36" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#C79A3A">synthesize blind 6.29%</text>
+                <path d="M44,176 C150,171 210,150 231,139 C300,120 360,78 418,41 L418,176 Z" fill="rgba(56,198,214,.1)"></path>
+                <path d="M44,176 C150,171 210,150 231,139 C300,120 360,78 418,41" fill="none" stroke="#38C6D6" stroke-width="2.4"></path>
+                <line x1="231" y1="139" x2="231" y2="176" stroke="rgba(150,190,210,.25)" stroke-width="1" stroke-dasharray="3 3"></line>
+                <circle cx="231" cy="139" r="4.5" fill="#35D48A" stroke="#080b10" stroke-width="1.6"></circle>
+                <text x="238" y="134" font-family="IBM Plex Mono, monospace" font-size="8.5" font-weight="600" fill="#35D48A">safest half · 1.91%</text>
+                <text x="200" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#6C7783">fraction of batch synthesized, safest-first &rarr;</text>
+              </svg>
+              <div class="foot">The gap between the dashed blind line and the curve is the failures avoided by ranking. <code>triage_curve.py</code></div>
+            </div>
+
+            <div class="op-card">
+              <div class="cap">OPERATING POINTS</div>
+              <div class="op">
+                <div class="t">Synthesize the safest half</div>
+                <div class="d">failure rate <b class="green">1.91%</b>, a 70% reduction</div>
+              </div>
+              <div class="op">
+                <div class="t">Flag the riskiest 10%</div>
+                <div class="d">captures <b class="ink">43%</b> of all failures, 4.3&times; the base rate</div>
+              </div>
+              <div class="op">
+                <div class="t">Flag the riskiest 2%</div>
+                <div class="d"><b class="ink">49%</b> truly fail, 7.8&times; enrichment (PPV 0.49)</div>
+              </div>
+              <div class="cost">Each pursued design costs roughly $250 to $1000 in materials, plus weeks of turnaround.</div>
+            </div>
+          </div>
+
+          <div class="batch-note">Risk-ranked view. The base rate 6.29% reflects the Gosai cross-lab population (n = 93,435). CisFalcon is a triage ranker, not a hard gate.</div>
+
+          <!-- LIVE triage tool: rank any batch, per-batch economics (real /batch) -->
+          <div class="tool">
+            <div class="eyebrow">RANK YOUR BATCH</div>
+            <h2 class="sec-h" style="font-size:22px">Paste or upload a design library and rank it live</h2>
+            <p class="sec-p" style="max-width:70ch;font-size:13.5px">Any size. CisFalcon scores each design against the frozen external model, ranks safest-first, and returns a ranked CSV. Enter your cost per design to see the wasted synthesis a safest-half triage averts.</p>
+            <div class="tool-grid">
+              <div class="panel">
+                <div class="hd">Designs (one per line or FASTA)</div>
+                <div class="bd">
+                  <textarea id="bt-seq" placeholder="&gt;design_1&#10;ACGT...&#10;&gt;design_2&#10;ACGT..." spellcheck="false"></textarea>
+                  <div class="seqmeta"><input type="file" id="bt-file" accept=".csv,.tsv,.txt,.fa,.fasta" style="display:none"><button class="linkbtn" id="bt-upload" style="margin:0">or upload a CSV / FASTA library (id, sequence columns)</button></div>
+                  <label class="fld" style="margin-top:14px">Target cell type</label>
+                  <select id="bt-target"></select>
+                  <div class="btns">
+                    <button class="b primary" id="bt-rank">Rank by failure risk</button>
+                    <button class="b ghost" id="bt-example">Load example set</button>
+                    <button class="b ghost" id="bt-download" style="display:none">Download ranked CSV</button>
+                  </div>
+                  <div id="bt-err"></div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="hd">Triage ranking</div>
+                <div class="bd" id="bt-result"><div class="empty">Paste designs and rank them, or load the example set.</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== VALIDATION ===== -->
+      <section id="view-validation" class="view">
+        <div class="pad-wrap" style="max-width:1140px">
+          <div style="margin-bottom:22px">
+            <div class="eyebrow">VALIDATION</div>
+            <h2 class="sec-h">Measured on a different lab's designs the model never saw</h2>
+            <p class="sec-p" style="max-width:70ch">Cross-lab is the flagship: a frozen published activity model, scored on 93,435 designs from a different lab, a different design process, and generators it never saw (Gosai et al. 2024), with zero sequence overlap. Both the deployment number and the harder fully-conditioned number are reported.</p>
+          </div>
+
+          <div class="val-hero">
+            <div class="val-roc">
+              <svg width="200" height="180" viewBox="0 0 200 180" style="display:block;flex:none">
+                <line x1="34" y1="150" x2="34" y2="14" stroke="rgba(150,190,210,.3)" stroke-width="1"></line>
+                <line x1="34" y1="150" x2="182" y2="150" stroke="rgba(150,190,210,.3)" stroke-width="1"></line>
+                <line x1="34" y1="150" x2="182" y2="14" stroke="#E7B24A" stroke-width="1.2" stroke-dasharray="4 4" opacity=".8"></line>
+                <path d="M34,150 C62,78 104,34 182,14 L182,150 Z" fill="rgba(53,212,138,.13)"></path>
+                <path d="M34,150 C62,78 104,34 182,14" fill="none" stroke="#35D48A" stroke-width="2.4" stroke-dasharray="300" style="animation:cf-draw 1.7s ease-out"></path>
+                <text x="104" y="58" font-family="Space Grotesk" font-weight="700" font-size="26" fill="#C6D0D8">0.80</text>
+                <text x="105" y="74" font-family="IBM Plex Mono, monospace" font-size="8" letter-spacing="1.5" fill="#8996A0">AUROC</text>
+                <text x="120" y="116" font-family="IBM Plex Mono, monospace" font-size="8" fill="#C79A3A" transform="rotate(-31 120 116)">chance 0.50</text>
+                <text x="108" y="168" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" fill="#5C6771">false positive rate</text>
+              </svg>
+              <div style="flex:1">
+                <div class="big">0.8013</div>
+                <div class="subl">cross-lab AUROC · 95% CI [0.796, 0.807]</div>
+                <div class="lines">
+                  <div>n = 93,435 designs</div>
+                  <div>held-out lab · Gosai/Tewhey 2024</div>
+                  <div>zero sequence overlap</div>
+                </div>
+                <div class="tags">
+                  <span class="tag">GC 0.51</span>
+                  <span class="tag">length 0.50</span>
+                  <span class="tag">random 0.50</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="decomp">
+              <div class="cap">WHERE THE SIGNAL LIVES</div>
+              <div class="lead">The pooled 0.80 is the mixed-batch deployment number. Remove the base rates and genuine per-sequence signal remains, above chance at every level.</div>
+              <div class="rows">
+                <div class="drow">
+                  <div class="top"><span class="k">pooled, mixed batch</span><span class="v">0.80</span></div>
+                  <div class="bar"><div class="fill" style="width:75%;background:#14171B"></div></div>
+                </div>
+                <div class="drow">
+                  <div class="top"><span class="k">within target cell</span><span class="v">0.75</span></div>
+                  <div class="bar"><div class="fill" style="width:62.5%;background:#3A4048"></div></div>
+                </div>
+                <div class="drow">
+                  <div class="top"><span class="k">cell-prior only, no sequence</span><span class="v">0.68</span></div>
+                  <div class="bar"><div class="fill" style="width:45%;background:#6A7079"></div></div>
+                </div>
+                <div class="drow">
+                  <div class="top"><span class="k">fully conditioned per-sequence</span><span class="v">0.66</span></div>
+                  <div class="bar"><div class="fill" style="width:40%;background:#8A9098"></div></div>
+                </div>
+              </div>
+              <div class="fine">left edge = 0.50 chance · every level clears it</div>
+            </div>
+          </div>
+
+          <div class="val-3">
+            <div class="c">
+              <div class="cap">TWO-HEAD ENSEMBLE</div>
+              <div class="d">activity <b>0.802</b> and accessibility <b>0.789</b>, rank-averaged to <b class="green">0.806</b>. Nothing trained, fixed before the number was read.</div>
+            </div>
+            <div class="c">
+              <div class="cap">CALIBRATED, NOT ASSERTED</div>
+              <div class="d">held-out calibration error <b>ECE 0.0031</b> (isotonic). A design labelled 70% risk fails close to 70% of the time.</div>
+            </div>
+            <div class="c">
+              <div class="cap">BRAIN-DERIVED LINE</div>
+              <div class="d">SKNSH cross-lab <b>0.73</b>; safest half cuts failures 58%. A primary-neuron MPRA is the honest next step.</div>
+            </div>
+          </div>
+
+          <div class="het">
+            <div class="top">
+              <div class="cap">HETEROGENEOUS RANKER · LEAD WITH THE RANGE</div>
+              <div class="macro">within-generator macro 0.73</div>
+            </div>
+            <div class="range"><div class="mark"></div></div>
+            <div class="ends">
+              <span>FastSeqProp <b class="red">0.62</b> (best-optimized, near coin-flip)</span>
+              <span>Hamiltonian MC <b class="green">0.92</b> (failure-prone)</span>
+            </div>
+            <div class="d">Discrimination is highest exactly where failures cluster, and near chance on the best-optimized generators. Strongest on failure-prone and out-of-distribution designs.</div>
+          </div>
+
+          <div class="bounds">
+            <div class="cap">HONEST BOUNDARIES</div>
+            <div class="grid">
+              <div class="bnd"><span class="dot">&bull;</span><span>A triage ranker, not a hard gate. At the 6.29% base rate a hard gate has poor precision (PPV 0.24 at recall 0.5). Its value is prioritization.</span></div>
+              <div class="bnd"><span class="dot">&bull;</span><span>The closed-loop flip is an in-silico consistency check on one design, ahead of wet-lab validation. It is not a wet-lab result.</span></div>
+              <div class="bnd"><span class="dot">&bull;</span><span>The in-distribution number (0.896) carries a residual near-duplicate leakage caveat and is a sanity check only. The cross-lab result is the headline and is immune by construction.</span></div>
+              <div class="bnd"><span class="dot">&bull;</span><span>Every cross-lab number re-derives to four decimals from the committed per-design scores with a plain rank-sum AUROC. <code>reproduce_flagship.py</code>, one-click Colab.</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== METHODS ===== -->
+      <section id="view-methods" class="view">
+        <div class="pad-wrap" style="max-width:1080px">
+          <div style="margin-bottom:24px">
+            <div class="eyebrow">METHODS</div>
+            <h2 class="sec-h">A deterministic gate, an agent diagnosis, checked against external ground truth</h2>
+            <p class="sec-p" style="max-width:72ch">Nothing is trained here. The ranking comes from a frozen, published measured-activity model; the agents add the redesign guidance a bare score cannot.</p>
+          </div>
+
+          <div class="m-2">
+            <div class="m-card">
+              <div class="cap is">WHAT IT IS</div>
+              <div class="d">A pre-synthesis failure-risk triage for AI-designed, cell-type-specific enhancers. It reads a designed DNA sequence and predicts, before any DNA is synthesized, whether the design will misfire in the wrong cell type in a wet-lab MPRA, grounded in an external measured-activity model rather than self-report.</div>
+            </div>
+            <div class="m-card">
+              <div class="cap isnot">WHAT IT IS NOT</div>
+              <div class="d">It does not design DNA. It is not a hard kill-switch or abort gate, and it is not a wet-lab assay. It exposes no generative optimization loop and creates no new design capability. It is a defensive falsifier that prevents wasted synthesis.</div>
+            </div>
+          </div>
+
+          <div class="m-lbl">HOW IT WORKS</div>
+          <div class="m-3">
+            <div class="c">
+              <div class="step gate">01 · Gate</div>
+              <div class="t">Frozen external model</div>
+              <div class="d">The atlas DHS64-MPRA activity models (Castillo-Hair et al. 2025), three fold models ensembled, plus a chromatin-accessibility second head, rank-averaged. Input a 500 bp sequence, output predicted log2FC across 12 human cell lines. Nothing trained.</div>
+            </div>
+            <div class="c">
+              <div class="step label">02 · Label</div>
+              <div class="t">Transparent fail rule</div>
+              <div class="d">A design fails specificity when it is not most-active in its intended target.</div>
+              <div class="code">gap = log2FC(target) &minus; max(off-target)<br>FAIL := gap &le; 0</div>
+            </div>
+            <div class="c">
+              <div class="step diag">03 · Diagnose</div>
+              <div class="t">Agent redesign layer</div>
+              <div class="d">Four Claude agents turn a bare FAIL into a mechanism: which off-target cell wins and which driver motifs to ablate or install. A measured ablation shows the agents do not improve classification over the gate; their value is the redesign guidance.</div>
+            </div>
+          </div>
+
+          <div class="clin">
+            <div class="cap">CLINICAL GROUNDING</div>
+            <div class="d">CisFalcon attaches the Mendelian disease to each of the ten erythroid and hepatocyte driver factors it tracks. It reads regulatory grammar whose disruption causes human disease, so a specificity failure is not a cosmetic QC issue.</div>
+            <div class="chips">
+              <span class="chip"><b>GATA1</b> &middot; X-linked dyserythropoietic anemia &middot; OMIM 300367</span>
+              <span class="chip"><b>HNF4A</b> &middot; MODY1 diabetes &middot; OMIM 125850</span>
+              <span class="chip"><b>TAL1</b> &middot; T-cell acute lymphoblastic leukemia</span>
+              <span class="chip"><b>KLF1</b> &middot; congenital dyserythropoietic anemia</span>
+              <span class="chip"><b>FOXA2</b> &middot; congenital hyperinsulinism</span>
+            </div>
+          </div>
+
+          <div class="m-data">
+            <div class="l">
+              <div class="cap">DATA &amp; REPRODUCE</div>
+              <div class="rows">
+                <div><b>Cross-lab benchmark:</b> Gosai et al. 2024 MPRA, 93,435 designs, a different lab and design process the model never saw.</div>
+                <div><b>One command, no GPU:</b> <code>reproduce_flagship.py</code> re-derives AUROC 0.8013 in pure numpy from the committed per-design scores. One-click Colab in the browser.</div>
+                <div><b>We verify the verifier:</b> a separate Claude Science session independently re-derived every number to the decimal from the committed data. Built with Claude Code; full methodology and every caveat in PREREG.md.</div>
+              </div>
+            </div>
+            <div class="r">
+              <div class="cap">OPEN SOURCE</div>
+              <a href="https://github.com/belumume/cisfalcon" target="_blank" rel="noopener">github.com/belumume/cisfalcon
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#5A616B" stroke-width="1.4"><path d="M4 10l6-6M5 4h5v5"></path></svg>
+              </a>
+              <a href="https://cisfalcon-lifesci.fly.dev/" target="_blank" rel="noopener">live tool · cisfalcon-lifesci.fly.dev
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#5A616B" stroke-width="1.4"><path d="M4 10l6-6M5 4h5v5"></path></svg>
+              </a>
+              <div class="fine">MIT licensed. The predictor is a public, already-released model.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
-  </section>
+  </div>
+</div>
 
-  <!-- SCREENAUDIT -->
-  <section id="tab-screen" hidden>
-    <p class="hero-note">The same verifier pattern (a deterministic domain gate checked against external measured ground truth) transfers to a second, disjoint domain: <b>ScreenAudit</b> re-derives the hit calls of published CRISPR screens on live BioGRID ORCS data. Independent screens of the same cell line agree on only a fraction of their hit calls, and ScreenAudit flags which published hit lists are fragile.</p>
-    <div class="panel"><div class="bd">
-      <div class="big-stat">
-        <div class="s"><div class="v" id="sa-mean">0.39</div><div class="l">mean hit-list agreement (Jaccard) across independent same-context essentiality screens</div></div>
-        <div class="s"><div class="v">4</div><div class="l">cell lines, 28 screens, live BioGRID ORCS</div></div>
-      </div>
-      <div class="sa-grid" id="sa-grid"></div>
-      <div class="note" style="margin-top:16px">Read: published CRISPR essentiality hit calls are method and lab dependent, and the fragility is highly variable. HEK293-A reproduces (Jaccard 0.69); K-562 barely overlaps (0.14). One architecture, two disjoint bio domains: AI-enhancer design QC and CRISPR-screen QC.</div>
-    </div></div>
-  </section>
-
-  <!-- HOW -->
-  <section id="tab-how" hidden>
-    <div class="prose">
-      <h3>What CisFalcon does</h3>
-      <p>Modern generative models design enhancers meant to be active in one target cell type and silent elsewhere. Many still fire in the wrong cell. Synthesizing and validating one design costs roughly $250–1000 and 2–4 weeks. CisFalcon reads the sequence and predicts the failure first, grounded in a frozen external measured-activity model rather than self-report.</p>
-      <h3>Three layers</h3>
-      <ul>
-        <li><b>Gate</b> (deterministic): the frozen atlas DHS64-MPRA activity model, ensembled over independent folds, predicts per-cell activity and the specificity gap. Nothing is trained here.</li>
-        <li><b>Grounded motif scan</b>: the input sequence is scanned against real JASPAR transcription-factor PWMs, so the diagnosis names driver motifs that are actually present, not guessed.</li>
-        <li><b>Agent layer</b> (built with Claude): parallel agents interpret the mechanism, ground the risk in the measured benchmark, and adversarially challenge the call; a synthesizer returns the verdict and a motif-level redesign.</li>
-      </ul>
-      <h3>The closed loop</h3>
-      <p>When CisFalcon flags a design, it does more than warn. It applies the prescribed motif edit (disrupt the off-target cell's driver motifs, install the target cell's) and re-scores with the same external model. The predicted specificity gap moving in the right direction is an in-silico consistency check on one example, not wet-lab proof the redesign works. What it shows is that the diagnosis names a concrete, mechanistically grounded edit, which a bare score or a single model call narrating a score cannot.</p>
-      <h3>Verified numbers</h3>
-      <ul>
-        <li>Cross-lab <b>AUROC 0.8013</b> on 93,435 designs from an independent lab (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw. Zero sequence overlap. Baselines: GC 0.51, random 0.50.</li>
-        <li>Rank by CisFalcon, synthesize the safest half first: specificity failure rate drops from <b>6.29% to 1.91%</b> (70% fewer failures).</li>
-        <li>How the 0.80 conditions: it is the deployment number for a mixed batch. Remove the cell base-rate and the gate still separates failures at 0.75; remove the cell <i>and</i> generator base-rates at once and the genuine per-sequence signal is <b>0.66</b>, still well above 0.50. Matched in-distribution (3-cell, out-of-fold) it is <b>0.896</b> (in-distribution, so it carries a near-duplicate-leakage caveat; the cross-lab 0.80 is the leakage-immune flagship). All reported, never just the highest (<code>cell_prior_baseline.py</code>).</li>
-        <li>Where to trust it (confidence by design regime): a triage ranker, not a hard gate (PPV 0.24 at recall 0.5 at the 6.3% base rate). It is strongest exactly where designs actually fail (Hamiltonian MC generator AUROC 0.92) and near coin-flip on already-well-optimized designs (FastSeqProp 0.62, AdaLead 0.61) that mostly already work. The value of a pre-synthesis falsifier concentrates out-of-distribution, on failure-prone designs and novel cell types, which is where a wrong design costs the most and where the closed loop still names the fix.</li>
-      </ul>
-      <h3>Where to trust it, by generator</h3>
-      <p>Cross-lab AUROC per design method (the generator that produced the batch), on the 93,435 Gosai designs. CisFalcon is strongest exactly where designs fail, and near coin-flip on the best-optimized generators whose designs mostly already work. The dashed line is random (0.50). Lead with this range, not the pooled number.</p>
-      <div class="regime">
-        <div class="rg"><span class="rgl">Hamiltonian MC</span><div class="rgb"><i class="hi" style="width:92%"></i></div><span class="rgv">0.92</span></div>
-        <div class="rg"><span class="rgl">Simulated Annealing</span><div class="rgb"><i class="hi" style="width:78%"></i></div><span class="rgv">0.78</span></div>
-        <div class="rg"><span class="rgl">SA (repeat set)</span><div class="rgb"><i class="mid" style="width:70%"></i></div><span class="rgv">0.70</span></div>
-        <div class="rg"><span class="rgl">FastSeqProp</span><div class="rgb"><i class="lo" style="width:62%"></i></div><span class="rgv">0.62</span></div>
-        <div class="rg"><span class="rgl">AdaLead</span><div class="rgb"><i class="lo" style="width:61%"></i></div><span class="rgv">0.61</span></div>
-      </div>
-      <p class="dim">Within-generator macro-average 0.73; the pooled 0.80 benefits from cross-generator separation. Bars are cross-lab AUROC per method, re-derivable from the committed per-design scores.</p>
-      <p class="dim" style="margin-top:16px">Open source. Grounded in Castillo-Hair et al. 2025 (atlas MPRA models), Gosai et al. 2024 (cross-lab designs), JASPAR (motifs), and BioGRID ORCS (CRISPR screens).</p>
-    </div>
-  </section>
-
-</main>
-
-<footer class="foot"><div class="wrap">
-  <span>CisFalcon · a defensive pre-synthesis falsifier · built with Claude · <a href="https://github.com/belumume/cisfalcon">open source</a> (reproduce every number: <code>python reproduce_flagship.py</code>)</span>
-  <span>Scored against external measured ground truth (DHS64 MPRA). It does not design DNA.</span>
-</div></footer>
-
-<script src="/app.js?v=20260712b"></script>
-<script>
-  document.getElementById('jload')?.addEventListener('click',()=>{document.querySelector('.tab[data-tab=check]').click();document.getElementById('loadex').click();document.getElementById('seq').scrollIntoView({behavior:'smooth',block:'center'});});
-  document.getElementById('jmethods')?.addEventListener('click',()=>{document.querySelector('.tab[data-tab=how]').click();window.scrollTo({top:0,behavior:'smooth'});});
-  document.getElementById('roflip')?.addEventListener('click',function(){var r=document.getElementById('readout'),p=r.classList.toggle('pass');document.getElementById('vnum').textContent=p?'+1.0':'−3.0';document.getElementById('vword').textContent=p?'PASS':'REJECT';this.textContent=p?'reset to the flagged design':'apply the named motif fix, re-score';});
-</script>
+<script src="/app.js?v=20260712c"></script>
 </body>
 </html>

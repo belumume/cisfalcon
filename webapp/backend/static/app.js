@@ -235,7 +235,36 @@ function _renderBatch(rows, R) {
   </div><table><thead><tr><th>rank</th><th>design</th><th>gap</th><th>most-active</th><th>call</th></tr></thead><tbody>`;
   h += rows.slice(0, 200).map((r) => `<tr><td>${r.rank}</td><td>${esc(r.id)}</td><td>${r.gap >= 0 ? "+" : ""}${r.gap}</td><td>${r.cell}</td><td><span class="pill ${r.fail ? "FAIL" : "PASS"}">${r.fail ? "fail" : "pass"}</span></td></tr>`).join("");
   h += `</tbody></table><div class="dim" style="font-size:11px;margin-top:8px">ranked safest-first by predicted specificity gap. Synthesize from the top.${n > 200 ? ` Showing 200 of ${n}; download the full ranked CSV.` : ""}</div>`;
+  h += `<div class="econ" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+    <div class="hd" style="border:0;padding:0 0 6px 0">What triaging this batch is worth</div>
+    <label style="font-size:13px" class="dim">Your cost per design (synthesis + assay): $<input id="econcost" type="number" min="0" step="50" value="500" style="width:88px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:inherit;border-radius:6px;padding:4px 6px;font:inherit"></label>
+    <div id="econ-out" style="margin-top:10px"></div>
+  </div>`;
   R.innerHTML = h;
+  const _ci = $("#econcost", R);
+  if (_ci) _ci.addEventListener("input", () => _renderEcon(rows));
+  _renderEcon(rows);
+}
+
+// interactive economics: user supplies the cost, CisFalcon supplies the ranking (avoids asserting a cost figure ourselves)
+function _renderEcon(rows) {
+  const out = $("#econ-out");
+  if (!out) return;
+  const cost = Math.max(0, parseFloat($("#econcost")?.value) || 0);
+  const n = rows.length, nfail = rows.filter((r) => r.fail).length;
+  const halfN = Math.max(1, Math.floor(n / 2));
+  const halfFail = rows.slice(0, halfN).filter((r) => r.fail).length;
+  const randHalfFail = n ? (nfail / n) * halfN : 0; // expected failures in a random half
+  const avoided = Math.max(0, randHalfFail - halfFail); // failures CisFalcon keeps out of the synthesized half
+  const money = (x) => "$" + Math.round(x).toLocaleString();
+  if (avoided < 0.5) {
+    out.innerHTML = `<div class="dim" style="font-size:12px">CisFalcon flags ${nfail}/${n} here. At ${money(cost)}/design, making all ${n} is ${money(n * cost)}. Too few flagged failures on this batch for triage to change the spend much; the value concentrates on failure-prone libraries.</div>`;
+    return;
+  }
+  out.innerHTML = `<div class="big-stat">
+    <div class="s"><div class="v">${money(n * cost)}</div><div class="l">to synthesize all ${n} designs</div></div>
+    <div class="s"><div class="v">${money(avoided * cost)}</div><div class="l">wasted synthesis averted: ~${avoided.toFixed(1)} fewer broken designs made if you build CisFalcon's safest half instead of a random half</div></div>
+  </div><div class="dim" style="font-size:11px;margin-top:6px">You enter the cost; CisFalcon supplies the ranking. Averted = expected failures in a random half minus the failures left in CisFalcon's safest half, times your cost.</div>`;
 }
 
 $("#btn-upload").addEventListener("click", () => $("#batchfile").click());

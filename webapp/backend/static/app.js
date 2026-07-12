@@ -42,7 +42,7 @@ const OV_PHASES = [
     winner: "K562", winnerColor: "rgba(255,91,79,.55)", gap: "−3.0", gapColor: "rgba(255,91,79,.5)", pos: "20%",
     status: "Prescribed edit: disrupt K562 drivers GATA1, TAL1, GATA2; install HepG2 grammar HNF4A, HNF1A, CEBPA. Old scores are now stale." },
   { name: "RE-SCORE", color: CYAN, hep: "18%", off: "90%", fill: CYAN, op: 0.18, glow: GLOW.CYAN,
-    winner: "· ·", winnerColor: CYAN, gap: "· ·", gapColor: CYAN, pos: "50%",
+    winner: "···", winnerColor: CYAN, gap: "···", gapColor: CYAN, pos: "50%",
     status: "Re-scoring with the same frozen external model. No fine-tuning, no self-report." },
   { name: "PASS", color: GREEN, hep: "80%", off: "46%", fill: GREEN, op: 1, glow: GLOW.GREEN,
     winner: "HepG2", winnerColor: GREEN, gap: "+1.0", gapColor: GREEN, pos: "60%",
@@ -67,7 +67,16 @@ function ovArm() {
   clearTimeout(ovTimer);
   ovTimer = setTimeout(() => { ovStep = (ovStep + 1) % 4; ovRender(ovStep); ovArm(); }, OV_DUR[ovStep]);
 }
-function ovStart() { ovStep = 0; ovRender(0); ovArm(); }
+function ovStart() {
+  ovStep = 0; ovRender(0);
+  const rm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!rm) ovArm();
+  const pc = document.querySelector(".proof");
+  if (pc) {
+    pc.addEventListener("mouseenter", () => clearTimeout(ovTimer));
+    pc.addEventListener("mouseleave", () => { if (!rm) ovArm(); });
+  }
+}
 
 /* ---------------- verify: batch table (real /example-batch + /batch) ---------------- */
 async function loadVerify() {
@@ -94,7 +103,7 @@ async function loadVerify() {
       try {
         const hp = await api("/predict", { sequence: hero.sequence, target_cell: hero.target_cell || "HepG2" });
         items.push({
-          id: "HERO", hero: true, seq: hero.sequence, target: hero.target_cell || "HepG2",
+          id: "H2-0417", hero: true, seq: hero.sequence, target: hero.target_cell || "HepG2",
           gap: hp.predicted_specificity_gap, cell: hp.predicted_most_active_cell, fail: hp.predicted_fail,
         });
       } catch (_) { /* hero optional */ }
@@ -170,7 +179,7 @@ function collectHits(scan) {
 function selectDesign(item) {
   $$(".vf-row").forEach((r) => r.classList.toggle("sel", r.dataset.id === item.id));
   const scan = $("#insp-scan"); if (scan) scan.style.opacity = "1";
-  $("#insp-id").textContent = "/ " + item.id + (item.hero ? " · hero" : "");
+  $("#insp-id").textContent = "/ " + item.id;
   $("#insp-dot").style.background = "#5C6771";
   $("#insp-content").innerHTML = `<div class="insp-empty"><span class="spin"></span><div>scoring ${esc(item.id)} against the frozen external model…</div></div>`;
 

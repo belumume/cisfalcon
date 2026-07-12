@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=20260712c">
+<link rel="stylesheet" href="/styles.css?v=20260712d">
 </head>
 <body>
 <div class="app">
@@ -49,6 +49,11 @@
         <span class="bar"></span>
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 14V2M2 14h12"></path><path d="M4 11l3-4 3 2 3-6"></path></svg>
         <span>Validation</span>
+      </button>
+      <button class="nav-btn" data-view="variant">
+        <span class="bar"></span>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 2v12M12 2v12"></path><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10" r="1.5" fill="currentColor" stroke="none"></circle></svg>
+        <span>Variant effect</span>
       </button>
       <button class="nav-btn" data-view="methods">
         <span class="bar"></span>
@@ -326,7 +331,7 @@
                 <div class="t">Flag the riskiest 2%</div>
                 <div class="d"><b class="ink">49%</b> truly fail, 7.8&times; enrichment (PPV 0.49)</div>
               </div>
-              <div class="cost">Each pursued design costs roughly $250 to $1000 in materials, plus weeks of turnaround.</div>
+              <div class="cost">Each pursued design costs real materials and weeks of turnaround; enter your own cost in the tool below to see the wasted spend a safest-first triage averts on your batch.</div>
             </div>
           </div>
 
@@ -466,6 +471,71 @@
       </section>
 
       <!-- ===== METHODS ===== -->
+      <!-- ===== VARIANT EFFECT ===== -->
+      <section id="view-variant" class="view">
+        <div style="height:100%;overflow:auto">
+          <div style="max-width:1120px;margin:0 auto;padding:32px 40px 44px">
+            <div style="margin-bottom:22px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;color:#7A8089;margin-bottom:10px">RESEARCH-TRACK EXTENSION</div>
+              <h2 style="font-family:'Space Grotesk';font-weight:600;font-size:28px;letter-spacing:-.02em;margin:0 0 8px">The same frozen model ranks single-base variant effects</h2>
+              <p style="font-size:14.5px;line-height:1.5;color:#4B525C;margin:0;max-width:74ch">Beyond cell-type specificity, the identical model scores single-nucleotide variants on a fully independent saturation-mutagenesis benchmark it never saw (Kircher et al. 2019). A second, disjoint test of the same triage signal, with the scorer loaded bit-identical to the flagship.</p>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:20px">
+              <div style="border:1px solid rgba(20,23,27,.12);border-radius:11px;padding:16px 17px;background:#F2EFE7">
+                <div style="font-family:'Space Grotesk';font-weight:700;font-size:29px;letter-spacing:-.02em;color:#227A4E">0.88</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#7A8089;margin:5px 0 8px">K562 LARGE-EFFECT AUROC</div>
+                <div style="font-size:12px;line-height:1.4;color:#5A616B">separates high- from low-impact variants</div>
+              </div>
+              <div style="border:1px solid rgba(20,23,27,.12);border-radius:11px;padding:16px 17px;background:#F2EFE7">
+                <div style="font-family:'Space Grotesk';font-weight:700;font-size:29px;letter-spacing:-.02em;color:#14171B">r 0.58</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#7A8089;margin:5px 0 8px">PEARSON &middot; K562</div>
+                <div style="font-size:12px;line-height:1.4;color:#5A616B">n = 2,814 scored variants</div>
+              </div>
+              <div style="border:1px solid rgba(20,23,27,.12);border-radius:11px;padding:16px 17px;background:#F2EFE7">
+                <div style="font-family:'Space Grotesk';font-weight:700;font-size:29px;letter-spacing:-.02em;color:#14171B">11,005</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#7A8089;margin:5px 0 8px">SNVs SCORED</div>
+                <div style="font-size:12px;line-height:1.4;color:#5A616B">Kircher 2019 &middot; GSE126550</div>
+              </div>
+              <div style="border:1px solid rgba(20,23,27,.12);border-radius:11px;padding:16px 17px;background:#F2EFE7">
+                <div style="font-family:'Space Grotesk';font-weight:700;font-size:29px;letter-spacing:-.02em;color:#14171B">0.64</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#7A8089;margin:5px 0 8px">HepG2 AUROC</div>
+                <div style="font-size:12px;line-height:1.4;color:#5A616B">Pearson r 0.29</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+              <div style="border-radius:13px;padding:20px 22px;background:radial-gradient(130% 120% at 30% -10%,#141b25,#080b10 74%);border:1px solid rgba(120,190,220,.16);box-shadow:0 24px 50px -28px rgba(0,0,0,.5),inset 0 0 60px rgba(0,0,0,.4);color:#C6D0D8">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;color:#8996A0;margin-bottom:4px">LARGE-EFFECT VARIANT AUROC</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#5C6771;margin-bottom:18px">high- vs low-impact single-base variants, held-out</div>
+                <div style="display:flex;flex-direction:column;gap:16px">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;margin-bottom:6px"><span style="color:#AEB9C1">K562 &middot; r 0.58</span><span style="color:#35D48A;font-weight:600">0.88</span></div>
+                    <div style="height:12px;background:rgba(150,190,210,.08);border-radius:6px"><div style="width:76%;height:100%;background:#35D48A;border-radius:6px;box-shadow:0 0 14px rgba(53,212,138,.4)"></div></div>
+                  </div>
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;margin-bottom:6px"><span style="color:#AEB9C1">HepG2 &middot; r 0.29</span><span style="color:#C6D0D8;font-weight:600">0.64</span></div>
+                    <div style="height:12px;background:rgba(150,190,210,.08);border-radius:6px"><div style="width:28%;height:100%;background:#6C7783;border-radius:6px"></div></div>
+                  </div>
+                </div>
+                <div style="margin-top:16px;display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#5C6771"><span style="color:#C79A3A">left edge = chance 0.50</span><span>right = 1.0</span></div>
+              </div>
+              <div style="border:1px solid rgba(20,23,27,.12);border-radius:13px;padding:18px 20px;background:#F2EFE7;display:flex;flex-direction:column;gap:12px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:#7A8089">WHAT IT SHOWS</div>
+                <div style="font-size:12.5px;line-height:1.55;color:#5A616B">It separates high-impact from low-impact variants well, the same triage signal that flags failing enhancers. It does not calibrate absolute effect size, and it is near-blind on the LDLR element, reported with an honest per-element breakdown.</div>
+                <div style="margin-top:auto;padding-top:12px;border-top:1px solid rgba(20,23,27,.09);font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#7A8089;line-height:1.55">Model loading is bit-identical to the flagship scorer. The K562 headline reproduces from the committed per-SNV data with one command.</div>
+              </div>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+              <a href="https://github.com/belumume/cisfalcon/blob/main/docs/variant-effect-extension.md" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid rgba(20,23,27,.14);border-radius:8px;background:#F2EFE7;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#14171B">docs/variant-effect-extension.md
+                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="#5A616B" stroke-width="1.4"><path d="M4 10l6-6M5 4h5v5"></path></svg>
+              </a>
+              <a href="https://github.com/belumume/cisfalcon/tree/main/satmut" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid rgba(20,23,27,.14);border-radius:8px;background:#F2EFE7;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#14171B">satmut/
+                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="#5A616B" stroke-width="1.4"><path d="M4 10l6-6M5 4h5v5"></path></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="view-methods" class="view">
         <div class="pad-wrap" style="max-width:1080px">
           <div style="margin-bottom:24px">
@@ -544,6 +614,6 @@
   </div>
 </div>
 
-<script src="/app.js?v=20260712c"></script>
+<script src="/app.js?v=20260712d"></script>
 </body>
 </html>

@@ -212,6 +212,15 @@ A Gosai design built for the SKNSH brain line, flagged from sequence alone: pred
 K562 (a blood cell), not its neuroblastoma target, specificity gap -2.17, calibrated failure
 probability 100%, with the off-target K562 driver motifs (TAL1 / KLF1 / GATA2) named in the sequence.
 
+One honest scope point, stated plainly: CisFalcon scores specificity as argmax over three
+MPRA-measured cell types (K562, HepG2, SKNSH), and in-vivo enhancer-AAV specificity is a harder
+many-cell problem with failure modes a three-cell reporter assay does not see (off-target expression
+in untested cell types, cell- and species-specific silencing in the genomic and delivery context). So
+a CisFalcon PASS is a cheap necessary pre-filter that removes designs which already fail the three-cell
+specificity test before any DNA is made; it is not a prediction of in-vivo specificity and does not
+replace the wet-lab validation that is the field's stated bottleneck. It moves the failure rate down at
+the earliest and cheapest stage, which is where a triage gate belongs.
+
 ## How it works
 
 1. **Gate (`gate.py`)** - the frozen atlas DHS64-MPRA activity models (Castillo-Hair et al. 2025), three

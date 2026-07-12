@@ -151,7 +151,10 @@ reproducible, and is separate from the flagship cross-lab 0.801 (a single run, n
   comparison and the baseline anchor.
 Residual honest weaknesses that remain (not falsifications, but stated): weak within-generator
 discrimination on the best-optimized designs; in-dist leakage risk; the operating-point PPV ceiling
-inherent to a 6% base rate.
+inherent to a 6% base rate; and the task itself is a proxy, the specificity target is argmax over
+three MPRA-measured cell types, while in-vivo enhancer-AAV specificity is a many-cell problem with
+failure modes a three-cell reporter assay does not capture, so a PASS is a cheap pre-synthesis filter
+rather than a prediction of in-vivo specificity.
 
 ## 9. Reproducibility
 Code: `cisfalcon/gate.py` (frozen encoder + ensemble), `build_benchmark.py`, `score_oof.py`,

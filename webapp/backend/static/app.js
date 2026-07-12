@@ -356,7 +356,7 @@ function buildInspector(item, rep, scan) {
     <button class="btn-diagnose" id="ins-diagnose">Run Claude diagnosis
       <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l1.6 3.4 3.7.5-2.7 2.6.7 3.7L8 13.4 4.7 15l.7-3.7L2.7 8.7l3.7-.5z"></path></svg>
     </button>
-    <button class="btn-fix" id="ins-fix"${fail ? "" : " hidden"}>Apply HepG2-grammar fix
+    <button class="btn-fix" id="ins-fix"${fail ? "" : " hidden"}>Apply ${esc(rep.target_cell)}-grammar fix
       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#14171B" stroke-width="1.6"><path d="M2 7h9M7 3l4 4-4 4"></path></svg>
     </button>
     <span class="badge-clear" id="ins-clear"${fail ? " hidden" : ""}>cleared for synthesis</span>
@@ -523,7 +523,7 @@ async function applyFix(item) {
           const zl = $("#ins-zlbl"); if (zl) zl.textContent = zoom2.zlbl;
           if (scan2.by_cell) {
             const d = scan2.by_cell[item.target], tfs = d && d.tfs ? Object.keys(d.tfs) : [];
-            const ms = $("#ins-motifset"); if (ms) { ms.textContent = tfs.length ? tfs.join(" · ") : "HepG2 grammar installed"; ms.style.color = GREEN; }
+            const ms = $("#ins-motifset"); if (ms) { ms.textContent = tfs.length ? tfs.join(" · ") : esc(item.target) + " grammar installed"; ms.style.color = GREEN; }
           }
         }
       }

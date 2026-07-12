@@ -17,17 +17,24 @@ design:
 - A **Claude Opus 4.8** adjudicator synthesizes the gate report and the three independent reviews
   into one calibrated verdict.
 
-The shape is deliberate: a fan-out to three independent reviewers, then a fan-in to one adjudicator
-(the orchestrator-workers pattern). The lenses run in parallel and never see each other, so their
-perspectives stay uncorrelated and the adversary is a genuine check rather than an echo of the other
-two; the adjudicator is the only place the three reviews combine. It runs on the raw Messages API
-rather than an agent framework because the task is a single bounded round with no tool use, and it
+The shape is deliberate: a fan-out to three reviewers, then a fan-in to one adjudicator (the
+orchestrator-workers pattern). The lenses run in parallel and never see each other's output, so each
+reasons from a distinct stance (mechanism, precedent, adversary) rather than converging on one. They
+share the same gate report as evidence, so this is perspective diversity, not statistically
+independent sampling; the adversary is a distinct critical stance whose job is to argue the verdict is
+wrong, and the adjudicator is the only place the three reviews combine. It runs on the raw Messages
+API rather than an agent framework because the task is a single bounded round with no tool use, and it
 right-sizes the models: three Sonnet 5 workers, one Opus 4.8 adjudicator. The verdict is a structured
-tool call (verdict, confidence, reasoning), and the adjudicator visibly holds its confidence below
-certainty when the adversary raises a valid calibration caveat, which you can watch happen on a
-flagged design in the live tool.
+tool call (verdict, reasoning, and a model-reported confidence that is the adjudicator's own, not the
+gate's calibrated probability), and the adjudicator visibly holds that confidence below certainty when
+the adversary raises a valid calibration caveat, which you can watch on a flagged design in the live
+tool.
 
-![The live four-agent Claude verifier on a flagged design: three Sonnet 5 lenses (mechanism, precedent, adversary) run in parallel, then an Opus 4.8 adjudicator synthesizes them and holds confidence at 82 percent because the adversary raised a valid out-of-distribution calibration caveat](docs/claude_diagnosis_live.png)
+![The live four-agent Claude verifier on a flagged design: three Sonnet 5 lenses (mechanism, precedent, adversary) run in parallel, then an Opus 4.8 adjudicator synthesizes them and holds its self-rated confidence below certainty because the adversary raised a valid out-of-distribution calibration caveat](docs/claude_diagnosis_live.png)
+
+A raw, unedited response from this live call is committed at `samples/diagnose_flagship_sample.json`
+(the flagship design, all three lens outputs plus the adjudicated verdict) so a judge can diff the real
+four-agent output without running it.
 
 We ran the ablation and report it straight (`run_ablation.py`): the agent layer does not improve
 classification accuracy over the deterministic gate, and that is the point. The gate decides pass

@@ -442,7 +442,7 @@ function renderDiagnosis(host, out) {
     <div class="diag-hd"><span class="cap">CLAUDE VERIFIER · first-party Anthropic API</span>${arch}</div>
     ${lensRow}
     <div class="diag-verdict" style="border-left-color:${vcol}">
-      <div class="dv-top"><span class="dv-badge" style="color:${vcol};border-color:${vcol}">${esc(verdict)}</span><span class="dv-model">ADJUDICATOR · Opus 4.8${conf ? " · confidence " + conf : ""}</span></div>
+      <div class="dv-top"><span class="dv-badge" style="color:${vcol};border-color:${vcol}">${esc(verdict)}</span><span class="dv-model">ADJUDICATOR · Opus 4.8${conf ? " · self-rated confidence " + conf : ""}</span></div>
       <div class="dv-reason">${mdLite(v.reasoning || (refusedSynth ? "The adjudicator declined under the safety classifier; rely on the deterministic gate verdict above." : ""))}</div>
       ${v.recommendation ? `<div class="dv-rec"><span>recommendation</span> ${mdLite(v.recommendation)}</div>` : ""}
     </div>

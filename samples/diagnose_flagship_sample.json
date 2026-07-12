@@ -1,0 +1,172 @@
+{
+  "gate": {
+    "target_cell": "HepG2",
+    "predicted_specificity_gap": -3.017,
+    "predicted_most_active_cell": "K562",
+    "predicted_fail": true,
+    "calibrated_fail_probability": 1.0,
+    "predicted_profile_log2fc": {
+      "NT2_D1": -0.304,
+      "GM12878": -0.094,
+      "786_O": -0.011,
+      "SKNSH": -0.722,
+      "WERI_Rb1": -0.314,
+      "SJCRH30": 0.153,
+      "HepG2": -0.566,
+      "K562": 2.451,
+      "MCF7": 0.041,
+      "HeLaS3": -0.412,
+      "HEK293": -0.068,
+      "HMC3": -0.578
+    },
+    "off_target_risk_cells": [
+      "K562",
+      "SJCRH30",
+      "MCF7",
+      "786_O",
+      "GM12878",
+      "NT2_D1",
+      "WERI_Rb1",
+      "HeLaS3"
+    ]
+  },
+  "reviews": {
+    "mechanism": "This design is predicted to fail cell-type specificity: the target HepG2 shows negative log2FC (-0.566), while K562 dominates at +2.451, giving a large negative specificity gap (-3.017) and a calibrated failure probability of 1.0. Mechanistically, this pattern indicates the enhancer's sequence likely contains motifs favoring erythroid/myeloid regulators (e.g., GATA1, TAL1, KLF1 sites typical of K562 chromatin state) rather than hepatocyte-driving factors (HNF4A, FOXA2), so it is being driven by an off-target regulatory grammar. The primary off-target risk is K562, by a wide margin, with much weaker secondary leakage into SJCRH30 and MCF7 (small positive log2FC), while other lines (SKNSH, HMC3, HeLaS3, HepG2 itself) are actually suppressed. Overall this sequence should be flagged/deprioritized pre-synthesis, as it is essentially a K562-active enhancer mislabeled as HepG2-intended.",
+    "precedent": "This design shows a strongly negative predicted specificity gap (-3.017) with a large predicted shift toward K562 over HepG2, which is exactly the pattern the cross-lab benchmark was best at catching: on 93,435 independent enhancers the ranker hit AUROC 0.80 (vs 0.50 baselines), and its top-risk flags were enriched 7.8x over the 6.3% base failure rate (PPV ~0.49) at the 2% threshold. Given the extremity of this predicted gap, this design almost certainly falls in that high-confidence failure-prone regime rather than the near-chance \"well-optimized\" regime where the residual per-sequence signal (AUROC 0.66) is weak. The printed 1.0 calibrated probability should not be read literally as certainty, since calibration is only marginal across the design population and not conditioned on target cell (HepG2) or generator; treat it as \"very high population-level risk,\" realistically corresponding to a failure likelihood well above the 49% PPV seen even at the strictest triage cutoff, but not a guaranteed 100%. Overall, trust the qualitative call (flag as high risk, likely fails) strongly, but treat the exact numeric probability as an upper-bound heuristic rather than a precise wet-lab forecast.",
+    "adversary": "The 1.0 calibrated probability is almost certainly a clipped or saturated output rather than a genuine population frequency, and since calibration here is only marginal across the whole design population, not conditioned on target cell or on generator, we have no real guarantee the model's confidence transfers to HepG2-targeted designs specifically or to this predicted_specificity_gap regime. The core discriminative signal (AUROC 0.66 once base-rates are stripped) is explicitly described as near chance on well-optimized designs, and a gap of -3.017 with a clean K562 dominance could just as easily be one of the 'easy' failure-prone cases the model is good at, or an out-of-distribution artifact if this generator or motif composition differs from Gosai et al.'s in ways that inflate predicted separation without real wet-lab failure. HepG2 versus K562 specificity is also a known hard axis for many enhancer models due to shared regulatory motifs, so there's real risk this is a systematic blind spot rather than a true signal, and PPV of 0.49 at the top 2% still means roughly half of high-flagged designs are false alarms. Treat this as one noisy vote for deprioritization, not proof the design would fail at the bench."
+  },
+  "verdict": {
+    "verdict": "FAIL",
+    "confidence": 0.8,
+    "recommendation": "Do not synthesize as-is: deprioritize this design and regenerate/re-optimize for HepG2 specificity before committing bench resources. If bench capacity allows a small confirmatory panel, this is a low-value candidate to keep. The most productive path is to redesign the sequence to introduce hepatocyte-driving grammar (HNF4A, FOXA2 motifs) and suppress the dominant K562/erythroid signal.",
+    "reasoning": "This is a defensive triage gate, and the design sits squarely in the regime where the ranker is most trustworthy. The predicted specificity gap of -3.017 is extreme, driven by K562 log2FC +2.451 completely dominating the intended HepG2 target (-0.566), which is actually suppressed. All three reviews converge on 'high risk / likely fails'; the mechanism and precedent reviews independently note this is the clean, failure-prone pattern the cross-lab benchmark (AUROC 0.80 on 93,435 leakage-free independent enhancers) catches best, not the near-chance well-optimized regime. Critically, this is a FLAG-not-abort decision: the cost of deprioritizing one candidate is low, and the enrichment is real (7.8x at the 2% cutoff). I discount the printed 1.0 probability per the adversary and precedent reviews \u00e2\u20ac\u201d calibration is only marginal, not conditioned on HepG2 or generator, so treat 1.0 as 'very high population-level risk,' not literal certainty. The adversary raises two legitimate caveats that keep confidence at 0.8 rather than higher: (1) HepG2-vs-K562 is a known hard axis due to shared motifs, a plausible systematic blind spot, and (2) even at the strictest triage cutoff ~half of top flags are false alarms (PPV 0.49). However, the sheer magnitude of the predicted gap and the unanimous, mechanistically coherent K562-dominance signal push this well past a borderline call. The measured ground truth (0.80 cross-lab AUROC, 0.66 base-rate-stripped, 6.3% base rate) supports acting on a strong flag while remaining humble about the exact number.",
+    "grounded_in": "Cross-lab validation: AUROC 0.80 on 93,435 independent Gosai et al. 2024 enhancers (vs 0.50 baselines); base-rate-stripped per-sequence AUROC 0.66; 6.3% base failure rate; top-2% enrichment 7.8x (PPV 0.49). Design: predicted_specificity_gap -3.017, HepG2 log2FC -0.566, K562 log2FC +2.451, calibrated_fail_probability 1.0 (marginal calibration only). Failure definition: specificity gap <= 0 (not most-active in target cell)."
+  },
+  "agents": true,
+  "motif_scan": {
+    "target_cell": "HepG2",
+    "off_target_cell": "K562",
+    "by_cell": {
+      "K562": {
+        "n_driver_tfs_present": 4,
+        "total_sites": 11,
+        "tfs": {
+          "GATA1": {
+            "matrix_id": "MA0035.4",
+            "n_sites": 1,
+            "top": [
+              {
+                "pos": 30,
+                "strand": "-",
+                "score": 9.64,
+                "rel": 0.891
+              }
+            ],
+            "disease": {
+              "disease": "X-linked dyserythropoietic anemia / thrombocytopenia",
+              "omim": "300367"
+            }
+          },
+          "TAL1": {
+            "matrix_id": "MA0140.2",
+            "n_sites": 2,
+            "top": [
+              {
+                "pos": 21,
+                "strand": "-",
+                "score": 14.73,
+                "rel": 0.946
+              },
+              {
+                "pos": 73,
+                "strand": "+",
+                "score": 12.07,
+                "rel": 0.922
+              }
+            ],
+            "disease": {
+              "disease": "T-cell acute lymphoblastic leukemia",
+              "omim": null
+            }
+          },
+          "KLF1": {
+            "matrix_id": "MA0493.2",
+            "n_sites": 1,
+            "top": [
+              {
+                "pos": 104,
+                "strand": "+",
+                "score": 4.09,
+                "rel": 0.869
+              }
+            ],
+            "disease": {
+              "disease": "congenital dyserythropoietic anemia",
+              "omim": null
+            }
+          },
+          "GATA2": {
+            "matrix_id": "MA0036.1",
+            "n_sites": 7,
+            "top": [
+              {
+                "pos": 61,
+                "strand": "+",
+                "score": 7.11,
+                "rel": 1.0
+              },
+              {
+                "pos": 75,
+                "strand": "-",
+                "score": 6.65,
+                "rel": 0.982
+              },
+              {
+                "pos": 54,
+                "strand": "+",
+                "score": 6.38,
+                "rel": 0.972
+              }
+            ],
+            "disease": {
+              "disease": "GATA2 deficiency (MonoMAC / Emberger syndrome)",
+              "omim": null
+            }
+          }
+        }
+      },
+      "HepG2": {
+        "n_driver_tfs_present": 0,
+        "total_sites": 0,
+        "tfs": {}
+      }
+    },
+    "erythroid_composite": [
+      {
+        "pos": 18,
+        "strand": "+",
+        "ebox": "CACCTG",
+        "gata": "TGATAA",
+        "spacer": 8
+      }
+    ],
+    "source": "JASPAR CORE vertebrates (log-odds PWM scan, both strands, rel>=0.85)"
+  },
+  "redesign": {
+    "off_target_cell": "K562",
+    "off_target_drivers": [
+      "GATA1 (MA0035.4, 1 site)",
+      "TAL1 (MA0140.2, 2 sites)",
+      "KLF1 (MA0493.2, 1 site)",
+      "GATA2 (MA0036.1, 7 sites)"
+    ],
+    "target_drivers_to_add": [
+      "HNF4A",
+      "FOXA2",
+      "HNF1A",
+      "CEBPA"
+    ],
+    "redesign": "Delete/mutate all 7 GATA2 (MA0036.1) sites, the single GATA1 (MA0035.4) site, both TAL1 (MA0140.2) sites, and the KLF1 (MA0493.2) site (the erythroid/megakaryocytic TF module driving the K562 signal per the scan), and in their place insert canonical HNF4A, FOXA2, HNF1A, and CEBPA motifs\u00e2\u20ac\u201dnone of which are currently present\u00e2\u20ac\u201dto rebuild a hepatocyte-specific regulatory grammar and eliminate the K562 off-target activity."
+  },
+  "ms": 26571
+}

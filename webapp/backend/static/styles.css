@@ -569,3 +569,50 @@ td { padding: 6px 8px; border-bottom: 1px solid var(--line-3); font-family: var(
 :focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(20,23,27,.30); border-radius: 6px; }
 .instrument :focus-visible, .proof :focus-visible, textarea:focus-visible, .vf-row:focus-visible { box-shadow: 0 0 0 3px rgba(56,198,214,.45); }
 button:active { transform: translateY(0) !important; }
+
+
+/* ---------------- live Claude diagnosis panel (real /diagnose 4-agent call) ---------------- */
+.diag-wrap { margin-top: 2px; }
+.btn-diagnose { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--d-cyan); background: linear-gradient(180deg, rgba(56,198,214,.16), rgba(56,198,214,.05));
+  color: var(--d-cyan); font-family: var(--sans); font-weight: 600; font-size: 13px;
+  transition: box-shadow .25s, transform .15s, filter .15s; }
+.btn-diagnose:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 6px 22px -8px rgba(56,198,214,.5); }
+.btn-diagnose:disabled { opacity: .55; cursor: default; transform: none; box-shadow: none; }
+.btn-diagnose.busy { color: var(--d-mut); border-color: var(--d-line); }
+
+.diag-panel { margin-top: 12px; border: 1px solid var(--d-line-2); border-radius: 11px; padding: 15px 16px;
+  background: radial-gradient(120% 130% at 20% -10%, rgba(56,198,214,.06), rgba(0,0,0,.22) 70%); }
+.diag-panel.loading { border-color: rgba(56,198,214,.28); }
+.diag-hd { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.diag-hd .cap { font-family: var(--mono); font-size: 10px; letter-spacing: .10em; color: var(--d-cyan); }
+.diag-arch-mini { font-family: var(--mono); font-size: 9.5px; color: var(--d-mut-2); }
+.diag-live { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 10px; color: var(--d-teal); }
+.diag-live .ld { width: 7px; height: 7px; border-radius: 50%; background: var(--d-cyan); box-shadow: 0 0 8px var(--d-cyan); animation: cf-pulse 1.1s ease-in-out infinite; }
+
+.diag-arch { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 11px; }
+.diag-arch .ag { display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 7px;
+  border: 1px solid var(--d-line-2); background: rgba(0,0,0,.2); font-family: var(--mono); font-size: 10.5px; color: var(--d-dim); }
+.diag-arch .ag.op { border-color: rgba(56,198,214,.4); color: var(--d-teal); }
+.diag-arch .ag .spin { width: 12px; height: 12px; border-width: 1.6px; }
+.diag-arch .darrow { color: var(--d-mut-2); font-size: 13px; }
+.diag-note { font-family: var(--mono); font-size: 10px; line-height: 1.5; color: var(--d-mut); max-width: 82ch; }
+
+.diag-lenses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; margin-bottom: 13px; }
+.diag-lens { border: 1px solid var(--d-line-2); border-radius: 9px; padding: 12px 13px; background: rgba(0,0,0,.2); }
+.diag-lens .ll { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px; }
+.diag-lens .ln { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; color: var(--d-dim); }
+.diag-lens .lm { font-family: var(--mono); font-size: 8.5px; color: var(--d-mut-3); }
+.diag-lens .lt { font-family: var(--sans); font-size: 12px; line-height: 1.5; color: var(--d-dim-2); }
+
+.diag-verdict { border: 1px solid var(--d-line-2); border-left: 3px solid var(--d-mut); border-radius: 9px; padding: 13px 15px; background: rgba(0,0,0,.26); }
+.diag-verdict .dv-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.dv-badge { font-family: var(--mono); font-weight: 600; font-size: 12px; letter-spacing: .10em; padding: 3px 10px; border: 1px solid; border-radius: 6px; }
+.dv-model { font-family: var(--mono); font-size: 9.5px; color: var(--d-mut-2); }
+.dv-reason { font-family: var(--sans); font-size: 12.5px; line-height: 1.55; color: var(--d-dim); }
+.dv-rec { margin-top: 9px; font-family: var(--mono); font-size: 11px; line-height: 1.5; color: var(--d-dim-2); }
+.dv-rec span { color: var(--d-mut-2); letter-spacing: .06em; }
+.diag-fallback { font-family: var(--mono); font-size: 11px; line-height: 1.5; color: var(--d-mut); padding: 4px 0 12px; }
+.diag-err { font-family: var(--mono); font-size: 11px; line-height: 1.5; color: var(--d-amber); padding: 4px 0; }
+
+@media (max-width: 720px) { .diag-lenses { grid-template-columns: 1fr; } }

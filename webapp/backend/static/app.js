@@ -22,6 +22,7 @@ const TARGET_CELLS_FALLBACK = ["NT2_D1", "GM12878", "786_O", "SKNSH", "WERI_Rb1"
 
 let META = null;
 const inspCache = new Map(); // id -> { rep, scan, item }
+const diagCache = new Map(); // id -> /diagnose response (cache the real Claude call per design)
 
 /* ---------------- nav ---------------- */
 let verifyLoaded = false;
@@ -352,12 +353,17 @@ function buildInspector(item, rep, scan) {
   </div>
 
   <div class="insp-actions">
+    <button class="btn-diagnose" id="ins-diagnose">Run Claude diagnosis
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l1.6 3.4 3.7.5-2.7 2.6.7 3.7L8 13.4 4.7 15l.7-3.7L2.7 8.7l3.7-.5z"></path></svg>
+    </button>
     <button class="btn-fix" id="ins-fix"${fail ? "" : " hidden"}>Apply HepG2-grammar fix
       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#14171B" stroke-width="1.6"><path d="M2 7h9M7 3l4 4-4 4"></path></svg>
     </button>
     <span class="badge-clear" id="ins-clear"${fail ? " hidden" : ""}>cleared for synthesis</span>
     <span class="insp-hint" id="ins-hint">in-silico consistency check, ahead of wet-lab</span>
   </div>
+
+  <div class="diag-wrap" id="ins-diagnosis"></div>
 
   <div class="insp-statusbar" id="ins-statusbar" style="border-left-color:${col}">
     <span class="pn" id="ins-pn" style="color:${col}">${fail ? "FLAG" : "CLEAR"}</span>
@@ -367,7 +373,74 @@ function buildInspector(item, rep, scan) {
 
   const fixBtn = $("#ins-fix");
   if (fixBtn) fixBtn.addEventListener("click", () => applyFix(item));
+  const dxBtn = $("#ins-diagnose");
+  if (dxBtn) dxBtn.addEventListener("click", () => runDiagnosis(item));
+  const prevDiag = diagCache.get(item.id);
+  const diagHost = $("#ins-diagnosis");
+  if (prevDiag && diagHost) renderDiagnosis(diagHost, prevDiag);
 }
+
+/* ---------------- live Claude diagnosis (real /diagnose: 3 Sonnet-5 lenses -> Opus-4.8 adjudicator) ---------------- */
+function diagLoadingHTML() {
+  const ag = (name) => `<span class="ag"><span class="spin"></span>${name}</span>`;
+  return `<div class="diag-panel loading">
+    <div class="diag-hd"><span class="cap">CLAUDE VERIFIER · first-party Anthropic API</span><span class="diag-live"><span class="ld"></span>agents reasoning</span></div>
+    <div class="diag-arch">${ag("mechanism · Sonnet 5")}${ag("precedent · Sonnet 5")}${ag("adversary · Sonnet 5")}<span class="darrow">&rarr;</span><span class="ag op"><span class="spin"></span>adjudicator · Opus 4.8</span></div>
+    <div class="diag-note">Three independent reasoning lenses run in parallel on the frozen gate report, then Opus synthesizes one pre-synthesis verdict grounded in the measured benchmark. Live multi-agent call, ~20 to 30s.</div>
+  </div>`;
+}
+
+function lensText(t) {
+  if (t && typeof t === "object") return t.refused ? "declined by the safety classifier; the other lenses proceeded" : JSON.stringify(t);
+  return t || "—";
+}
+
+function renderDiagnosis(host, out) {
+  const v = (out.verdict && typeof out.verdict === "object") ? out.verdict : {};
+  const refusedSynth = out.verdict && out.verdict.refused;
+  const reviews = out.reviews || null;
+  const verdict = String(v.verdict || (refusedSynth ? "DECLINED" : "—")).toUpperCase();
+  const vcol = verdict === "FAIL" ? RED : verdict === "PASS" ? GREEN : verdict === "BORDERLINE" ? AMBER : "#8A9098";
+  const conf = typeof v.confidence === "number" ? (v.confidence <= 1 ? Math.round(v.confidence * 100) + "%" : v.confidence + "") : "";
+  const lensCard = (label, txt) =>
+    `<div class="diag-lens"><div class="ll"><span class="ln">${esc(label)}</span><span class="lm">Sonnet 5</span></div><div class="lt">${esc(lensText(txt))}</div></div>`;
+  const lensRow = reviews
+    ? `<div class="diag-lenses">${lensCard("MECHANISM", reviews.mechanism)}${lensCard("PRECEDENT", reviews.precedent)}${lensCard("ADVERSARY", reviews.adversary)}</div>`
+    : `<div class="diag-fallback">Claude agents are not configured on this instance, so this shows the deterministic rule verdict. The full multi-agent path (3 Sonnet lenses + Opus adjudicator) runs when the API key is present.</div>`;
+  const arch = out.agents !== false
+    ? `<span class="diag-arch-mini">4 agents · 3 Sonnet-5 lenses in parallel &rarr; Opus-4.8 adjudicator${out.ms ? " · " + (out.ms / 1000).toFixed(1) + "s" : ""}</span>`
+    : `<span class="diag-arch-mini">deterministic fallback · agents off</span>`;
+  host.innerHTML =
+    `<div class="diag-panel">
+    <div class="diag-hd"><span class="cap">CLAUDE VERIFIER · first-party Anthropic API</span>${arch}</div>
+    ${lensRow}
+    <div class="diag-verdict" style="border-left-color:${vcol}">
+      <div class="dv-top"><span class="dv-badge" style="color:${vcol};border-color:${vcol}">${esc(verdict)}</span><span class="dv-model">ADJUDICATOR · Opus 4.8${conf ? " · confidence " + conf : ""}</span></div>
+      <div class="dv-reason">${esc(v.reasoning || (refusedSynth ? "The adjudicator declined under the safety classifier; rely on the deterministic gate verdict above." : ""))}</div>
+      ${v.recommendation ? `<div class="dv-rec"><span>recommendation</span> ${esc(v.recommendation)}</div>` : ""}
+    </div>
+  </div>`;
+}
+
+async function runDiagnosis(item) {
+  const host = $("#ins-diagnosis"), btn = $("#ins-diagnose");
+  if (!host) return;
+  const cached = diagCache.get(item.id);
+  if (cached) { renderDiagnosis(host, cached); host.scrollIntoView({ behavior: "smooth", block: "nearest" }); return; }
+  if (btn) { btn.disabled = true; btn.classList.add("busy"); }
+  host.innerHTML = diagLoadingHTML();
+  host.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  try {
+    const out = await api("/diagnose", { sequence: item.seq, target_cell: item.target });
+    diagCache.set(item.id, out);
+    renderDiagnosis(host, out);
+  } catch (e) {
+    host.innerHTML = `<div class="diag-panel"><div class="diag-err">Claude diagnosis could not run: ${esc(e.message)}. The deterministic gate verdict above still stands.</div></div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.classList.remove("busy"); }
+  }
+}
+
 
 async function applyFix(item) {
   const fixBtn = $("#ins-fix");

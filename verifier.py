@@ -112,17 +112,20 @@ LENSES = {
         "You are a regulatory-genomics reviewer. Given a model-predicted per-cell-type activity "
         "profile for an AI-designed enhancer and its intended target cell, explain in mechanistic "
         "terms whether it is predicted to be cell-type SPECIFIC, and name the specific off-target "
-        "cell types that are the risk. Be concrete and brief."
+        "cell types that are the risk. Be concrete and brief." +
+        " Answer in 2 to 4 sentences of plain prose. Do not use markdown, headers, bold, or bullet lists."
     ),
     "precedent": (
         "You are a QC analyst grounding a prediction in measured data. Given the design's predicted "
         "specificity gap and target cell, state what the held-out benchmark implies about this "
-        "design's failure probability, and how much to trust it. Cite the ground-truth numbers."
+        "design's failure probability, and how much to trust it. Cite the ground-truth numbers." +
+        " Answer in 2 to 4 sentences of plain prose. Do not use markdown, headers, bold, or bullet lists."
     ),
     "adversary": (
         "You are an adversarial skeptic. Argue the gate's verdict on this design could be WRONG: "
         "model blind spots, out-of-distribution sequence features, calibration limits, target cells "
-        "the model predicts poorly. Default to raising real doubts, not rubber-stamping."
+        "the model predicts poorly. Default to raising real doubts, not rubber-stamping." +
+        " Answer in 2 to 4 sentences of plain prose. Do not use markdown, headers, bold, or bullet lists."
     ),
 }
 
@@ -130,7 +133,7 @@ LENSES = {
 def _agent(client, model, system, user, schema=None):
     kw = dict(
         model=model,
-        max_tokens=1024,
+        max_tokens=2000,
         system=system,
         messages=[{"role": "user", "content": user}],
     )

@@ -391,8 +391,17 @@ function diagLoadingHTML() {
 }
 
 function lensText(t) {
-  if (t && typeof t === "object") return t.refused ? "declined by the safety classifier; the other lenses proceeded" : JSON.stringify(t);
-  return t || "—";
+  if (t && typeof t === "object") return t.refused ? "Declined by the safety classifier; the other lenses proceeded." : JSON.stringify(t);
+  return (t == null ? "" : String(t)).trim();
+}
+
+// minimal, XSS-safe markdown: escape first, then render on the escaped text (safety net for any md a model emits)
+function mdLite(s) {
+  let t = esc((s == null ? "" : String(s)).trim());
+  t = t.replace(/^\s*#{1,6}\s*(.+)$/gm, '<b class="mdh">$1</b>');
+  t = t.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+  t = t.replace(/^\s*[-*]\s+(.+)$/gm, '<span class="mdb">• $1</span>');
+  return t.replace(/\n{2,}/g, "<br><br>").replace(/\n/g, "<br>");
 }
 
 function renderDiagnosis(host, out) {
@@ -402,8 +411,11 @@ function renderDiagnosis(host, out) {
   const verdict = String(v.verdict || (refusedSynth ? "DECLINED" : "—")).toUpperCase();
   const vcol = verdict === "FAIL" ? RED : verdict === "PASS" ? GREEN : verdict === "BORDERLINE" ? AMBER : "#8A9098";
   const conf = typeof v.confidence === "number" ? (v.confidence <= 1 ? Math.round(v.confidence * 100) + "%" : v.confidence + "") : "";
-  const lensCard = (label, txt) =>
-    `<div class="diag-lens"><div class="ll"><span class="ln">${esc(label)}</span><span class="lm">Sonnet 5</span></div><div class="lt">${esc(lensText(txt))}</div></div>`;
+  const lensCard = (label, txt) => {
+    const body = lensText(txt);
+    const inner = body ? mdLite(body) : `<span class="ldim">no material raised on this axis</span>`;
+    return `<div class="diag-lens"><div class="ll"><span class="ln">${esc(label)}</span><span class="lm">Sonnet 5</span></div><div class="lt">${inner}</div></div>`;
+  };
   const lensRow = reviews
     ? `<div class="diag-lenses">${lensCard("MECHANISM", reviews.mechanism)}${lensCard("PRECEDENT", reviews.precedent)}${lensCard("ADVERSARY", reviews.adversary)}</div>`
     : `<div class="diag-fallback">Claude agents are not configured on this instance, so this shows the deterministic rule verdict. The full multi-agent path (3 Sonnet lenses + Opus adjudicator) runs when the API key is present.</div>`;
@@ -416,8 +428,8 @@ function renderDiagnosis(host, out) {
     ${lensRow}
     <div class="diag-verdict" style="border-left-color:${vcol}">
       <div class="dv-top"><span class="dv-badge" style="color:${vcol};border-color:${vcol}">${esc(verdict)}</span><span class="dv-model">ADJUDICATOR · Opus 4.8${conf ? " · confidence " + conf : ""}</span></div>
-      <div class="dv-reason">${esc(v.reasoning || (refusedSynth ? "The adjudicator declined under the safety classifier; rely on the deterministic gate verdict above." : ""))}</div>
-      ${v.recommendation ? `<div class="dv-rec"><span>recommendation</span> ${esc(v.recommendation)}</div>` : ""}
+      <div class="dv-reason">${mdLite(v.reasoning || (refusedSynth ? "The adjudicator declined under the safety classifier; rely on the deterministic gate verdict above." : ""))}</div>
+      ${v.recommendation ? `<div class="dv-rec"><span>recommendation</span> ${mdLite(v.recommendation)}</div>` : ""}
     </div>
   </div>`;
 }

@@ -616,3 +616,9 @@ button:active { transform: translateY(0) !important; }
 .diag-err { font-family: var(--mono); font-size: 11px; line-height: 1.5; color: var(--d-amber); padding: 4px 0; }
 
 @media (max-width: 720px) { .diag-lenses { grid-template-columns: 1fr; } }
+
+/* markdown safety-net + empty-lens placeholder in the diagnosis panel */
+.diag-lens .lt .mdh { display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .04em; color: var(--d-dim); margin: 3px 0 4px; }
+.diag-lens .lt .mdb { display: block; margin: 2px 0; }
+.diag-lens .lt .ldim { color: var(--d-mut-3); font-style: italic; }
+.dv-reason .mdh, .dv-rec .mdh { display: block; font-family: var(--mono); font-size: 10px; color: var(--d-mut); margin: 2px 0 4px; }

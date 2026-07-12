@@ -119,6 +119,14 @@ FastSeqProp), with no sequence overlap with the model's training data.
   difference over the best single head is [+0.003, +0.007] (excludes zero), and it beats accessibility
   alone by +0.018. The lift is small and reported as such, but it means neither single model is the
   ceiling, and the combination is leakage-immune and un-tunable (`ensemble_ci.py`).
+- **A model of a completely different lineage agrees.** Cross-checked against AlphaGenome (Google
+  DeepMind, never trained on any MPRA) using its predicted chromatin accessibility: on 240 designs its
+  independent specificity gap agrees with CisFalcon's predicted gap at **Spearman 0.80** (Pearson 0.82)
+  and separates the wet-lab failures at **AUROC 0.688** [95% CI 0.620, 0.752], above chance from a model
+  used far outside its training distribution. Two independent-lineage models agreeing is evidence the
+  signal is not an artifact of one model family. Method and honest boundaries in
+  [`docs/independent-model-crosscheck.md`](docs/independent-model-crosscheck.md); reproduce with
+  `alphagenome_crosscheck.py`.
 - **Triage value (the operating point that matters):** rank designs by CisFalcon and synthesize the
   safest half first, and the specificity-failure rate in what you make drops from 6.29% to 1.91%, a
   **70% reduction in failures**. Flag the riskiest 10% for redesign and you capture 43% of all failures

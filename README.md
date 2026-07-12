@@ -42,19 +42,20 @@ passing. A batch mode ranks a whole set safest-first. No install, usable without
 
 ### The grammar it reads is disease grammar
 
-CisFalcon's motif diagnosis is not arbitrary pattern-matching. Every transcription factor it names is
-a validated human disease gene, so the tool reads the same regulatory grammar whose disruption causes
-disease: GATA1 (X-linked dyserythropoietic anemia / thrombocytopenia, OMIM 300367), TAL1 (T-cell acute
-lymphoblastic leukemia), KLF1 (congenital dyserythropoietic anemia), HNF4A (MODY1 diabetes, OMIM
-125850), FOXA2 (congenital hyperinsulinism). The disease annotation ships with every motif call
-(`webapp/backend/motifs.py`, `TF_DISEASE`).
+CisFalcon grounds its motif diagnosis in disease biology. The lineage-driver transcription factors
+behind the hero design's specificity failure are validated human disease genes, so the tool reads the
+same regulatory grammar whose disruption causes disease: GATA1 (X-linked dyserythropoietic anemia /
+thrombocytopenia, OMIM 300367), TAL1 (T-cell acute lymphoblastic leukemia), KLF1 (congenital
+dyserythropoietic anemia), HNF4A (MODY1 diabetes, OMIM 125850), FOXA2 (congenital hyperinsulinism).
+CisFalcon attaches the Mendelian disease to each of the ten erythroid and hepatocyte driver factors it
+tracks (`webapp/backend/motifs.py`, `TF_DISEASE`).
 
 Deeper than marginal motifs: GATA1 and TAL1 are obligate members of the erythroid pentameric complex
 (GATA1-TAL1-LMO2-LDB1-E2A), which binds a single bipartite composite element, an E-box six to twelve
 bases from a GATA site (Wadman et al. 1997, EMBO J). CisFalcon detects that assembled composite site
 directly (`erythroid_composite_sites`), and the real hero failing design carries one (CACCTG, 8 bp,
-TGATAA): the strongest single-motif evidence that a HepG2-target design instead carries assembled
-blood-cell regulatory grammar, not two coincidental hits.
+TGATAA): the E-box and GATA sites sit at the exact spacing the complex requires, so they read as one
+bound blood-cell regulatory unit inside a design that was meant for liver.
 
 ## What it does
 

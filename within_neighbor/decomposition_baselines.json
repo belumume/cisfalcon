@@ -1,0 +1,34 @@
+{
+  "note": "trivial-baseline decomposition on On-vs-Off (n=211, On=143 Off=68), computed locally from the committed benchmark CSV",
+  "deepbiccn2_sequence_gap": {
+    "auroc": 0.706,
+    "ci95": [
+      0.631,
+      0.771
+    ],
+    "source": "kaggle kernel v1"
+  },
+  "measured_baselines": {
+    "measured_max_accessibility": {
+      "auroc": 0.6983,
+      "ci95": [
+        0.6195,
+        0.7775
+      ]
+    },
+    "measured_gini_specificity": {
+      "auroc": 0.7464,
+      "ci95": [
+        0.6729,
+        0.8154
+      ]
+    },
+    "gc_content": {
+      "auroc": 0.3183,
+      "ci95": [
+        0.2405,
+        0.4005
+      ]
+    }
+  }
+}

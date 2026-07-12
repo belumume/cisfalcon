@@ -1,0 +1,4 @@
+# kaggle output: exclude the cloned benchmark repo + verbose logs (redundant/bulky)
+kaggle_brain/out/eb/
+kaggle_brain/out/*.log
+# keep: kaggle_brain/out/brain_within_neighbor_result.json (the actual result)

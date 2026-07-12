@@ -1,0 +1,131 @@
+{
+  "stage": "DONE",
+  "n": 532,
+  "spec_counts": {
+    "No_Labeling": 249,
+    "On_Target": 143,
+    "Mixed_Target": 72,
+    "Off_Target": 68
+  },
+  "input_shape": "(None, 2114, 4)",
+  "seq_len": 2114,
+  "n_classes": 19,
+  "classes": [
+    "Astro",
+    "Endo",
+    "L2_3IT",
+    "L5ET",
+    "L5IT",
+    "L5_6NP",
+    "L6CT",
+    "L6IT",
+    "L6b",
+    "Lamp5",
+    "Micro_PVM",
+    "OPC",
+    "Oligo",
+    "Pvalb",
+    "Sncg",
+    "Sst",
+    "SstChodl",
+    "VLMC",
+    "Vip"
+  ],
+  "preds_shape": "(532, 19)",
+  "mapped": 515,
+  "unmapped": 17,
+  "results": {
+    "on_vs_off": {
+      "auroc": 0.7056,
+      "ci95": [
+        0.6307,
+        0.7706
+      ],
+      "ci_excl_chance": true,
+      "n_pos": 140,
+      "n_neg": 64
+    },
+    "on_vs_offmixed": {
+      "auroc": 0.6656,
+      "ci95": [
+        0.6048,
+        0.7284
+      ],
+      "ci_excl_chance": true,
+      "n_pos": 140,
+      "n_neg": 131
+    },
+    "ON_target_col": {
+      "auroc": 0.6538,
+      "ci95": [
+        0.6002,
+        0.708
+      ],
+      "ci_excl_chance": true,
+      "n_pos": 140,
+      "n_neg": 375
+    },
+    "incremental_value": {
+      "max_scaled_acc_mouse": {
+        "auroc": 0.6983,
+        "ci95": [
+          0.6195,
+          0.7775
+        ],
+        "ci_excl_chance": true,
+        "n_pos": 143,
+        "n_neg": 68
+      },
+      "gini_index": {
+        "auroc": 0.7464,
+        "ci95": [
+          0.6729,
+          0.8154
+        ],
+        "ci_excl_chance": true,
+        "n_pos": 143,
+        "n_neg": 68
+      },
+      "GC.content": {
+        "auroc": 0.3183,
+        "ci95": [
+          0.2405,
+          0.4005
+        ],
+        "ci_excl_chance": false,
+        "n_pos": 143,
+        "n_neg": 68
+      },
+      "gap_only_cv": {
+        "auroc": 0.7012,
+        "ci95": [
+          0.6224,
+          0.7675
+        ],
+        "ci_excl_chance": true,
+        "n_pos": 140,
+        "n_neg": 64
+      },
+      "acc_only_cv": {
+        "auroc": 0.6739,
+        "ci95": [
+          0.5819,
+          0.76
+        ],
+        "ci_excl_chance": true,
+        "n_pos": 140,
+        "n_neg": 64
+      },
+      "gap+acc_cv": {
+        "auroc": 0.7037,
+        "ci95": [
+          0.6177,
+          0.7799
+        ],
+        "ci_excl_chance": true,
+        "n_pos": 140,
+        "n_neg": 64
+      }
+    }
+  }
+}

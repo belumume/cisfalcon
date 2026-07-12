@@ -22,9 +22,10 @@ orchestrator-workers pattern). The lenses run in parallel and never see each oth
 reasons from a distinct stance (mechanism, precedent, adversary) rather than converging on one. They
 share the same gate report as evidence, so this is perspective diversity, not statistically
 independent sampling; the adversary is a distinct critical stance whose job is to argue the verdict is
-wrong, and the adjudicator is the only place the three reviews combine. It runs on the raw Messages
-API rather than an agent framework because the task is a single bounded round with no tool use, and it
-right-sizes the models: three Sonnet 5 workers, one Opus 4.8 adjudicator. The verdict is a structured
+wrong, and the adjudicator is the only place the three reviews combine. The diagnosis runs on the raw
+Messages API rather than an agent framework because it is a single bounded round with no tool use (the
+tool-using loop is the optimizer below); it right-sizes the models: three Sonnet 5 workers, one Opus
+4.8 adjudicator. The verdict is a structured
 tool call (verdict, reasoning, and a model-reported confidence that is the adjudicator's own, not the
 gate's calibrated probability), and the adjudicator visibly holds that confidence below certainty when
 the adversary raises a valid calibration caveat, which you can watch on a flagged design in the live
@@ -42,6 +43,21 @@ or fail; the agents produce the diagnosis (which motif in which cell will make t
 and the edit that fixes it) and drive the closed-loop redesign. A bare AUROC cannot tell a scientist
 why a design failed or how to repair it. The agent layer can, and that is the part a competitor
 running the same public CNN cannot copy from a number alone.
+
+And Claude closes the loop, where it is genuinely tool-using and load-bearing. The frozen gate scores;
+it cannot optimize. `closed_loop.py` gives Claude (Opus 4.8) the gate as a tool: Claude proposes a
+grounded motif edit (disrupt the predicted off-target cell's driver TFs, install the target cell's
+driver TFs, all real JASPAR motifs, no invented sequence), calls the gate to re-score, reads the new
+specificity gap, and iterates until the design passes or it aborts. That is a capability the frozen
+gate alone does not have. On 20 independently-sampled failing designs, the deterministic single edit
+rescued 6; Claude's iterating loop rescued 8, including 2 the fixed edit could not, with zero
+regressions, in a mean of 3.5 rounds, and the lift concentrates on the hardest cell (the SKNSH brain
+line). It is an in-silico consistency loop, the same frozen gate that flagged the design agrees the
+rescue passes, not wet-lab validation. So the honest answer to whether Claude is load-bearing or
+decorative is both: on the ranking metric the frozen gate carries it, and Claude is measurably
+load-bearing for the iterative optimization the gate cannot do. `python closed_loop.py --demo` shows
+one rescue live (the flagship, gap -3.0 to +0.4 over three adaptive rounds, watching the winning cell
+shift each round); `closed_loop_eval.py` reproduces the number.
 
 ## The builder ran under epistemic hooks it wrote for itself
 

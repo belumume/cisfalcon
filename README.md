@@ -242,6 +242,13 @@ cheapest stage, which is where a triage gate belongs.
    adversary) and a fan-in to one Opus 4.8 adjudicator, on the raw Messages API. This layer runs live
    in the deployed tool at `/api/diagnose`, not only in the CLI: "Run Claude diagnosis" on any design
    returns the three reviews and the adjudicated verdict, visible in the browser network tab.
+4. **Closed-loop optimizer (`closed_loop.py`)** - where Claude is measurably load-bearing. The frozen
+   gate scores; it cannot optimize. Here Claude (Opus 4.8) is a genuine tool-using agent: it proposes a
+   grounded motif edit, calls the gate as a tool to re-score, reads the new specificity gap, and
+   iterates until the design passes or aborts. On 20 failing designs the deterministic single edit
+   rescued 6; Claude's iterating loop rescued 8 (2 the fixed edit could not, zero regressions, mean 3.5
+   rounds). In-silico (the frozen gate agrees the rescue passes), not wet-lab. `python closed_loop.py
+   --demo` rescues the flagship live; `closed_loop_eval.py` reproduces the number.
 
 ## Reproduce
 

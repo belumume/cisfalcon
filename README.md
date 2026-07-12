@@ -212,14 +212,34 @@ A Gosai design built for the SKNSH brain line, flagged from sequence alone: pred
 K562 (a blood cell), not its neuroblastoma target, specificity gap -2.17, calibrated failure
 probability 100%, with the off-target K562 driver motifs (TAL1 / KLF1 / GATA2) named in the sequence.
 
+### Within-tissue generalization, tested in vivo
+
+The three-lineage panel above is a cross-lineage detector. The harder question, the one that
+dominates enhancer-AAV failure, is within-tissue: does a design meant for one cortical cell type
+misfire into a neighboring one? We tested it directly. Using a model fully independent of CisFalcon's
+gate (DeepBICCN2, a mouse-cortex snATAC model with per-subclass outputs for astrocyte, oligodendrocyte,
+OPC, microglia, and neuron subtypes), we scored the 532 in-vivo AAV-screened cortical enhancers of the
+Allen/BICCN benchmark (Ben-Simon et al. 2025), each carrying a real in-vivo On-Target or Off-Target
+label. From sequence alone, the specificity gap separates in-vivo On-vs-Off-target at
+**AUROC 0.70 (95% CI [0.63, 0.77], excludes chance)**.
+
+Reported honestly: this is comparable to what a measured-accessibility feature reaches on the same set
+(0.70) and below the best measured cross-cell specificity feature (0.75), and combining the sequence
+gap with measured accessibility adds almost nothing. So it is a real, directional generalization to
+in-vivo within-cortex neighbor resolution from sequence alone, not a demonstration that the sequence
+model beats a measured assay. The honest next step is a functional (not accessibility) within-cortex
+model. Pre-registered method and the full baseline decomposition are in
+[`within_neighbor/`](within_neighbor/).
+
 One honest scope point, stated plainly: CisFalcon scores specificity as argmax over three
 MPRA-measured cell types (K562, HepG2, SKNSH), which are three different lineages (blood, liver,
 neural). That makes it a detector of gross cross-lineage misfires, the case where a design meant for
 one tissue fires strongly in an unrelated one. It is a weaker proxy for the harder within-tissue
 specificity that dominates in-vivo enhancer-AAV failure, where the off-target is a neighboring cell in
-the same tissue (astrocyte versus oligodendrocyte, one cortical interneuron subtype versus another); a
-three-lineage panel cannot resolve that, and the Mich et al. in-vivo failures are cited here as the
-motivating bottleneck, not as a set this tool is scored against. So a CisFalcon PASS is a cheap
+the same tissue (astrocyte versus oligodendrocyte, one cortical interneuron subtype versus another); the
+three-lineage flagship gate cannot resolve that on its own, which is exactly why the within-tissue
+result above uses a separate cortical model to score the Ben-Simon in-vivo set directly, at a
+directional 0.70, rather than only citing it as motivation. So a flagship CisFalcon PASS is a cheap
 necessary pre-filter that removes designs which already fail the coarse three-cell specificity test
 before any DNA is made; it is not a prediction of in-vivo specificity and does not replace the wet-lab
 validation that is the field's stated bottleneck. It moves the failure rate down at the earliest and

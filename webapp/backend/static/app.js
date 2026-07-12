@@ -19,6 +19,7 @@ const gapPos = (g) => clamp(50 + g * 10, 6, 94) + "%";
 const RED = "#FF5B4F", GREEN = "#35D48A", AMBER = "#E7B24A", CYAN = "#38C6D6";
 const GLOW = { RED: "rgba(255,91,79,.5)", GREEN: "rgba(53,212,138,.5)", CYAN: "rgba(56,198,214,.35)" };
 const TARGET_CELLS_FALLBACK = ["NT2_D1", "GM12878", "786_O", "SKNSH", "WERI_Rb1", "SJCRH30", "HepG2", "K562", "MCF7", "HeLaS3"];
+const VALIDATED_CELLS = ["K562", "HepG2", "SKNSH"]; // the 3 cross-lab cells the calibration is fit on; others are extrapolated
 
 let META = null;
 const inspCache = new Map(); // id -> { rep, scan, item }
@@ -287,8 +288,13 @@ function buildInspector(item, rep, scan) {
   const zoom = seqZoomHTML(item.seq, hits);
   const winnerLabel = fail ? offCell : rep.target_cell;
 
+  const validated = VALIDATED_CELLS.includes(rep.target_cell);
+  const probPct = (rep.calibrated_fail_probability * 100).toFixed(0);
+  const calibNote = validated
+    ? `Calibrated failure probability ${probPct}%.`
+    : `Failure probability ${probPct}% (calibration fit on the 3 cross-lab cells K562, HepG2, SKNSH; extrapolated to ${esc(rep.target_cell)}).`;
   const statusLine = fail
-    ? `Predicted to fail. Most-active cell is ${esc(offCell)}, not the ${esc(rep.target_cell)} target. Specificity gap ${fmtGap(rep.predicted_specificity_gap)} (fail when gap ≤ 0). Calibrated failure probability ${(rep.calibrated_fail_probability * 100).toFixed(0)}%.`
+    ? `Predicted to fail. Most-active cell is ${esc(offCell)}, not the ${esc(rep.target_cell)} target. Specificity gap ${fmtGap(rep.predicted_specificity_gap)} (fail when gap ≤ 0). ${calibNote}`
     : `Predicted specific. Most-active cell is its ${esc(rep.target_cell)} target. Specificity gap ${fmtGap(rep.predicted_specificity_gap)}. Cleared for synthesis.`;
 
   $("#insp-dot").style.background = col; $("#insp-dot").style.boxShadow = "0 0 8px " + col;

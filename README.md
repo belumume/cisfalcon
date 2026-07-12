@@ -111,7 +111,9 @@ FastSeqProp), with no sequence overlap with the model's training data.
   regression on held-out cross-lab data: held-out calibration error (ECE) is 0.0031, so a design it labels
   70% risk fails close to 70% of the time across this design population (reliability diagram in
   `docs/cisfalcon_calibration.png`; `fit_calibration.py`). It is a population-level estimate, calibrated
-  marginally on the Gosai distribution and not conditioned per target cell.
+  marginally on the Gosai distribution and not conditioned per target cell. The fit uses the three
+  measured cross-lab cells (K562, HepG2, SKNSH); for a design targeting one of the other cell types the
+  tool still prints a probability but labels it extrapolated rather than calibrated.
 - **The deployed two-head combination beats either model alone, with nothing trained.** A cheaper
   chromatin-accessibility model gets close cross-lab (0.789 vs the activity 0.802), a fair question for
   any reviewer. A zero-parameter, a-priori rank-average of the two frozen heads, fixed before the number

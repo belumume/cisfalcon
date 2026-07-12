@@ -297,6 +297,13 @@ function buildInspector(item, rep, scan) {
     ? `Predicted to fail. Most-active cell is ${esc(offCell)}, not the ${esc(rep.target_cell)} target. Specificity gap ${fmtGap(rep.predicted_specificity_gap)} (fail when gap ≤ 0). ${calibNote}`
     : `Predicted specific. Most-active cell is its ${esc(rep.target_cell)} target. Specificity gap ${fmtGap(rep.predicted_specificity_gap)}. Cleared for synthesis.`;
 
+  const seqN = item.seq.length;
+  const nBases = (item.seq.match(/[^ACGTacgt]/g) || []).length;
+  const seqWarns = [];
+  if ((rep.seq_len || seqN) > 500) seqWarns.push(`Only the first 500 bp are scored (the model's input window); this design is ${rep.seq_len || seqN} bp.`);
+  if (seqN && nBases / seqN > 0.1) seqWarns.push(`${Math.round((nBases / seqN) * 100)}% of the bases are non-ACGT and read as blanks by the model.`);
+  const seqWarnHTML = seqWarns.length ? `<div class="insp-warn">${esc(seqWarns.join(" "))}</div>` : "";
+
   $("#insp-dot").style.background = col; $("#insp-dot").style.boxShadow = "0 0 8px " + col;
   const stamp = $("#insp-stamp");
   stamp.textContent = fail ? "FLAGGED" : "CLEAR";
@@ -370,6 +377,8 @@ function buildInspector(item, rep, scan) {
   </div>
 
   <div class="diag-wrap" id="ins-diagnosis"></div>
+
+  ${seqWarnHTML}
 
   <div class="insp-statusbar" id="ins-statusbar" style="border-left-color:${col}">
     <span class="pn" id="ins-pn" style="color:${col}">${fail ? "FLAG" : "CLEAR"}</span>

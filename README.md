@@ -119,12 +119,14 @@ FastSeqProp), with no sequence overlap with the model's training data.
   difference over the best single head is [+0.003, +0.007] (excludes zero), and it beats accessibility
   alone by +0.018. The lift is small and reported as such, but it means neither single model is the
   ceiling, and the combination is leakage-immune and un-tunable (`ensemble_ci.py`).
-- **A model of a completely different lineage agrees.** Cross-checked against AlphaGenome (Google
-  DeepMind, never trained on any MPRA) using its predicted chromatin accessibility: on 240 designs its
-  independent specificity gap agrees with CisFalcon's predicted gap at **Spearman 0.80** (Pearson 0.82)
-  and separates the wet-lab failures at **AUROC 0.688** [95% CI 0.620, 0.752], above chance from a model
-  used far outside its training distribution. Two independent-lineage models agreeing is evidence the
-  signal is not an artifact of one model family. Method and honest boundaries in
+- **A different-architecture model, never trained on any MPRA, agrees.** Cross-checked against
+  AlphaGenome (Google DeepMind) using its predicted chromatin accessibility: on 240 designs its
+  independent specificity gap agrees with CisFalcon's predicted gap at **Spearman 0.80** (Pearson 0.82),
+  and on its own it separates the wet-lab failures at **AUROC 0.688** [95% CI 0.620, 0.752], above chance
+  even used far outside its training distribution. This is not fully orthogonal (both models learn
+  regulatory grammar from genomic data), so the honest independent floor is the 0.688, not the 0.80
+  agreement; the point is that a model built on different data with a different objective, that never saw
+  an MPRA, ranks the same designs in the same order. Method and boundaries in
   [`docs/independent-model-crosscheck.md`](docs/independent-model-crosscheck.md); reproduce with
   `alphagenome_crosscheck.py`.
 - **Triage value (the operating point that matters):** rank designs by CisFalcon and synthesize the
@@ -266,9 +268,16 @@ domain, and flags which published hit lists are trustworthy.
 
 ## Safety
 
-CisFalcon is a defensive falsifier. It predicts FAILURE to prevent wasted synthesis; it exposes no
-generative optimization loop and creates no new design capability. The predictor is a public, already
-released model.
+CisFalcon is a defensive falsifier: it predicts FAILURE to prevent wasted synthesis. The predictor is a
+public, already-released model, and CisFalcon exposes no learned generative model and runs no
+optimization search over sequences. The closed-loop "fix" is a bounded, deterministic, rule-based motif
+edit: it ablates the specific off-target driver motifs the JASPAR scan named and inserts the target
+cell's canonical motifs from a fixed lookup, then re-scores with the same frozen model as an in-silico
+consistency check on the diagnosis (does correcting the flagged problem flip the prediction?). That is
+textbook motif substitution, not a novel design capability or an optimizer, and the edited sequence is an
+interpretability artifact rather than a synthesis recommendation. We acknowledge the dual-use nature of
+any specificity predictor openly; the net effect here is a read-out that reduces spent effort on doomed
+designs.
 
 ## License
 

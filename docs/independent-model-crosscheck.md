@@ -6,8 +6,13 @@ different lineage looks at the same designs?
 
 To test this we cross-checked against **AlphaGenome** (Google DeepMind), a genomic
 sequence-to-function model that was **never trained on any MPRA**, using its predicted
-chromatin **accessibility** (DNASE) rather than MPRA activity. Different lab, different
-architecture, different training data, different readout.
+chromatin **accessibility** (DNASE) rather than MPRA activity. It is a different lab, a
+different architecture, and a different objective (endogenous chromatin, not episomal MPRA
+activity). It is not fully orthogonal evidence: both models learn regulatory grammar from
+genomic data, so part of their agreement reflects shared biology (both recognize, for example,
+that GATA1/TAL1 grammar drives K562). The honest claim is narrower and still useful: a model
+built on different data, with a different objective, that never saw an MPRA, independently ranks
+these designs' specificity in strong agreement with the MPRA-trained gate.
 
 ## Method
 
@@ -28,10 +33,11 @@ Reproduce with `python alphagenome_crosscheck.py` (needs a free AlphaGenome API 
 | rank agreement with CisFalcon's independent predicted gap | **Spearman 0.80** (Pearson 0.82, n = 240) |
 | sign check: fail designs vs pass designs (mean gap) | fail +0.006 vs pass +0.578 (pass > fail, correct direction) |
 
-Two independent-lineage models agreeing at Spearman 0.80 is direct evidence that CisFalcon's
-specificity signal is not an artifact of one model family. The 0.69 AUROC is well above chance
-(CI excludes 0.50) from a model that never saw an MPRA and is being used far outside its
-training distribution.
+A different-architecture, never-saw-an-MPRA model agreeing at Spearman 0.80 is evidence that
+CisFalcon's specificity signal is not an artifact of one model or one training objective. The
+independent floor is the **0.69 AUROC** (not the 0.80 agreement): that is what a model built on
+different data, used far outside its training distribution, achieves on its own against the
+wet-lab labels, and it is well above chance (CI excludes 0.50).
 
 ## Honest boundaries
 

@@ -125,7 +125,10 @@ neural-lineage design runs today and a primary-neuron MPRA is the honest next st
 
 ## What it is not, and how Claude built it
 
-It flags risk and abstains. It does not design the enhancer, and a flag is not a guarantee.
+It flags risk and abstains. It does not design enhancers de novo and runs no generative search; the
+closed-loop fix is a bounded, deterministic, rule-based motif edit (ablate the named off-target motifs,
+insert the target cell's canonical motifs from a fixed lookup) used as an in-silico consistency check on
+the diagnosis, not a synthesis recommendation. A flag is not a guarantee.
 In-distribution design already works well, so the value concentrates out-of-distribution,
 where current models quietly break; it honestly loses power on the best-optimized generators
 (per-generator AUROC 0.92 where failures are common, near 0.61 on the most heavily optimized),

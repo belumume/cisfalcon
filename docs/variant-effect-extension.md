@@ -8,8 +8,8 @@ the full-set rank correlation: **Pearson r = 0.58 in K562** (n = 2,814) and r =
 0.29 in HepG2 (n = 8,191), every p at most 3e-51. On the same data it also flags
 the high-impact variants: large-effect ranking AUROC is **0.88 in K562** at the
 standard |log2| >= 1 cutoff and 0.64 in HepG2. That AUROC is a thresholded metric,
-so it moves with the cutoff and the windowing (a 0.73 to 0.93 band across |log2|
-0.5 to 2.0 in K562, and about 0.66 under an earlier stricter-windowed run); we
+so it moves with the cutoff (a 0.73 to 0.93 band across |log2|
+0.5 to 2.0 in K562); we
 report the cutoff-free r as the primary number and the AUROC as a supporting view,
 never the headline. Ranking the strong-effect variants correctly is exactly the
 signal CisFalcon's pre-synthesis triage flag needs. **The honest

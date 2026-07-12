@@ -4,7 +4,7 @@
 
 **Live tool: https://cisfalcon-lifesci.fly.dev/**
 
-![CisFalcon closes the loop on a real designed enhancer: it is predicted to FAIL (most-active in K562, specificity gap -3.017), CisFalcon names the off-target driver motifs to remove and the target motifs to install, and the same external model re-scores the edit to PASS (most-active in HepG2, gap +1.027).](docs/closed_loop_demo.png)
+![The CisFalcon Overview: catch the AI-designed enhancers that will fail before the lab synthesizes them. Cross-lab AUROC 0.80 on 93,435 held-out designs, about 70 percent fewer wasted syntheses by ranking safest-first, with a closed-loop verification card showing a real Gosai/Tewhey design re-scored to PASS at specificity gap +1.0.](docs/hero_overview.png)
 
 *A real Gosai/Tewhey design that CisFalcon flags as off-target, diagnoses, and closes the loop on: disrupt the K562 driver motifs (GATA1, TAL1, GATA2), install the HepG2 grammar (HNF4A, HNF1A, CEBPA), and the same external model moves the predicted specificity gap from failing to passing. This is an in-silico consistency check on one design, not wet-lab validation, captured live from the tool.*
 
@@ -18,7 +18,7 @@
 
 **Try it, or reproduce it in one click:**
 - Reproduce the 0.80 in your browser, no install: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/belumume/cisfalcon/blob/main/reproduce_flagship.ipynb) fetches the committed scores from GitHub and prints AUROC 0.8013 in pure numpy.
-- Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (open Verify to see a real design batch scored and ranked live, click a flagged design to watch the closed-loop fix flip it, or paste your own sequence).
+- Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (open Verify to see a real design batch scored and ranked live, click a flagged design to watch the closed-loop fix flip it or to run the live four-agent Claude diagnosis on it, or paste your own sequence). The Claude verifier runs in the product, not only the CLI: "Run Claude diagnosis" fires three Sonnet 5 reasoning lenses in parallel and an Opus 4.8 adjudicator, and the browser network tab shows the real `/api/diagnose` call return.
 - Or locally, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the 7.8x triage straight from the committed per-design scores.
 - Uncertainty, in one command: `python bootstrap_ci.py` prints the 95% CIs (design-level and the honest cluster bootstrap over cell x generator strata) and the paired difference vs trivial baselines, all excluding zero (`docs/bootstrap_ci.png`).
 - Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md`.
@@ -223,7 +223,10 @@ probability 100%, with the off-target K562 driver motifs (TAL1 / KLF1 / GATA2) n
    external wet-lab-trained predictions. A measured ablation (`run_ablation.py`) shows the agents do not
    improve classification accuracy over the deterministic gate; their value is the diagnosis a bare score
    and a generic AI reviewer cannot give. The ranking accuracy comes from the gate; the agents add the
-   redesign guidance.
+   redesign guidance. It is a fan-out to three independent Sonnet 5 lenses (mechanism, precedent,
+   adversary) and a fan-in to one Opus 4.8 adjudicator, on the raw Messages API. This layer runs live
+   in the deployed tool at `/api/diagnose`, not only in the CLI: "Run Claude diagnosis" on any design
+   returns the three reviews and the adjudicated verdict, visible in the browser network tab.
 
 ## Reproduce
 

@@ -48,6 +48,44 @@ DRIVERS: dict[str, list[str]] = {
 }
 _TF_TO_CELL = {tf: cell for cell, tfs in DRIVERS.items() for tf in tfs}
 
+# Clinical grounding: the regulatory grammar CisFalcon reads is the same grammar whose
+# disruption causes human disease. Disease names are textbook lineage genetics; OMIM phenotype
+# numbers are included only where verified against omim.org (GATA1 300367 confirmed via Nichols
+# 2000; HNF4A 125850 = MODY1). This turns "the design carries the wrong TF motifs" into "it
+# carries the binding grammar of a validated human disease gene".
+TF_DISEASE: dict[str, dict] = {
+    "GATA1": {
+        "disease": "X-linked dyserythropoietic anemia / thrombocytopenia",
+        "omim": "300367",
+    },
+    "TAL1": {"disease": "T-cell acute lymphoblastic leukemia", "omim": None},
+    "KLF1": {"disease": "congenital dyserythropoietic anemia", "omim": None},
+    "GATA2": {
+        "disease": "GATA2 deficiency (MonoMAC / Emberger syndrome)",
+        "omim": None,
+    },
+    "HNF4A": {
+        "disease": "MODY1 (maturity-onset diabetes of the young)",
+        "omim": "125850",
+    },
+    "HNF1A": {"disease": "MODY3 diabetes", "omim": None},
+    "CEBPA": {"disease": "familial acute myeloid leukemia", "omim": None},
+    "FOXA2": {"disease": "congenital hyperinsulinism / hypopituitarism", "omim": None},
+    "GATA3": {
+        "disease": "HDR syndrome (hypoparathyroidism, deafness, renal dysplasia)",
+        "omim": None,
+    },
+    "PHOX2B": {
+        "disease": "congenital central hypoventilation; neuroblastoma predisposition",
+        "omim": None,
+    },
+}
+
+
+def tf_disease(tf: str) -> dict | None:
+    """Clinical/Mendelian disease caused by disruption of this TF, if documented."""
+    return TF_DISEASE.get(tf)
+
 
 def _http_json(url: str):
     req = urllib.request.Request(url, headers=_UA)
@@ -165,6 +203,7 @@ def scan_sequence(
                     "matrix_id": pwm["matrix_id"],
                     "n_sites": len(hits),
                     "top": hits[:3],
+                    "disease": tf_disease(tf),
                 }
         result[cell] = {
             "n_driver_tfs_present": len(tfs),
@@ -175,6 +214,7 @@ def scan_sequence(
         "target_cell": target_cell,
         "off_target_cell": off_target_cell,
         "by_cell": result,
+        "erythroid_composite": erythroid_composite_sites(seq),
         "source": "JASPAR CORE vertebrates (log-odds PWM scan, both strands, rel>=0.85)",
     }
 
@@ -210,6 +250,49 @@ def driver_sites(seq: str, cell: str, top: int = 3) -> list[dict]:
             )
     sites.sort(key=lambda s: -s["score"])
     return sites[:top]
+
+
+import re as _re
+
+# The erythroid pentameric complex (GATA1-TAL1-LMO2-LDB1-E2A) binds a single BIPARTITE composite
+# element: an E-box (CANNTG, the TAL1/E2A half) ~6-12 bp upstream of a WGATAR GATA site (the GATA1
+# half). Wadman et al. 1997, EMBO J (PMC1169933). Detecting the assembled composite is stronger
+# evidence of blood-cell (erythroid) grammar than two independent GATA1 + TAL1 hits, because it is
+# the cognate site of the master complex as a unit, not two coincidental motifs.
+_EBOX = _re.compile(r"CA[ACGT][ACGT]TG")
+_GATA = _re.compile(r"[AT]GATA[AG]")
+
+
+def erythroid_composite_sites(seq: str, spacer=(6, 12)) -> list[dict]:
+    """Detect E-box + (6-12 bp) + GATA composite sites: the erythroid pentameric-complex cognate
+    element (Wadman 1997). Returns each composite occurrence with position, strand, and spacer."""
+    s = seq.upper().replace("U", "T")
+    out = []
+    for strand, t in (("+", s), ("-", _revcomp(s))):
+        eboxes = [(m.start(), m.end(), m.group()) for m in _EBOX.finditer(t)]
+        gatas = [(m.start(), m.end(), m.group()) for m in _GATA.finditer(t)]
+        for es, ee, eg in eboxes:
+            for gs, ge, gg in gatas:
+                gap = gs - ee
+                if spacer[0] <= gap <= spacer[1]:
+                    pos = es if strand == "+" else len(t) - ge
+                    out.append(
+                        {
+                            "pos": pos,
+                            "strand": strand,
+                            "ebox": eg,
+                            "gata": gg,
+                            "spacer": gap,
+                        }
+                    )
+    # dedupe by (pos, strand)
+    seen, uniq = set(), []
+    for h in sorted(out, key=lambda h: h["pos"]):
+        k = (h["pos"], h["strand"])
+        if k not in seen:
+            seen.add(k)
+            uniq.append(h)
+    return uniq[:8]
 
 
 if __name__ == "__main__":

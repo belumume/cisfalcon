@@ -10,7 +10,7 @@ COPY webapp/backend/requirements.txt ./req.txt
 RUN pip install --no-cache-dir -r req.txt
 
 # the verified core + the fold models
-COPY gate.py verifier.py ./
+COPY gate.py verifier.py closed_loop.py ./
 COPY models/ ./models/
 # the web backend (app, motif surgery, static frontend, pre-fetched JASPAR PWM cache)
 COPY webapp/backend/ ./webapp/backend/

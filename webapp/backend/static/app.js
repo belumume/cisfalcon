@@ -24,6 +24,7 @@ const VALIDATED_CELLS = ["K562", "HepG2", "SKNSH"]; // the 3 cross-lab cells the
 let META = null;
 const inspCache = new Map(); // id -> { rep, scan, item }
 const diagCache = new Map(); // id -> /diagnose response (cache the real Claude call per design)
+const rescueCache = new Map(); // id -> /rescue response (Claude's closed-loop rescue per design)
 
 /* ---------------- nav ---------------- */
 let verifyLoaded = false;
@@ -372,11 +373,16 @@ function buildInspector(item, rep, scan) {
     <button class="btn-fix" id="ins-fix"${fail ? "" : " hidden"}>Apply ${esc(rep.target_cell)}-grammar fix
       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#14171B" stroke-width="1.6"><path d="M2 7h9M7 3l4 4-4 4"></path></svg>
     </button>
+    <button class="btn-rescue" id="ins-rescue"${fail ? "" : " hidden"}>Let Claude rescue it
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3"></path></svg>
+    </button>
     <span class="badge-clear" id="ins-clear"${fail ? " hidden" : ""}>cleared for synthesis</span>
     <span class="insp-hint" id="ins-hint">in-silico consistency check, ahead of wet-lab</span>
   </div>
 
   <div class="diag-wrap" id="ins-diagnosis"></div>
+
+  <div class="rescue-wrap" id="ins-rescue-out"></div>
 
   ${seqWarnHTML}
 
@@ -390,6 +396,11 @@ function buildInspector(item, rep, scan) {
   if (fixBtn) fixBtn.addEventListener("click", () => applyFix(item));
   const dxBtn = $("#ins-diagnose");
   if (dxBtn) dxBtn.addEventListener("click", () => runDiagnosis(item));
+  const rxBtn = $("#ins-rescue");
+  if (rxBtn) rxBtn.addEventListener("click", () => runRescue(item));
+  const prevRx = rescueCache.get(item.id);
+  const rxHost = $("#ins-rescue-out");
+  if (prevRx && rxHost) renderRescue(rxHost, prevRx);
   const prevDiag = diagCache.get(item.id);
   const diagHost = $("#ins-diagnosis");
   if (prevDiag && diagHost) renderDiagnosis(diagHost, prevDiag);
@@ -447,6 +458,50 @@ function renderDiagnosis(host, out) {
       ${v.recommendation ? `<div class="dv-rec"><span>recommendation</span> ${mdLite(v.recommendation)}</div>` : ""}
     </div>
   </div>`;
+}
+
+/* ---------------- live Claude closed-loop optimizer (real /rescue: Claude iterates grounded edits, gate re-scores) ---------------- */
+function _fmtGap(g) { return (g >= 0 ? "+" : "−") + Math.abs(g).toFixed(2); }
+
+function renderRescue(host, out) {
+  const hist = out.history || [];
+  const passed = out.passed;
+  const vcol = passed ? GREEN : RED;
+  const steps = hist.map((h, i) => {
+    const prev = i > 0 ? hist[i - 1].gap : -99;
+    const c = h.passed ? GREEN : (h.gap > prev ? AMBER : RED);
+    const lbl = h.round === 0 ? "start" : "round " + h.round;
+    return `<div class="rx-step"><div class="rx-g" style="color:${c}">${_fmtGap(h.gap)}</div><div class="rx-l">${esc(lbl)}</div><div class="rx-c">${esc(h.most_active)}</div></div>`;
+  }).join('<span class="rx-arrow">→</span>');
+  const verdict = passed
+    ? `RESCUED to ${_fmtGap(out.final_gap)} in ${out.rounds} round${out.rounds === 1 ? "" : "s"}`
+    : `not rescued in ${out.rounds} rounds (gap ${_fmtGap(out.final_gap)})`;
+  host.innerHTML =
+    `<div class="rescue-panel">
+    <div class="rx-hd"><span class="cap">CLAUDE CLOSED-LOOP OPTIMIZER · Opus 4.8 iterating, the frozen gate as a tool${out.ms ? " · " + Math.round(out.ms / 1000) + "s" : ""}</span></div>
+    <div class="rx-flow">${steps || '<span class="rx-c">no rounds</span>'}</div>
+    <div class="rx-verdict" style="border-left-color:${vcol};color:${vcol}">${verdict}</div>
+    <div class="rx-note">Claude proposed grounded JASPAR motif edits and re-scored with the frozen gate after each round, iterating a design the gate can only score. In-silico consistency, not wet-lab. Across 20 failing designs it rescued 8 versus the deterministic single edit's 6.</div>
+  </div>`;
+}
+
+async function runRescue(item) {
+  const host = $("#ins-rescue-out"), btn = $("#ins-rescue");
+  if (!host) return;
+  const cached = rescueCache.get(item.id);
+  if (cached) { renderRescue(host, cached); host.scrollIntoView({ behavior: "smooth", block: "nearest" }); return; }
+  if (btn) { btn.disabled = true; btn.classList.add("busy"); }
+  host.innerHTML = `<div class="rescue-panel loading"><div class="rx-hd"><span class="cap">CLAUDE CLOSED-LOOP OPTIMIZER · first-party Anthropic API</span><span class="diag-live"><span class="ld"></span>iterating</span></div><div class="rx-note">Claude is proposing grounded motif edits and re-scoring with the frozen gate each round. Up to 3 rounds, ~30 to 40s.</div></div>`;
+  host.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  try {
+    const out = await api("/rescue", { sequence: item.seq, target_cell: item.target });
+    rescueCache.set(item.id, out);
+    renderRescue(host, out);
+  } catch (e) {
+    host.innerHTML = `<div class="rescue-panel"><div class="diag-err">Claude rescue could not run: ${esc(e.message)}. The deterministic fix and the gate verdict above still stand.</div></div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.classList.remove("busy"); }
+  }
 }
 
 async function runDiagnosis(item) {

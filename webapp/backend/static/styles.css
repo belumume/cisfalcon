@@ -625,3 +625,23 @@ button:active { transform: translateY(0) !important; }
 
 /* sequence-validity warning banner in the inspector (truncation / degenerate bases) */
 .insp-warn { margin: 10px 0 0; padding: 9px 13px; border-radius: 8px; border-left: 3px solid var(--d-amber); background: rgba(231,178,74,.09); font-family: var(--mono); font-size: 11px; line-height: 1.5; color: var(--d-amber); }
+
+/* live Claude closed-loop optimizer panel (real /rescue: Claude iterates, gate re-scores) */
+.btn-rescue { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 7px; cursor: pointer; border: 1px solid var(--d-green); background: linear-gradient(180deg, rgba(53,212,138,.16), rgba(53,212,138,.05)); color: var(--d-green); font-family: var(--sans); font-weight: 600; font-size: 13px; transition: box-shadow .25s, transform .15s, filter .15s; }
+.btn-rescue:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 6px 22px -8px rgba(53,212,138,.5); }
+.btn-rescue:disabled { opacity: .55; cursor: default; transform: none; box-shadow: none; }
+.btn-rescue[hidden] { display: none; }
+.rescue-wrap { margin-top: 2px; }
+.rescue-panel { margin-top: 12px; border: 1px solid var(--d-line-2); border-radius: 11px; padding: 15px 16px; background: radial-gradient(120% 130% at 20% -10%, rgba(53,212,138,.06), rgba(0,0,0,.22) 70%); }
+.rescue-panel.loading { border-color: rgba(53,212,138,.28); }
+.rx-hd { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.rx-hd .cap { font-family: var(--mono); font-size: 10px; letter-spacing: .10em; color: var(--d-green); }
+.rx-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.rx-step { border: 1px solid var(--d-line-2); border-radius: 9px; padding: 8px 12px; background: rgba(0,0,0,.2); text-align: center; min-width: 60px; }
+.rx-step .rx-g { font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.02em; }
+.rx-step .rx-l { font-family: var(--mono); font-size: 8.5px; letter-spacing: .06em; color: var(--d-mut-2); margin-top: 2px; }
+.rx-step .rx-c { font-family: var(--mono); font-size: 9px; color: var(--d-mut); margin-top: 3px; }
+.rx-arrow { color: var(--d-mut-2); font-size: 13px; }
+.rx-verdict { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .04em; border-left: 3px solid; padding: 8px 12px; border-radius: 7px; background: rgba(0,0,0,.24); margin-bottom: 10px; }
+.rx-note { font-family: var(--mono); font-size: 10px; line-height: 1.5; color: var(--d-mut); max-width: 82ch; }
+@media (max-width: 720px) { .rx-flow { justify-content: flex-start; } }

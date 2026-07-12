@@ -123,14 +123,24 @@ _TOOL = {
 
 
 def claude_rescue(
-    seq: str, target: str, max_rounds: int = 4, verbose: bool = False
+    seq: str,
+    target: str,
+    max_rounds: int = 4,
+    verbose: bool = False,
+    score_fn=None,
+    client=None,
 ) -> dict:
-    """Claude (Opus) tool-using loop that rescues a failing design using the gate as a tool."""
-    import anthropic
+    """Claude (Opus) tool-using loop that rescues a failing design using the gate as a tool.
+    score_fn(seq, target) -> {gap, most_active, fail}; defaults to the deployed-API scorer.
+    client: an anthropic client; created from ANTHROPIC_API_KEY if not given.
+    Both are injectable so the SAME loop runs server-side (local gate) or from the CLI (deployed API)."""
+    _score = score_fn or score
+    if client is None:
+        import anthropic
 
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     cur = seq
-    rpt = score(cur, target)
+    rpt = _score(cur, target)
     off = rpt["most_active"]
     history = [
         {"round": 0, "gap": rpt["gap"], "most_active": off, "passed": not rpt["fail"]}
@@ -187,7 +197,7 @@ def claude_rescue(
             tu.input.get("install_target_tfs", []),
             tu.input.get("copies_per_tf", 2),
         )
-        rpt = score(edited, target)
+        rpt = _score(edited, target)
         cur = edited
         passed = not rpt["fail"]
         history.append(

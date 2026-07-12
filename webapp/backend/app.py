@@ -367,7 +367,7 @@ def rescue(req: PredictReq):
     edits, calling the frozen gate as a tool to re-score after each round. This is a capability the gate
     alone does not have (it scores, it does not optimize), and it is where Claude is measurably
     load-bearing (closed_loop_eval.py: 8/20 rescued vs the deterministic single edit's 6). In-silico
-    consistency (the same frozen gate agrees the rescue passes), NOT wet-lab. Bounded to 3 rounds to fit
+    consistency (the same frozen gate agrees the rescue passes), NOT wet-lab. Bounded to 4 rounds to fit
     the request timeout."""
     seq = _clean_seq(req.sequence)
     cell = _check_target(req.target_cell)
@@ -391,7 +391,7 @@ def rescue(req: PredictReq):
 
     t0 = time.time()
     out = closed_loop.claude_rescue(
-        seq, cell, max_rounds=3, score_fn=_local_score, client=v._client
+        seq, cell, max_rounds=4, score_fn=_local_score, client=v._client
     )
     out["ms"] = int((time.time() - t0) * 1000)
     return out

@@ -1,4 +1,9 @@
-"""Measured value of the Claude closed-loop optimizer vs the deterministic single-edit rule.
+"""SUPERSEDED by closed_loop_powered.py. This small n=20, single-edit-vs-Claude eval is kept for
+provenance only; its 8-vs-6 count is underpowered and gives the deterministic baseline just one edit.
+The canonical result is closed_loop_powered.py: n=97, EQUAL 4-round budget, paired bootstrap, which
+finds the adaptive agent does NOT beat a fixed rule at equal budget (delta +2.1pp, CI includes zero).
+
+Measured value of the Claude closed-loop optimizer vs the deterministic single-edit rule.
 
 For N predicted-failing designs (sampled diverse across target cells), run:
   - deterministic_rescue: the single fixed /api/redesign edit (disrupt top off-target sites + install

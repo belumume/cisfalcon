@@ -49,15 +49,18 @@ it cannot optimize. `closed_loop.py` gives Claude (Opus 4.8) the gate as a tool:
 grounded motif edit (disrupt the predicted off-target cell's driver TFs, install the target cell's
 driver TFs, all real JASPAR motifs, no invented sequence), calls the gate to re-score, reads the new
 specificity gap, and iterates until the design passes or it aborts. That is a capability the frozen
-gate alone does not have. On 20 independently-sampled failing designs, the deterministic single edit
-rescued 6; Claude's iterating loop rescued 8, including 2 the fixed edit could not, with zero
-regressions, in a mean of 3.5 rounds, and the lift concentrates on the hardest cell (the SKNSH brain
-line). It is an in-silico consistency loop, the same frozen gate that flagged the design agrees the
-rescue passes, not wet-lab validation. So the honest answer to whether Claude is load-bearing or
-decorative is both: on the ranking metric the frozen gate carries it, and Claude is measurably
-load-bearing for the iterative optimization the gate cannot do. `python closed_loop.py --demo` shows
-one rescue live (the flagship, gap -3.0 to +0.4 over three adaptive rounds, watching the winning cell
-shift each round); `closed_loop_eval.py` reproduces the number.
+gate alone does not have. We then powered the honest question rather than trusting a small number: on
+97 failing designs at an equal 4-round budget, Claude's adaptive motif search rescues 26.8% versus a
+fixed greedy rule's 24.7% (delta +2.1 points, 95% CI [-0.04, +0.08], which includes zero). So the
+adaptive agent does not beat a fixed rule at equal budget, and we report that null instead of the
+underpowered n=20 count it replaces. It is also an in-silico consistency loop, the same frozen gate
+that flagged the design agrees the rescue passes, not wet-lab validation. So the honest answer to
+whether Claude is load-bearing or decorative for the science is neither over-claim: on the ranking
+metric the frozen gate carries it, and on rescue rate the adaptive agent ties a fixed rule. What Claude
+genuinely adds is the live agentic tool-use itself, a scientist can watch it drive a grounded
+optimization loop, and the diverse-lens interpretation a bare score cannot give. `python closed_loop.py
+--demo` shows one rescue live (the flagship, gap -3.0 to +0.4 over adaptive rounds, watching the
+winning cell shift each round); `closed_loop_powered.py` reproduces the powered, equal-budget comparison.
 
 ## The builder ran under epistemic hooks it wrote for itself
 

@@ -216,20 +216,30 @@ probability 100%, with the off-target K562 driver motifs (TAL1 / KLF1 / GATA2) n
 
 The three-lineage panel above is a cross-lineage detector. The harder question, the one that
 dominates enhancer-AAV failure, is within-tissue: does a design meant for one cortical cell type
-misfire into a neighboring one? We tested it directly. Using a model fully independent of CisFalcon's
-gate (DeepBICCN2, a mouse-cortex snATAC model with per-subclass outputs for astrocyte, oligodendrocyte,
-OPC, microglia, and neuron subtypes), we scored the 532 in-vivo AAV-screened cortical enhancers of the
-Allen/BICCN benchmark (Ben-Simon et al. 2025), each carrying a real in-vivo On-Target or Off-Target
-label. From sequence alone, the specificity gap separates in-vivo On-vs-Off-target at
-**AUROC 0.70 (95% CI [0.63, 0.77], excludes chance)**.
+misfire into a neighboring one? CisFalcon's own frozen gate cannot answer this (it outputs three
+distant lineages, not cortical subclasses), so we tested whether the specificity-gap **paradigm**
+transfers, scored by a cortex-appropriate model that is fully independent of CisFalcon: DeepBICCN2, a
+mouse-cortex snATAC model (aertslab) with per-subclass outputs for astrocyte, oligodendrocyte, OPC,
+microglia, and neuron subtypes. We scored the 532 in-vivo AAV-screened cortical enhancers of the
+Allen/BICCN benchmark (Ben-Simon et al. 2025, the clean-labelled subset of their ~677-enhancer
+screen); on the **211 with a hard in-vivo On-Target or Off-Target label** (143 On, 68 Off), the
+sequence-derived specificity gap separates On-vs-Off at **AUROC 0.70 (95% CI [0.63, 0.77], excludes
+chance)**.
 
-Reported honestly: this is comparable to what a measured-accessibility feature reaches on the same set
-(0.70) and below the best measured cross-cell specificity feature (0.75), and combining the sequence
-gap with measured accessibility adds almost nothing. So it is a real, directional generalization to
-in-vivo within-cortex neighbor resolution from sequence alone, not a demonstration that the sequence
-model beats a measured assay. The honest next step is a functional (not accessibility) within-cortex
-model. Pre-registered method and the full baseline decomposition are in
-[`within_neighbor/`](within_neighbor/).
+Reported honestly, with the caveats elevated not buried:
+- This is the **paradigm generalizing via a different model**, not CisFalcon-the-tool working in brain.
+- It **ties** a measured-accessibility feature on the same set (0.70) and is **below** the best measured
+  cross-cell specificity feature (0.75); combining the sequence gap with measured accessibility adds
+  almost nothing. So the honest read is "from sequence alone it recovers what an accessibility assay
+  would tell you, a beat earlier," not "the model beats the assay."
+- DeepBICCN2 predicts accessibility (a proxy for the in-vivo functional readout), and the benchmark
+  enhancers were selected from the BICCN atlas it trained on, so the accessibility basis is partly
+  shared; the in-vivo On/Off **label** is an independent functional phenotype, which is what makes the
+  test meaningful. Mouse cortex, not human.
+
+A real, directional in-vivo within-cortex generalization of the paradigm, stated with its ceiling. The
+honest next step is a functional (not accessibility) within-cortex model. Pre-registered method and the
+full baseline decomposition are in [`within_neighbor/`](within_neighbor/).
 
 One honest scope point, stated plainly: CisFalcon scores specificity as argmax over three
 MPRA-measured cell types (K562, HepG2, SKNSH), which are three different lineages (blood, liver,
@@ -255,20 +265,32 @@ cheapest stage, which is where a triage gate belongs.
    measured activity, independent of any opaque score.
 3. **Agent layer (`verifier.py`)** - four Claude agents that turn a bare FAIL into a concrete mechanistic
    diagnosis: which off-target cell wins and which driver motifs to ablate or strengthen, grounded in the
-   external wet-lab-trained predictions. A measured ablation (`run_ablation.py`) shows the agents do not
-   improve classification accuracy over the deterministic gate; their value is the diagnosis a bare score
-   and a generic AI reviewer cannot give. The ranking accuracy comes from the gate; the agents add the
-   redesign guidance. It is a fan-out to three independent Sonnet 5 lenses (mechanism, precedent,
-   adversary) and a fan-in to one Opus 4.8 adjudicator, on the raw Messages API. This layer runs live
-   in the deployed tool at `/api/diagnose`, not only in the CLI: "Run Claude diagnosis" on any design
-   returns the three reviews and the adjudicated verdict, visible in the browser network tab.
-4. **Closed-loop optimizer (`closed_loop.py`)** - where Claude is measurably load-bearing. The frozen
-   gate scores; it cannot optimize. Here Claude (Opus 4.8) is a genuine tool-using agent: it proposes a
-   grounded motif edit, calls the gate as a tool to re-score, reads the new specificity gap, and
-   iterates until the design passes or aborts. On 20 failing designs the deterministic single edit
-   rescued 6; Claude's iterating loop rescued 8 (2 the fixed edit could not, zero regressions, mean 3.5
-   rounds). In-silico (the frozen gate agrees the rescue passes), not wet-lab. `python closed_loop.py
-   --demo` rescues the flagship live; `closed_loop_eval.py` reproduces the number.
+   external wet-lab-trained predictions. It is a fan-out to three independent Sonnet 5 lenses (mechanism,
+   precedent, adversary) and a fan-in to one Opus 4.8 adjudicator, on the raw Messages API. We ablated it
+   twice, honestly, instead of asserting value. First, against the gate (`run_ablation.py`): the agents
+   do **not** improve classification accuracy over the deterministic gate, so the ranking accuracy comes
+   from the gate, not from Claude. Second, the multi-agent structure against a single Opus call
+   (`agent_ablation.py`, 16 designs, a blind panel of 3 Opus judges, A/B order randomized): overall the
+   single call wins slightly (9 designs to 7) and is more concise for a wet-lab decision, so the panel is
+   **not** a blanket win. Its one measured advantage is exactly the property it was built for: the
+   dedicated adversary lens raises more genuine calibration and out-of-distribution caveats before
+   committing, winning the **adversarial-rigor** dimension (24 judge-votes to 19). So the honest claim is
+   narrow and measured: the multi-agent structure buys adversarial rigor (it argues with itself before it
+   commits) and the diagnosis a bare score cannot give, not overall accuracy. This
+   layer runs live in the deployed tool at `/api/diagnose`, not only in the CLI: "Run Claude diagnosis" on
+   any design returns the three reviews and the adjudicated verdict, visible in the browser network tab.
+4. **Closed-loop optimizer (`closed_loop.py`)** - Claude as a live tool-using agent, reported honestly.
+   The frozen gate scores; it cannot optimize. Here Claude (Opus 4.8) runs a genuine tool-using loop: it
+   proposes a grounded JASPAR motif edit, calls the gate as a tool to re-score, reads the new
+   specificity gap, and iterates until the design passes or aborts (watch it live in the browser, the
+   flagship goes -3.02 to +1.03). We then powered the obvious question instead of trusting a small
+   number: on 97 failing designs, at an **equal 4-round budget**, Claude's adaptive motif search rescues
+   26.8% versus a fixed greedy rule's 24.7% (delta +2.1 points, 95% CI [-0.04, +0.08], **includes
+   zero**). So the adaptive agent does **not** beat a fixed rule at equal budget, and we report that null
+   rather than the underpowered n=20 headline it replaces. The honest value here is the **live agentic
+   tool-use loop itself** (a judge can watch Claude drive a scientific optimization), and it is in-silico
+   consistency (the frozen gate agrees the rescue passes), not wet-lab. `python closed_loop.py --demo`
+   rescues the flagship live; `closed_loop_powered.py` reproduces the powered, equal-budget comparison.
 
 ## Reproduce
 

@@ -365,10 +365,11 @@ def redesign(req: PredictReq):
 def rescue(req: PredictReq):
     """CLAUDE CLOSED-LOOP OPTIMIZER: Claude (Opus) rescues a failing design by ITERATING grounded motif
     edits, calling the frozen gate as a tool to re-score after each round. This is a capability the gate
-    alone does not have (it scores, it does not optimize), and it is where Claude is measurably
-    load-bearing (closed_loop_eval.py: 8/20 rescued vs the deterministic single edit's 6). In-silico
-    consistency (the same frozen gate agrees the rescue passes), NOT wet-lab. Bounded to 4 rounds to fit
-    the request timeout."""
+    alone does not have (it scores, it does not optimize). Powered, equal-budget comparison
+    (closed_loop_powered.py, n=97): the adaptive agent rescues 26.8% vs a fixed greedy rule's 24.7%
+    (delta +2.1pp, 95% CI includes zero), so it does NOT beat a fixed rule at equal budget; the value is
+    the live agentic tool-use loop itself. In-silico consistency (the same frozen gate agrees the rescue
+    passes), NOT wet-lab. Bounded to 4 rounds to fit the request timeout."""
     seq = _clean_seq(req.sequence)
     cell = _check_target(req.target_cell)
     if not _agents_available():

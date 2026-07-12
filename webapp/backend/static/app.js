@@ -481,7 +481,7 @@ function renderRescue(host, out) {
     <div class="rx-hd"><span class="cap">CLAUDE CLOSED-LOOP OPTIMIZER · Opus 4.8 iterating, the frozen gate as a tool${out.ms ? " · " + Math.round(out.ms / 1000) + "s" : ""}</span></div>
     <div class="rx-flow">${steps || '<span class="rx-c">no rounds</span>'}</div>
     <div class="rx-verdict" style="border-left-color:${vcol};color:${vcol}">${verdict}</div>
-    <div class="rx-note">Claude proposed grounded JASPAR motif edits and re-scored with the frozen gate after each round, iterating a design the gate can only score. In-silico consistency, not wet-lab. Across 20 failing designs it rescued 8 versus the deterministic single edit's 6.</div>
+    <div class="rx-note">Claude proposed grounded JASPAR motif edits and re-scored with the frozen gate after each round, iterating a design the gate can only score. In-silico consistency, not wet-lab. At an equal 4-round budget on 97 failing designs, its adaptive search rescues 27% versus a fixed greedy rule's 25% (within noise, CI includes zero); the value shown here is the live tool-using loop itself, not a rescue-rate lift.</div>
   </div>`;
 }
 

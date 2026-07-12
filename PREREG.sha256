@@ -1,6 +1,4 @@
 # Pre-registration integrity record
-# SHA-256 of PREREG.md (the locked methodology: fail label gap<=0, out-of-fold scoring,
-# operating threshold, metrics, and the pre-registered within-tissue test in section 10).
-# The git commit that adds/updates these two files is the immutable timestamp; recompute
-# with: sha256sum PREREG.md  (must equal the hash below).
-PREREG.md  2dd426a48f3be189843a05f277a3c87ee982f3d5041e15891f69009e0c739f64
+# SHA-256 of PREREG.md (locked methodology + the within-tissue test (10), the powered closed-loop
+# comparison (11), and the multi-agent panel ablation (12)). Recompute: sha256sum PREREG.md.
+PREREG.md  98b7cce2880623c7da24213d7c2ee201a91093d114bc5b02d0fd8612dbaaea2f

@@ -213,13 +213,17 @@ K562 (a blood cell), not its neuroblastoma target, specificity gap -2.17, calibr
 probability 100%, with the off-target K562 driver motifs (TAL1 / KLF1 / GATA2) named in the sequence.
 
 One honest scope point, stated plainly: CisFalcon scores specificity as argmax over three
-MPRA-measured cell types (K562, HepG2, SKNSH), and in-vivo enhancer-AAV specificity is a harder
-many-cell problem with failure modes a three-cell reporter assay does not see (off-target expression
-in untested cell types, cell- and species-specific silencing in the genomic and delivery context). So
-a CisFalcon PASS is a cheap necessary pre-filter that removes designs which already fail the three-cell
-specificity test before any DNA is made; it is not a prediction of in-vivo specificity and does not
-replace the wet-lab validation that is the field's stated bottleneck. It moves the failure rate down at
-the earliest and cheapest stage, which is where a triage gate belongs.
+MPRA-measured cell types (K562, HepG2, SKNSH), which are three different lineages (blood, liver,
+neural). That makes it a detector of gross cross-lineage misfires, the case where a design meant for
+one tissue fires strongly in an unrelated one. It is a weaker proxy for the harder within-tissue
+specificity that dominates in-vivo enhancer-AAV failure, where the off-target is a neighboring cell in
+the same tissue (astrocyte versus oligodendrocyte, one cortical interneuron subtype versus another); a
+three-lineage panel cannot resolve that, and the Mich et al. in-vivo failures are cited here as the
+motivating bottleneck, not as a set this tool is scored against. So a CisFalcon PASS is a cheap
+necessary pre-filter that removes designs which already fail the coarse three-cell specificity test
+before any DNA is made; it is not a prediction of in-vivo specificity and does not replace the wet-lab
+validation that is the field's stated bottleneck. It moves the failure rate down at the earliest and
+cheapest stage, which is where a triage gate belongs.
 
 ## How it works
 

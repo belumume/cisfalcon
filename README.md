@@ -198,7 +198,20 @@ where the field's own stated bottleneck is that many designs fail specificity: M
 about half of astrocyte / oligodendrocyte enhancers fail in vivo, and Ben-Simon et al. 2024 tested 682
 enhancers selected for cortical-cell-type open-chromatin specificity and reached only ~30% success (so
 about 70% fail), as reported in the mammalian-cortex enhancer-prediction benchmark (bioRxiv
-2024.08.21.609075). CisFalcon already runs on a
+2024.08.21.609075).
+
+Wrong-cell-type firing is not a cosmetic QC issue; in a real therapy it is a safety failure. In an
+interneuron-specific enhancer-AAV gene therapy for Dravet syndrome (a severe childhood epilepsy with a
+10 to 20% rate of premature death), driving the therapeutic gene in *all* neurons instead of only
+interneurons caused increased mortality in mice, while the cell-type-specific enhancer version was safe
+and corrected the seizures (Mich, Ting, Lein et al., *Sci Transl Med* 2025,
+[DOI 10.1126/scitranslmed.adn5603](https://doi.org/10.1126/scitranslmed.adn5603)). That off-target
+firing is the exact failure CisFalcon flags from sequence, before a dollar is spent, and it is the
+Allen Institute's enhancer-AAV program that produced both this Dravet result and the in-vivo benchmark
+our within-cortex validation is scored on. So the case is concrete: catch the misfire in silico, before
+it reaches an animal.
+
+CisFalcon already runs on a
 brain-derived line. Restricting the committed cross-lab scores to the SKNSH neuroblastoma designs
 (`python brain_triage.py`, no GPU): base failure rate 10.06%, cross-lab AUROC 0.73; synthesize the
 safest-ranked half and the brain-cell failure rate drops to 4.19% (**58% fewer**); the riskiest-2%

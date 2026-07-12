@@ -3,10 +3,16 @@
 **Result (judge-legible).** The *frozen* CisFalcon activity model, the atlas
 DHS64-MPRA CNN ensemble already used for cell-type-specificity scoring, with no
 retraining and never trained on variants, ranks single-base variant effects on
-independent saturation-mutagenesis MPRA data with **K562 large-effect AUROC 0.88**
-(Pearson r = 0.58, n = 2,814) and HepG2 AUROC 0.64 (r = 0.29, n = 8,191). It
-correctly separates the high-impact variants from the inert ones, which is
-exactly the signal CisFalcon's pre-synthesis triage flag needs. **The honest
+independent saturation-mutagenesis MPRA data. The threshold-independent signal is
+the full-set rank correlation: **Pearson r = 0.58 in K562** (n = 2,814) and r =
+0.29 in HepG2 (n = 8,191), every p at most 3e-51. On the same data it also flags
+the high-impact variants: large-effect ranking AUROC is **0.88 in K562** at the
+standard |log2| >= 1 cutoff and 0.64 in HepG2. That AUROC is a thresholded metric,
+so it moves with the cutoff and the windowing (a 0.73 to 0.93 band across |log2|
+0.5 to 2.0 in K562, and about 0.66 under an earlier stricter-windowed run); we
+report the cutoff-free r as the primary number and the AUROC as a supporting view,
+never the headline. Ranking the strong-effect variants correctly is exactly the
+signal CisFalcon's pre-synthesis triage flag needs. **The honest
 caveat in the same breath:** the model *ranks* variants but does *not* calibrate
 absolute effect size, predicted magnitudes are compressed ~6–9× (predicted σ
 ≈ 0.06–0.09 vs measured σ ≈ 0.50–0.56 log₂), so a raw predicted Δ is not a

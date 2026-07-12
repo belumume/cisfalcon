@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=20260712k">
+<link rel="stylesheet" href="/styles.css?v=20260712l">
 </head>
 <body>
 <div class="app">
@@ -445,6 +445,26 @@
             </div>
           </div>
 
+          <div class="decomp" style="margin-bottom:22px">
+            <div class="cap">IN-VIVO WITHIN-CORTEX · NEIGHBOR RESOLUTION</div>
+            <div class="lead">Beyond cross-lineage: an independent cortical model (DeepBICCN2, per-subclass for astrocyte, oligodendrocyte, and neuron subtypes) scores 532 in-vivo AAV-screened enhancers (Ben-Simon et al. 2025). From sequence alone, the specificity gap predicts in-vivo On-vs-Off-target, shown here against the measured baselines on the same set.</div>
+            <div class="rows">
+              <div class="drow">
+                <div class="top"><span class="k">specificity gap · sequence only</span><span class="v green">0.71</span></div>
+                <div class="bar"><div class="fill" style="width:51.5%;background:#35D48A"></div></div>
+              </div>
+              <div class="drow">
+                <div class="top"><span class="k">measured accessibility</span><span class="v">0.70</span></div>
+                <div class="bar"><div class="fill" style="width:49.5%;background:#6A7079"></div></div>
+              </div>
+              <div class="drow">
+                <div class="top"><span class="k">measured accessibility-specificity (gini)</span><span class="v">0.75</span></div>
+                <div class="bar"><div class="fill" style="width:61.5%;background:#3A4048"></div></div>
+              </div>
+            </div>
+            <div class="fine">AUROC 0.706, 95% CI [0.63, 0.77], excludes chance. A directional within-cortex generalization from sequence alone, comparable to measured accessibility and below the best measured feature. Independent model, in-vivo functional labels. The honest next step is a functional within-cortex model.</div>
+          </div>
+
           <div class="het">
             <div class="top">
               <div class="cap">HETEROGENEOUS RANKER · LEAD WITH THE RANGE</div>
@@ -614,6 +634,6 @@
   </div>
 </div>
 
-<script src="/app.js?v=20260712k"></script>
+<script src="/app.js?v=20260712l"></script>
 </body>
 </html>

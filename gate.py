@@ -34,6 +34,15 @@ TARGET_CELLS = MPRA_CELL_LINES[
 CELL_IDX = {c: i for i, c in enumerate(MPRA_CELL_LINES)}
 FOLDS = [0, 1, 3]  # atlas shipped model splits
 
+# Absolute-activity plausibility floor: peak predicted activity (max log2FC over the
+# target cells) below which a sequence is not a plausible enhancer, so the (relative)
+# specificity call is low-confidence for it. Calibrated 2026-07-13 on 1000 real designs
+# vs 2000 random 200bp sequences (calibrate_floor.py): random peak activity has 95th
+# percentile ~0.5, so peak < 0.5 is statistically indistinguishable from random noise.
+# A design that MISFIRES (active in the wrong cell) still has high peak activity and is
+# NOT flagged; only sequences weakly active everywhere are.
+ACTIVITY_FLOOR = 0.5
+
 
 def one_hot_encode(sequences, max_seq_len=INPUT_LEN, padding="left"):
     """Verbatim atlas convention: channels A,C,G,T; padding='left' = sequence at
@@ -96,7 +105,10 @@ def specificity_gap(pred: np.ndarray, target_cell: str, cells=None) -> np.ndarra
 
 def verdict(sequences, target_cell: str, cells=None, kind: str = "mpra"):
     """Full gate verdict for a batch of designs all targeting `target_cell`.
-    Returns list of dicts: predicted_gap, most_active_cell, predicted_fail, margin."""
+    Returns list of dicts: predicted_gap, most_active_cell, predicted_fail, margin,
+    peak_activity, low_activity. `low_activity` marks sequences predicted weakly active
+    in every cell (peak < ACTIVITY_FLOOR); for those the relative specificity call is
+    low-confidence and the sequence may not be a functional enhancer (see calibrate_floor.py)."""
     cells = cells or TARGET_CELLS
     pred = score_sequences(sequences, kind=kind)
     gaps = specificity_gap(pred, target_cell, cells)
@@ -105,12 +117,15 @@ def verdict(sequences, target_cell: str, cells=None, kind: str = "mpra"):
     out = []
     for i, g in enumerate(gaps):
         ma = cells[int(np.argmax(sub[i]))]
+        peak = float(sub[i].max())
         out.append(
             {
                 "predicted_gap": float(g),
                 "most_active_cell": ma,
                 "predicted_fail": bool(g <= 0),
                 "margin": float(abs(g)),
+                "peak_activity": peak,
+                "low_activity": bool(peak < ACTIVITY_FLOOR),
             }
         )
     return out

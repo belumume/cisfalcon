@@ -429,10 +429,12 @@ def batch(req: BatchReq):
             "predicted_gap": round(v["predicted_gap"], 3),
             "predicted_most_active_cell": v["most_active_cell"],
             "predicted_fail": v["predicted_fail"],
+            "low_activity": v.get("low_activity", False),
         }
         for i, (idx, v) in enumerate(ranked)
     ]
     n_fail = sum(1 for v in verdicts if v["predicted_fail"])
+    n_low = sum(1 for v in verdicts if v.get("low_activity"))
     half = ranked[: max(1, n // 2)]
     half_fail = sum(1 for _, v in half if v["predicted_fail"]) / len(half)
     overall_fail = n_fail / n
@@ -441,6 +443,7 @@ def batch(req: BatchReq):
         "n": n,
         "target_cell": cell,
         "predicted_fail_count": n_fail,
+        "low_activity_count": n_low,
         "predicted_fail_rate": round(overall_fail, 4),
         "safest_half_fail_rate": round(half_fail, 4),
         "failure_reduction_pct_safest_half": reduction,

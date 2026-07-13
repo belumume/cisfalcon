@@ -69,6 +69,7 @@ def gate_report(
     idx = [gate.CELL_IDX[c] for c in gate.TARGET_CELLS]
     profile = {c: round(float(pred[gate.CELL_IDX[c]]), 3) for c in gate.MPRA_CELL_LINES}
     most_active = gate.TARGET_CELLS[int(np.argmax(pred[idx]))]
+    peak_activity = float(pred[idx].max())
     p_fail = calib.p_fail(gap)
     return {
         "target_cell": target_cell,
@@ -76,6 +77,9 @@ def gate_report(
         "predicted_most_active_cell": most_active,
         "predicted_fail": bool(gap <= 0),
         "calibrated_fail_probability": round(p_fail, 3),
+        "peak_activity": round(peak_activity, 3),
+        "low_activity": bool(peak_activity < gate.ACTIVITY_FLOOR),
+        "activity_floor": gate.ACTIVITY_FLOOR,
         "predicted_profile_log2fc": profile,
         "off_target_risk_cells": sorted(
             [
@@ -112,20 +116,20 @@ LENSES = {
         "You are a regulatory-genomics reviewer. Given a model-predicted per-cell-type activity "
         "profile for an AI-designed enhancer and its intended target cell, explain in mechanistic "
         "terms whether it is predicted to be cell-type SPECIFIC, and name the specific off-target "
-        "cell types that are the risk. Be concrete and brief." +
-        " Answer in 2 to 4 sentences of plain prose. Do not use markdown, headers, bold, or bullet lists."
+        "cell types that are the risk. Be concrete and brief."
+        + " Answer in 2 to 4 sentences of plain prose. Do not use markdown, headers, bold, or bullet lists."
     ),
     "precedent": (
         "You are a QC analyst grounding a prediction in measured data. Given the design's predicted "
         "specificity gap and target cell, state what the held-out benchmark implies about this "
-        "design's failure probability, and how much to trust it. Cite the ground-truth numbers." +
-        " Answer in 2 to 4 sentences of plain prose. Do not use markdown, headers, bold, or bullet lists."
+        "design's failure probability, and how much to trust it. Cite the ground-truth numbers."
+        + " Answer in 2 to 4 sentences of plain prose. Do not use markdown, headers, bold, or bullet lists."
     ),
     "adversary": (
         "You are an adversarial skeptic. Argue the gate's verdict on this design could be WRONG: "
         "model blind spots, out-of-distribution sequence features, calibration limits, target cells "
-        "the model predicts poorly. Default to raising real doubts, not rubber-stamping." +
-        " Answer in 2 to 4 sentences of plain prose. Do not use markdown, headers, bold, or bullet lists."
+        "the model predicts poorly. Default to raising real doubts, not rubber-stamping."
+        + " Answer in 2 to 4 sentences of plain prose. Do not use markdown, headers, bold, or bullet lists."
     ),
 }
 
@@ -220,16 +224,24 @@ class CisFalconVerifier:
 def _rule_verdict(report: dict) -> dict:
     p = report["calibrated_fail_probability"]
     v = "FAIL" if report["predicted_fail"] else ("BORDERLINE" if p > 0.4 else "PASS")
+    low = bool(report.get("low_activity"))
+    if low:
+        rec = (
+            f"predicted weakly active in every cell (peak {report.get('peak_activity')} log2FC, "
+            "within the range of random sequences); may not be a functional enhancer, so treat the "
+            "specificity call as low-confidence"
+        )
+    elif v == "FAIL":
+        rec = "do not synthesize; predicted to miss target cell"
+    elif v == "PASS":
+        rec = "predicted specific; reasonable to synthesize"
+    else:
+        rec = "borderline; consider redesign or add controls"
     return {
         "verdict": v,
+        "low_activity": low,
         "confidence": round(abs(p - 0.5) * 2, 2),
-        "recommendation": (
-            "do not synthesize; predicted to miss target cell"
-            if v == "FAIL"
-            else "predicted specific; reasonable to synthesize"
-            if v == "PASS"
-            else "borderline; consider redesign or add controls"
-        ),
+        "recommendation": rec,
         "grounded_in": "gate calibration only (agents disabled)",
     }
 

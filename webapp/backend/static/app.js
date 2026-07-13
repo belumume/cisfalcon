@@ -294,7 +294,9 @@ function buildInspector(item, rep, scan) {
   const calibNote = validated
     ? `Calibrated failure probability ${probPct}%.`
     : `Failure probability ${probPct}% (calibration fit on the 3 cross-lab cells K562, HepG2, SKNSH; extrapolated to ${esc(rep.target_cell)}).`;
-  const statusLine = rep.low_activity
+  const statusLine = rep.low_complexity
+    ? `Degenerate or repetitive sequence (k-mer complexity ${rep.complexity}, a homopolymer or tandem repeat rather than a diverse enhancer-like sequence). This is not a credible enhancer design, so the specificity call is not meaningful — real designs use over 80% of their k-mer vocabulary; this one is far below that.`
+    : rep.low_activity
     ? `Predicted weakly active in every cell (peak activity ${rep.peak_activity} log2FC, within the range of random sequences). This may not be a functional enhancer, so the specificity call is low-confidence — a relative specificity score is only meaningful once a sequence is actually active somewhere.`
     : fail
     ? `Predicted to fail. Most-active cell is ${esc(offCell)}, not the ${esc(rep.target_cell)} target. Specificity gap ${fmtGap(rep.predicted_specificity_gap)} (fail when gap ≤ 0). ${calibNote}`
@@ -303,17 +305,19 @@ function buildInspector(item, rep, scan) {
   const seqN = item.seq.length;
   const nBases = (item.seq.match(/[^ACGTacgt]/g) || []).length;
   const seqWarns = [];
+  if (rep.low_complexity) seqWarns.push(`Degenerate/repetitive: k-mer complexity ${rep.complexity} (a homopolymer or tandem repeat, not enhancer-like), so the specificity call is not meaningful.`);
   if (rep.low_activity) seqWarns.push(`Not enhancer-like: predicted weakly active in every cell (peak ${rep.peak_activity} log2FC), so its specificity call is low-confidence.`);
   if ((rep.seq_len || seqN) > 500) seqWarns.push(`Only the first 500 bp are scored (the model's input window); this design is ${rep.seq_len || seqN} bp.`);
   if (seqN && nBases / seqN > 0.1) seqWarns.push(`${Math.round((nBases / seqN) * 100)}% of the bases are non-ACGT and read as blanks by the model.`);
   const seqWarnHTML = seqWarns.length ? `<div class="insp-warn">${esc(seqWarns.join(" "))}</div>` : "";
 
+  const amber = rep.low_complexity || rep.low_activity;
   $("#insp-dot").style.background = col; $("#insp-dot").style.boxShadow = "0 0 8px " + col;
   const stamp = $("#insp-stamp");
-  stamp.textContent = rep.low_activity ? "LOW ACTIVITY" : (fail ? "FLAGGED" : "CLEAR");
-  stamp.style.opacity = "1"; stamp.style.color = rep.low_activity ? AMBER : col;
-  stamp.style.background = rep.low_activity ? "rgba(231,178,74,.1)" : (fail ? "rgba(255,91,79,.1)" : "rgba(53,212,138,.1)");
-  stamp.style.borderColor = rep.low_activity ? "rgba(231,178,74,.55)" : (fail ? "rgba(255,91,79,.55)" : "rgba(53,212,138,.55)");
+  stamp.textContent = rep.low_complexity ? "LOW COMPLEXITY" : (rep.low_activity ? "LOW ACTIVITY" : (fail ? "FLAGGED" : "CLEAR"));
+  stamp.style.opacity = "1"; stamp.style.color = amber ? AMBER : col;
+  stamp.style.background = amber ? "rgba(231,178,74,.1)" : (fail ? "rgba(255,91,79,.1)" : "rgba(53,212,138,.1)");
+  stamp.style.borderColor = amber ? "rgba(231,178,74,.55)" : (fail ? "rgba(255,91,79,.55)" : "rgba(53,212,138,.55)");
 
   $("#insp-content").innerHTML =
   `<div class="insp-grid">
@@ -661,7 +665,7 @@ async function scoreChunked(items, target_cell, R) {
     const d = await api("/batch", { sequences: chunk.map((x) => x.seq), target_cell });
     for (const r of d.ranking) {
       const it = chunk[r.input_index];
-      if (it) rows.push({ id: it.id, seq: it.seq, gap: r.predicted_gap, cell: r.predicted_most_active_cell, fail: r.predicted_fail, low: r.low_activity });
+      if (it) rows.push({ id: it.id, seq: it.seq, gap: r.predicted_gap, cell: r.predicted_most_active_cell, fail: r.predicted_fail, low: r.low_activity, lowc: r.low_complexity });
     }
   }
   rows.sort((a, b) => b.gap - a.gap);
@@ -675,13 +679,14 @@ function renderBatchResult(rows, R) {
   const halfFail = half.filter((r) => r.fail).length / half.length;
   const overall = n ? nfail / n : 0;
   const nlow = rows.filter((r) => r.low).length;
+  const nlowc = rows.filter((r) => r.lowc).length;
   const reduction = overall > 0 ? Math.round(100 * (1 - halfFail / overall)) : 0;
   let h = `<div class="big-stat">
     <div class="s"><div class="v">${reduction}%</div><div class="l">fewer failures if you synthesize the safest half first</div></div>
     <div class="s"><div class="v">${nfail}/${n}</div><div class="l">predicted to miss their target cell</div></div>
   </div><table><thead><tr><th>rank</th><th>design</th><th>gap</th><th>most-active</th><th>call</th></tr></thead><tbody>`;
-  h += rows.slice(0, 200).map((r) => `<tr><td>${r.rank}</td><td>${esc(r.id)}${r.low ? ` <span class="dim" style="font-size:10px">· weak</span>` : ""}</td><td>${r.gap >= 0 ? "+" : "−"}${Math.abs(r.gap).toFixed(2)}</td><td>${esc(r.cell)}</td><td><span class="tpill ${r.fail ? "FAIL" : "PASS"}">${r.fail ? "fail" : "pass"}</span></td></tr>`).join("");
-  h += `</tbody></table><div class="dim" style="font-size:11px;margin-top:8px">ranked safest-first by predicted specificity gap. Synthesize from the top.${nlow > 0 ? ` ${nlow} of ${n} predicted weakly active in all cells (marked <i>weak</i>): not enhancer-like, so their specificity call is low-confidence.` : ""}${n > 200 ? ` Showing 200 of ${n}; download the full ranked CSV.` : ""}</div>`;
+  h += rows.slice(0, 200).map((r) => `<tr><td>${r.rank}</td><td>${esc(r.id)}${r.lowc ? ` <span class="dim" style="font-size:10px">· degenerate</span>` : (r.low ? ` <span class="dim" style="font-size:10px">· weak</span>` : "")}</td><td>${r.gap >= 0 ? "+" : "−"}${Math.abs(r.gap).toFixed(2)}</td><td>${esc(r.cell)}</td><td><span class="tpill ${r.fail ? "FAIL" : "PASS"}">${r.fail ? "fail" : "pass"}</span></td></tr>`).join("");
+  h += `</tbody></table><div class="dim" style="font-size:11px;margin-top:8px">ranked safest-first by predicted specificity gap. Synthesize from the top.${nlowc > 0 ? ` ${nlowc} of ${n} are degenerate or repetitive (marked <i>degenerate</i>): homopolymers or tandem repeats, not enhancer-like, so their specificity call is not meaningful.` : ""}${nlow > 0 ? ` ${nlow} of ${n} predicted weakly active in all cells (marked <i>weak</i>): not enhancer-like, so their specificity call is low-confidence.` : ""}${n > 200 ? ` Showing 200 of ${n}; download the full ranked CSV.` : ""}</div>`;
   h += `<div class="econ">
     <div class="hd">What triaging this batch is worth</div>
     <label style="font-size:13px" class="dim">Your cost per design (synthesis + assay): $<input id="econcost" type="number" min="0" step="50" value="500"></label>

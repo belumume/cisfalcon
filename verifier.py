@@ -70,6 +70,7 @@ def gate_report(
     profile = {c: round(float(pred[gate.CELL_IDX[c]]), 3) for c in gate.MPRA_CELL_LINES}
     most_active = gate.TARGET_CELLS[int(np.argmax(pred[idx]))]
     peak_activity = float(pred[idx].max())
+    complexity = gate.sequence_complexity(sequence)
     p_fail = calib.p_fail(gap)
     return {
         "target_cell": target_cell,
@@ -80,6 +81,9 @@ def gate_report(
         "peak_activity": round(peak_activity, 3),
         "low_activity": bool(peak_activity < gate.ACTIVITY_FLOOR),
         "activity_floor": gate.ACTIVITY_FLOOR,
+        "complexity": round(complexity, 3),
+        "low_complexity": bool(complexity < gate.COMPLEXITY_FLOOR),
+        "complexity_floor": gate.COMPLEXITY_FLOOR,
         "predicted_profile_log2fc": profile,
         "off_target_risk_cells": sorted(
             [
@@ -225,7 +229,14 @@ def _rule_verdict(report: dict) -> dict:
     p = report["calibrated_fail_probability"]
     v = "FAIL" if report["predicted_fail"] else ("BORDERLINE" if p > 0.4 else "PASS")
     low = bool(report.get("low_activity"))
-    if low:
+    low_cplx = bool(report.get("low_complexity"))
+    if low_cplx:
+        rec = (
+            f"degenerate/repetitive sequence (complexity {report.get('complexity')}, "
+            "a homopolymer or tandem repeat, not a diverse enhancer-like sequence); "
+            "not a credible enhancer design, so the specificity call is not meaningful"
+        )
+    elif low:
         rec = (
             f"predicted weakly active in every cell (peak {report.get('peak_activity')} log2FC, "
             "within the range of random sequences); may not be a functional enhancer, so treat the "
@@ -240,6 +251,7 @@ def _rule_verdict(report: dict) -> dict:
     return {
         "verdict": v,
         "low_activity": low,
+        "low_complexity": low_cplx,
         "confidence": round(abs(p - 0.5) * 2, 2),
         "recommendation": rec,
         "grounded_in": "gate calibration only (agents disabled)",

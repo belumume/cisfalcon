@@ -43,6 +43,37 @@ FOLDS = [0, 1, 3]  # atlas shipped model splits
 # NOT flagged; only sequences weakly active everywhere are.
 ACTIVITY_FLOOR = 0.5
 
+# Low-complexity / repeat plausibility floor. Complementary to ACTIVITY_FLOOR: the floor
+# catches sequences weakly active everywhere (random noise); this catches degenerate or
+# repetitive sequences (homopolymers like poly-A, short-period tandem repeats like an
+# ACGT-repeat) that can SPURIOUSLY over-activate the CNN and clear the floor with a
+# confident-looking verdict. A base-composition entropy check catches poly-A but not a
+# balanced tandem repeat (an ACGT-repeat has 25% of each base, so its base entropy is
+# maximal); a k-mer diversity metric catches both. Calibrated 2026-07-13 on the 1000 real
+# gosai designs (calibrate_complexity.py): real designs use >=81% of their k-mer
+# vocabulary (min 0.812, 1st pct 0.844); every degenerate case uses <=9.4% (poly-A 0.016,
+# ACGT-tandem 0.063, poly-N 0.0). The two populations are cleanly separated by an empty
+# gap; 0.35 is a wide-margin cut inside it (real false-flag 0%, all degenerate flagged).
+COMPLEXITY_FLOOR = 0.35
+
+
+def sequence_complexity(seq) -> float:
+    """Low-complexity score in [0,1]: min over k in {2,3} of the distinct-k-mer fraction
+    (distinct k-mers / max possible), computed on the ACGT-filtered signal (non-ACGT maps
+    to N = zero in the model and carries no signal). ~1.0 for diverse real/random
+    sequences; near 0 for homopolymers and tandem repeats. Below COMPLEXITY_FLOOR the
+    sequence is degenerate/repetitive and the specificity call is not meaningful."""
+    s = "".join(c for c in str(seq).upper() if c in "ACGT")
+    L = len(s)
+    if L < 6:
+        return 0.0
+    vals = []
+    for k in (2, 3):
+        kmers = {s[i : i + k] for i in range(L - k + 1)}
+        maxk = min(4**k, L - k + 1)
+        vals.append(len(kmers) / maxk)
+    return float(min(vals))
+
 
 def one_hot_encode(sequences, max_seq_len=INPUT_LEN, padding="left"):
     """Verbatim atlas convention: channels A,C,G,T; padding='left' = sequence at
@@ -106,11 +137,14 @@ def specificity_gap(pred: np.ndarray, target_cell: str, cells=None) -> np.ndarra
 def verdict(sequences, target_cell: str, cells=None, kind: str = "mpra"):
     """Full gate verdict for a batch of designs all targeting `target_cell`.
     Returns list of dicts: predicted_gap, most_active_cell, predicted_fail, margin,
-    peak_activity, low_activity. `low_activity` marks sequences predicted weakly active
-    in every cell (peak < ACTIVITY_FLOOR); for those the relative specificity call is
-    low-confidence and the sequence may not be a functional enhancer (see calibrate_floor.py)."""
+    peak_activity, low_activity, complexity, low_complexity. `low_activity` marks sequences
+    predicted weakly active in every cell (peak < ACTIVITY_FLOOR). `low_complexity` marks
+    degenerate/repetitive sequences (complexity < COMPLEXITY_FLOOR). For either flag the
+    relative specificity call is not meaningful and the sequence may not be a functional
+    enhancer (see calibrate_floor.py / calibrate_complexity.py)."""
     cells = cells or TARGET_CELLS
-    pred = score_sequences(sequences, kind=kind)
+    seqs = list(sequences)
+    pred = score_sequences(seqs, kind=kind)
     gaps = specificity_gap(pred, target_cell, cells)
     idx = [CELL_IDX[c] for c in cells]
     sub = pred[:, idx]
@@ -118,6 +152,7 @@ def verdict(sequences, target_cell: str, cells=None, kind: str = "mpra"):
     for i, g in enumerate(gaps):
         ma = cells[int(np.argmax(sub[i]))]
         peak = float(sub[i].max())
+        comp = sequence_complexity(seqs[i])
         out.append(
             {
                 "predicted_gap": float(g),
@@ -126,6 +161,8 @@ def verdict(sequences, target_cell: str, cells=None, kind: str = "mpra"):
                 "margin": float(abs(g)),
                 "peak_activity": peak,
                 "low_activity": bool(peak < ACTIVITY_FLOOR),
+                "complexity": comp,
+                "low_complexity": bool(comp < COMPLEXITY_FLOOR),
             }
         )
     return out

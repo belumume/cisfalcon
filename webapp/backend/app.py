@@ -430,11 +430,13 @@ def batch(req: BatchReq):
             "predicted_most_active_cell": v["most_active_cell"],
             "predicted_fail": v["predicted_fail"],
             "low_activity": v.get("low_activity", False),
+            "low_complexity": v.get("low_complexity", False),
         }
         for i, (idx, v) in enumerate(ranked)
     ]
     n_fail = sum(1 for v in verdicts if v["predicted_fail"])
     n_low = sum(1 for v in verdicts if v.get("low_activity"))
+    n_low_cplx = sum(1 for v in verdicts if v.get("low_complexity"))
     half = ranked[: max(1, n // 2)]
     half_fail = sum(1 for _, v in half if v["predicted_fail"]) / len(half)
     overall_fail = n_fail / n

@@ -1,5 +1,3 @@
-<!-- PITCH INTRO (voice this in your own words before publishing; the rest is factual/technical). -->
-
 # CisFalcon
 
 **Live tool: https://cisfalcon-lifesci.fly.dev/**

@@ -446,6 +446,7 @@ def batch(req: BatchReq):
         "target_cell": cell,
         "predicted_fail_count": n_fail,
         "low_activity_count": n_low,
+        "low_complexity_count": n_low_cplx,
         "predicted_fail_rate": round(overall_fail, 4),
         "safest_half_fail_rate": round(half_fail, 4),
         "failure_reduction_pct_safest_half": reduction,

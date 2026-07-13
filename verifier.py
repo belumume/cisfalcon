@@ -112,7 +112,13 @@ GROUND_TRUTH = (
     "cell (specificity gap <= 0). The emitted failure probability is calibrated marginally on this "
     "design population (a design it prints as 70% risk fails about 70% of the time across the "
     "population), not conditioned per target cell, so treat its absolute value as a population-level "
-    "estimate."
+    "estimate.\n\n"
+    "PLAUSIBILITY PRE-CHECK (do this FIRST): the report carries two flags. If low_complexity is "
+    "true the sequence is degenerate or repetitive (a homopolymer like poly-A or a short-period "
+    "tandem repeat), not a diverse enhancer-like sequence. If low_activity is true it is predicted "
+    "weakly active in every cell (within the range of random sequences). In EITHER case the design "
+    "is NOT a credible enhancer and the specificity/off-target question is moot: say that plainly and "
+    "first, and do NOT diagnose off-target cell risk as if it were a real design."
 )
 
 LENSES = {

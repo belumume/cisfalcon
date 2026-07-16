@@ -66,9 +66,9 @@ stated, so the numbers are honest rather than implied to be one eval:
 
 | Model | Cross-lab AUROC | Evaluated on |
 |---|---:|---|
-| Two-head ensemble (activity + chromatin accessibility) | **0.806** | paired subset (`ensemble_ci.py`); the lift over the best single head has a 95% CI excluding 0 |
-| CisFalcon activity CNN (the reference baseline) | **0.80** | full benchmark (`reproduce_flagship.py`); 0.8013 pooled, 0.802 on the paired subset |
-| Chromatin-accessibility head alone | 0.789 | paired subset (`ensemble_ci.py`), a fair cheaper single-model comparison |
+| Two-head ensemble (activity + chromatin accessibility) | **0.806** | full benchmark (`ensemble_ci.py`, all 93,435); the lift over the best single head has a 95% CI excluding 0 |
+| CisFalcon activity CNN (the reference baseline) | **0.80** | full benchmark; 0.8013 (`reproduce_flagship.py`), 0.8016 on the ensemble's independent code path (`ensemble_ci.py`) |
+| Chromatin-accessibility head alone | 0.789 | full benchmark (`ensemble_ci.py`, all 93,435), a fair cheaper single-model comparison |
 | AlphaGenome (DeepMind, independent, never trained on any MPRA) | 0.688 | n=240 subset (`docs/independent-model-crosscheck.md`); different-architecture agreement, the honest independent floor |
 | GC-content | 0.51 | full benchmark, trivial baseline |
 | Sequence length | 0.50 | full benchmark, trivial baseline |

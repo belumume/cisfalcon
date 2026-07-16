@@ -293,8 +293,12 @@ cheapest stage, which is where a triage gate belongs.
 4. **Closed-loop optimizer (`closed_loop.py`)** - Claude as a live tool-using agent, reported honestly.
    The frozen gate scores; it cannot optimize. Here Claude (Opus 4.8) runs a genuine tool-using loop: it
    proposes a grounded JASPAR motif edit, calls the gate as a tool to re-score, reads the new
-   specificity gap, and iterates until the design passes or aborts (watch it live in the browser, the
-   flagship goes -3.02 to +1.03). We then powered the obvious question instead of trusting a small
+   specificity gap, and iterates until the design passes or aborts ("Let Claude rescue it" runs this
+   live in the browser; `python closed_loop.py --demo` drives the flagship from -3.0 to +0.4 over
+   adaptive rounds, the winning cell shifting each round). The separate one-click closed-loop card is
+   the deterministic rule-based edit (`/api/redesign`, no model call, the flagship goes -3.02 to
+   +1.03), re-scored by the same frozen gate and described in full under Safety below; keep the two
+   apart when reading the numbers. We then powered the obvious question instead of trusting a small
    number: on 97 failing designs, at an **equal 4-round budget**, Claude's adaptive motif search rescues
    26.8% versus a fixed greedy rule's 24.7% (delta +2.1 points, 95% CI [-0.04, +0.08], **includes
    zero**). So the adaptive agent does **not** beat a fixed rule at equal budget, and we report that null

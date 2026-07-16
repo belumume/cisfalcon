@@ -340,6 +340,8 @@ Repository guide (the no-GPU scripts a reviewer can run straight from the commit
 | `fit_calibration.py` | isotonic calibration fit + held-out ECE 0.0031 |
 | `verifier.py` | the four-agent diagnosis harness; `gate.py` the frozen encoder + ensemble |
 | `PREREG.md` | frozen methodology, every caveat, pre-committed vs post-hoc labels |
+| `PREREG-ERRATA.md` | dated corrections to the frozen PREREG (it is hash-locked, so errors are recorded here rather than edited in place) |
+| `within_neighbor/matched_paired.py` | the matched, paired within-tissue comparison against the measured baselines |
 
 ## Generality
 

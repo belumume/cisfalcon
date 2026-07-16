@@ -233,16 +233,21 @@ transfers, scored by a cortex-appropriate model that is fully independent of Cis
 mouse-cortex snATAC model (aertslab) with per-subclass outputs for astrocyte, oligodendrocyte, OPC,
 microglia, and neuron subtypes. We scored the 532 in-vivo AAV-screened cortical enhancers of the
 Allen/BICCN benchmark (Ben-Simon et al. 2025, the clean-labelled subset of their ~677-enhancer
-screen); on the **211 with a hard in-vivo On-Target or Off-Target label** (143 On, 68 Off), the
-sequence-derived specificity gap separates On-vs-Off at **AUROC 0.70 (95% CI [0.63, 0.77], excludes
-chance)**.
+screen); of the **211 with a hard in-vivo On-Target or Off-Target label** (143 On, 68 Off), 204 carry a
+target subclass DeepBICCN2 has an output head for, and on those (140 On, 64 Off) the sequence-derived
+specificity gap separates On-vs-Off at **AUROC 0.7056 (95% CI [0.63, 0.77], excludes chance)**.
 
 Reported honestly, with the caveats elevated not buried:
 - This is the **paradigm generalizing via a different model**, not CisFalcon-the-tool working in brain.
-- It **ties** a measured-accessibility feature on the same set (0.70) and is **below** the best measured
-  cross-cell specificity feature (0.75); combining the sequence gap with measured accessibility adds
-  almost nothing. So the honest read is "from sequence alone it recovers what an accessibility assay
-  would tell you, a beat earlier," not "the model beats the assay."
+- It **ties** a measured-accessibility feature on the same set (0.70). Against the best measured
+  cross-cell specificity feature (gini) the comparison has to be matched and paired to mean anything:
+  the 0.746 gini figure is scored on all 211 rows, including 7 whose target subclass the gap cannot
+  score at all. On the same 204 scorable enhancers gini reads 0.7308 against the gap's 0.7056, and a
+  paired bootstrap on that difference (2000 resamples, seed 0) gives **+0.026, 95% CI [-0.066, +0.115],
+  which includes zero**. So on this set the sequence gap and the measured feature are statistically
+  indistinguishable, not ranked. Combining the sequence gap with measured accessibility adds almost
+  nothing. The honest read is "from sequence alone it recovers what an accessibility assay would tell
+  you, a beat earlier," not "the model beats the assay." Reproduce with `within_neighbor/matched_paired.py`.
 - DeepBICCN2 predicts accessibility (a proxy for the in-vivo functional readout), and the benchmark
   enhancers were selected from the BICCN atlas it trained on, so the accessibility basis is partly
   shared; the in-vivo On/Off **label** is an independent functional phenotype, which is what makes the

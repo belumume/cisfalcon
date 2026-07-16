@@ -34,7 +34,7 @@ tool.
 ![The live four-agent Claude verifier on a flagged design: three Sonnet 5 lenses (mechanism, precedent, adversary) run in parallel, then an Opus 4.8 adjudicator synthesizes them and holds its self-rated confidence below certainty because the adversary raised a valid out-of-distribution calibration caveat](docs/claude_diagnosis_live.png)
 
 A raw, unedited response from this live call is committed at `samples/diagnose_flagship_sample.json`
-(the flagship design, all three lens outputs plus the adjudicated verdict) so a judge can diff the real
+(the flagship design, all three lens outputs plus the adjudicated verdict) so anyone can diff the real
 four-agent output without running it.
 
 We ran the ablation and report it straight (`run_ablation.py`): the agent layer does not improve
@@ -82,7 +82,7 @@ over-solved instead of settled at the first passing number.
 
 A separate Claude Science session, on separate infrastructure, cloned the public repo from scratch
 and independently re-derived every committed number to the decimal. The captured table is in
-[`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md); a judge can diff it against the repo. Every row
+[`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md); anyone can diff it against the repo. Every row
 matched, and its verdict on the flagship was "honest, presented more conservatively than it needs
 to be, no overclaim."
 

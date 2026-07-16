@@ -6,7 +6,7 @@
 
 *A real Gosai/Tewhey design that CisFalcon flags as off-target, diagnoses, and closes the loop on: disrupt the K562 driver motifs (GATA1, TAL1, GATA2), install the HepG2 grammar (HNF4A, HNF1A, CEBPA), and the same external model moves the predicted specificity gap from failing to passing. This is an in-silico consistency check on one design, not wet-lab validation, captured live from the tool.*
 
-## For judges (60 seconds)
+## In 60 seconds
 
 **The problem.** AI now designs synthetic enhancers: short DNA meant to switch a gene on in one cell type and stay silent everywhere else, the targeting step of gene therapy. About **1 in 16** of those designs is secretly broken and fires in the wrong cell. You only find out after you synthesize and assay it, weeks and hundreds of dollars later.
 
@@ -20,7 +20,7 @@
 - Or locally, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the 7.8x triage straight from the committed per-design scores.
 - Uncertainty, in one command: `python bootstrap_ci.py` prints the 95% CIs (design-level and the honest cluster bootstrap over cell x generator strata) and the paired difference vs trivial baselines, all excluding zero (`docs/bootstrap_ci.png`).
 - Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md`.
-- **How it was built (the Claude Code + Claude Science collaboration):** [`HOW-BUILT.md`](HOW-BUILT.md). A Claude multi-agent verifier plus custom epistemic hooks, independently audited by a separate Claude Science session that re-derived every number and caught a real reproduction-claim conflation. Judge-diffable audit table: [`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md).
+- **How it was built (the Claude Code + Claude Science collaboration):** [`HOW-BUILT.md`](HOW-BUILT.md). A Claude multi-agent verifier plus custom epistemic hooks, independently audited by a separate Claude Science session that re-derived every number and caught a real reproduction-claim conflation. Diffable audit table: [`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md).
 
 **Why it matters.** Enhancers are the targeting element of brain / heart / immune enhancer-AAV gene therapy, where the field's own stated bottleneck is that many designs fail specificity. That is the spend CisFalcon triages, and it already runs on a brain-derived cell (the SKNSH neuroblastoma line, cross-lab 0.73; a primary-neuron MPRA is the honest next step).
 
@@ -308,7 +308,7 @@ cheapest stage, which is where a triage gate belongs.
    26.8% versus a fixed greedy rule's 24.7% (delta +2.1 points, 95% CI [-0.04, +0.08], **includes
    zero**). So the adaptive agent does **not** beat a fixed rule at equal budget, and we report that null
    rather than the underpowered n=20 headline it replaces. The honest value here is the **live agentic
-   tool-use loop itself** (a judge can watch Claude drive a scientific optimization), and it is in-silico
+   tool-use loop itself** (you can watch Claude drive a scientific optimization), and it is in-silico
    consistency (the frozen gate agrees the rescue passes), not wet-lab. `python closed_loop.py --demo`
    rescues the flagship live; `closed_loop_powered.py` reproduces the powered, equal-budget comparison.
 

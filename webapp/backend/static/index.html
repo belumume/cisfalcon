@@ -129,10 +129,10 @@
 
               <div class="ov-stat">
                 <div class="lhs">
-                  <div class="num">70%</div>
+                  <div class="num">41%</div>
                   <div class="cap">FEWER FAILURES</div>
                 </div>
-                <div class="body">Rank safest-first and synthesize the safer half: specificity failures drop from 6.29% to 1.91%.</div>
+                <div class="body">Rank safest-first and synthesize the safer half. Measured within one target cell and one generator, the honest conditioned reduction is 41%. Pooled across a mixed batch it reads 70% (6.29% to 1.91%), but a sequence-free rule using only stratum base rates scores 91% pooled, so the pooled number is not per-design signal.</div>
               </div>
             </div>
 
@@ -279,19 +279,19 @@
               <div class="d">about 1 in 16 designs misfires in the wrong cell type</div>
             </div>
             <div class="stat-card">
-              <div class="v green">70%</div>
+              <div class="v green">41%</div>
               <div class="k">FEWER FAILURES</div>
-              <div class="d">synthesize the safest half: 6.29% drops to 1.91%</div>
+              <div class="d">conditioned within cell x generator (the deployment case). Pooled it reads 70%, but a sequence-free stratum-prior rule beats that at 91%.</div>
             </div>
             <div class="stat-card">
-              <div class="v">7.8&times;</div>
+              <div class="v">2.59&times;</div>
               <div class="k">RISKIEST-2% ENRICHMENT</div>
-              <div class="d">of the flagged 2%, about half truly fail (PPV 0.49)</div>
+              <div class="d">macro across cell x generator strata (the deployment case). Pooled it reads 7.74&times; at PPV 0.487, on the same mixed-batch basis the 70% figure above is disowned for.</div>
             </div>
             <div class="stat-card">
               <div class="v">43%</div>
               <div class="k">FAILURES CAUGHT</div>
-              <div class="d">flag the riskiest 10% for redesign, capture 43% (4.3&times;)</div>
+              <div class="d">flag the riskiest 10%, capture 43% (4.3&times;). Pooled basis, and unlike the two cards above it has no conditioned counterpart measured yet, so read it as an upper bound.</div>
             </div>
           </div>
 
@@ -321,7 +321,7 @@
               <div class="cap">OPERATING POINTS</div>
               <div class="op">
                 <div class="t">Synthesize the safest half</div>
-                <div class="d">failure rate <b class="green">1.91%</b>, a 70% reduction</div>
+                <div class="d">failure rate <b class="green">1.91%</b> pooled (70%); conditioned within cell x generator the honest figure is a <b class="green">41%</b> reduction</div>
               </div>
               <div class="op">
                 <div class="t">Flag the riskiest 10%</div>
@@ -329,13 +329,13 @@
               </div>
               <div class="op">
                 <div class="t">Flag the riskiest 2%</div>
-                <div class="d"><b class="ink">49%</b> truly fail, 7.8&times; enrichment (PPV 0.49)</div>
+                <div class="d"><b class="ink">49%</b> truly fail, 7.74&times; enrichment (PPV 0.487)</div>
               </div>
               <div class="cost">Each pursued design costs real materials and weeks of turnaround; enter your own cost in the tool below to see the wasted spend a safest-first triage averts on your batch.</div>
             </div>
           </div>
 
-          <div class="batch-note">Risk-ranked view. The base rate 6.29% reflects the Gosai cross-lab population (n = 93,435). CisFalcon is a triage ranker, not a hard gate.</div>
+          <div class="batch-note">Risk-ranked view, computed POOLED across the Gosai cross-lab population (n = 93,435) where the base rate is 6.29%. Pooled is the wrong basis for a single lab's batch: conditioned within one cell type and one generator the reduction is 41% rather than 70%, and the riskiest-2% enrichment is 2.59&times; rather than 7.74&times;. Reproduce both with <code>triage_conditioning_check.py</code>. CisFalcon is a triage ranker, not a hard gate.</div>
 
           <!-- LIVE triage tool: rank any batch, per-batch economics (real /batch) -->
           <div class="tool">
@@ -441,28 +441,28 @@
             </div>
             <div class="c">
               <div class="cap">BRAIN-DERIVED LINE</div>
-              <div class="d">SKNSH cross-lab <b>0.73</b>; safest half cuts failures 58%. A primary-neuron MPRA is the honest next step.</div>
+              <div class="d">SKNSH cross-lab <b>0.73</b>; safest half cuts failures <b>32%</b> macro, conditioned within (SKNSH x generator), against an 82% sequence-free generator-prior null (58% pooled). A primary-neuron MPRA is the honest next step.</div>
             </div>
           </div>
 
           <div class="decomp" style="margin-bottom:22px">
             <div class="cap">IN-VIVO WITHIN-CORTEX · NEIGHBOR RESOLUTION</div>
-            <div class="lead">The paradigm, not this tool, tested one tissue deeper: an independent cortical model (DeepBICCN2, per-subclass for astrocyte, oligodendrocyte, and neuron subtypes) scores 532 in-vivo AAV-screened enhancers (Ben-Simon et al. 2025); on the 211 with a hard in-vivo On/Off label, the sequence-only specificity gap predicts On-vs-Off, shown here against the measured baselines on the same set.</div>
+            <div class="lead">The paradigm, not this tool, tested one tissue deeper: an independent cortical model (DeepBICCN2, per-subclass for astrocyte, oligodendrocyte, and neuron subtypes) scores 532 in-vivo AAV-screened enhancers (Ben-Simon et al. 2025). Scored here on <b>204 of the 211</b> hard-labelled enhancers (140 On / 64 Off) whose target subclass DeepBICCN2 can score; the other 7 have no output head for their subclass. All three bars are matched on those same 204 rows and paired, so they are like-for-like.</div>
             <div class="rows">
               <div class="drow">
                 <div class="top"><span class="k">specificity gap · sequence only</span><span class="v green">0.706</span></div>
                 <div class="bar"><div class="fill" style="width:51.5%;background:#35D48A"></div></div>
               </div>
               <div class="drow">
-                <div class="top"><span class="k">measured accessibility</span><span class="v">0.698</span></div>
-                <div class="bar"><div class="fill" style="width:49.5%;background:#6A7079"></div></div>
+                <div class="top"><span class="k">measured accessibility</span><span class="v">0.687</span></div>
+                <div class="bar"><div class="fill" style="width:46.8%;background:#6A7079"></div></div>
               </div>
               <div class="drow">
-                <div class="top"><span class="k">measured accessibility-specificity (gini)</span><span class="v">0.746</span></div>
-                <div class="bar"><div class="fill" style="width:61.5%;background:#3A4048"></div></div>
+                <div class="top"><span class="k">measured accessibility-specificity (gini)</span><span class="v">0.731</span></div>
+                <div class="bar"><div class="fill" style="width:57.7%;background:#3A4048"></div></div>
               </div>
             </div>
-            <div class="fine">AUROC 0.706, 95% CI [0.63, 0.77], excludes chance. A directional within-cortex generalization from sequence alone, comparable to measured accessibility and below the best measured feature. Independent model, in-vivo functional labels. The honest next step is a functional within-cortex model.</div>
+            <div class="fine">AUROC 0.706, 95% CI [0.63, 0.77], excludes chance. Against the measured features on the matched 204, the sequence gap is <b>statistically indistinguishable</b>, not ranked: vs gini paired delta +0.026, 95% CI [-0.066, +0.115]; vs accessibility -0.018, 95% CI [-0.103, +0.067]. Both include zero. The honest claim is that the gap recovers from sequence what an assay would tell you, not that either ranks above the other. An earlier version of this panel ranked them by comparing the n=204 gap against n=211 baselines; that unmatched comparison was retracted on 2026-07-16 (see PREREG-ERRATA.md). Reproduce with <code>python within_neighbor/matched_paired.py</code>. Independent model, in-vivo functional labels. The honest next step is a functional within-cortex model.</div>
           </div>
 
           <div class="het">

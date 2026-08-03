@@ -16,7 +16,8 @@ line. Every captured row matched to the decimal.
 | Joint (cell x method) macro | 0.662 | 0.6624 (14 strata) | yes |
 | Per-generator macro | 0.726 | 0.726 (hmc .922, sa .776, sa_rep .695, fsp .625, al .613) | yes |
 | GC / length baselines | 0.51 / 0.50 | 0.5113 / 0.5000 | yes |
-| Riskiest-2% PPV / enrichment | 0.49 / 7.8x | 0.4872 / 7.75x | yes |
+| Riskiest-2% PPV / enrichment (pooled) | 0.49 / 7.8x | 0.487 / 7.74x (`economics_table.py`, positive control against `reproduce_flagship.py`) | yes |
+| Riskiest-2% enrichment, conditioned within (cell x generator) | 2.59x macro | `triage_conditioning_check.py` | added post-audit |
 | Riskiest-10% capture / lift | 43% / 4.3x | 42.6% / 4.26x | yes |
 | Safest-50% failure rate | 1.91% | 1.9072% (69.7% reduction) | yes |
 

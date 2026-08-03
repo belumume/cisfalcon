@@ -1,12 +1,13 @@
-Quantity,Low estimate,High estimate
+Quantity,Conditioned (headline),Pooled (upper bound)
+Basis,"CONDITIONED macro within (cell x generator), 14 strata (the honest per-design case)",POOLED riskiest-2% across a mixed batch (upper bound; rides the stratum prior)
 Batch size (designs),200,200
 Measured failure base rate,6.29%,6.29%
 Designs flagged (riskiest 2%),4,4
-Flag precision (PPV),0.49,0.49
-Enrichment over base rate,7.8x,7.8x
-Real failures caught early / batch,2.0,2.0
-Full committed spend / design,$950,"$3,500"
-Cheap orthogonal recheck / flag,$40,$120
-Wasted spend averted / batch,"$1,862","$6,860"
-Recheck cost / batch,$160,$480
-Net savings / batch,"$1,702","$6,380"
+Enrichment over base rate,2.59x,7.74x
+Flag precision (PPV),0.163,0.487
+Real failures caught early / batch,0.65,1.95
+Full committed spend / design,"$950 to $3,500","$950 to $3,500"
+Cheap orthogonal recheck / flag,$40 to $120,$40 to $120
+Wasted spend averted / batch,"$618 to $2,276","$1,850 to $6,816"
+Recheck cost / batch,$160 to $480,$160 to $480
+Net savings / batch,"$458 to $1,796","$1,690 to $6,336"

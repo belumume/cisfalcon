@@ -28,7 +28,7 @@ set is a genuine cross-lab generalization measurement that memorization cannot i
 |---|---|
 | `id` | design identifier (encodes the generator method + intended target cell) |
 | `target_cell` | the cell type the design was built to be active in |
-| `method` | the generative method that produced it (fsp, den, motif_embedding, hmc, sa, ...) |
+| `method` | the generative method that produced it. The file carries exactly eight codes: `al` (AdaLead), `fsp` (FastSeqProp), `hmc` (Hamiltonian MC), `sa` (simulated annealing), `sa_rep` (simulated annealing, replicated), plus the three low-n unconstrained variants `al_uc`, `fsp_uc`, `sa_uc` (about 300 designs each) |
 | `sequence` | the designed DNA (fixed length) |
 | `K562`, `HepG2`, `SKNSH` | measured MPRA activity (log2FC) per cell type |
 | `measured_gap` | `target_activity - max(off-target activity)`; > 0 = specific, <= 0 = fails |
@@ -56,8 +56,11 @@ and spend synthesis budget on the designs most likely to work. Report AUROC/AUPR
 
 CisFalcon's frozen-atlas ensemble (this repo) scores **cross-lab AUROC 0.80** on this benchmark
 (random = 0.50), with a transparent decomposition (pooled 0.80 / within-cell-macro 0.75 /
-cell-prior-only 0.66). Reproduce with `python reproduce_flagship.py` (no GPU). It is an open baseline
-for other models to beat.
+cell-prior-only 0.68 / fully-conditioned joint within (cell x generator) 0.66). Reproduce with
+`python reproduce_flagship.py` (no GPU), and the decomposition with `python cell_prior_baseline.py`.
+Score a competing model at the conditioned operating point too, not only the pooled one: `python
+triage_conditioning_check.py` prints the per-stratum triage figures that go with the 0.66. It is an
+open baseline for other models to beat.
 
 ### Leaderboard (the reference is 0.80; beat it)
 
@@ -69,7 +72,7 @@ stated, so the numbers are honest rather than implied to be one eval:
 | Two-head ensemble (activity + chromatin accessibility) | **0.806** | full benchmark (`ensemble_ci.py`, all 93,435); the lift over the best single head has a 95% CI excluding 0 |
 | CisFalcon activity CNN (the reference baseline) | **0.80** | full benchmark; 0.8013 (`reproduce_flagship.py`), 0.8016 on the ensemble's independent code path (`ensemble_ci.py`) |
 | Chromatin-accessibility head alone | 0.789 | full benchmark (`ensemble_ci.py`, all 93,435), a fair cheaper single-model comparison |
-| AlphaGenome (DeepMind, independent, never trained on any MPRA) | 0.688 | n=240 subset (`docs/independent-model-crosscheck.md`); different-architecture agreement, the honest independent floor |
+| AlphaGenome (DeepMind, independent, never trained on any MPRA) | 0.688 | **different basis, not comparable to the rows above**: n=240 stratified *balanced* subsample (50% failures by construction), not the full 93,435 at a 6.29% base rate. Matched on those same 240 rows CisFalcon scores 0.673 vs AlphaGenome 0.688, paired delta +0.015, 95% CI [-0.038, +0.063] (includes zero, so indistinguishable). See `docs/independent-model-crosscheck.md`, reproduce with `alphagenome_matched.py` |
 | GC-content | 0.51 | full benchmark, trivial baseline |
 | Sequence length | 0.50 | full benchmark, trivial baseline |
 | Random | 0.50 | chance |

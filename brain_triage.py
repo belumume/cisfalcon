@@ -65,8 +65,12 @@ def main() -> None:
     print(f"  synthesize the safest-ranked half:")
     print(f"    failure rate in what you make            : {safe_half * 100:.2f}%")
     print(
-        f"    reduction vs unranked                    : {(1 - safe_half / base) * 100:.0f}%"
+        f"    reduction vs unranked, POOLED             : {(1 - safe_half / base) * 100:.0f}%"
     )
+    print(f"    reduction CONDITIONED (x generator)      : 32% macro (7% to 67%)")
+    print(f"    sequence-free generator-prior null       : 82%")
+    print(f"    -> the honest per-design figure is the conditioned 32%, not the")
+    print(f"       pooled number; run brain_conditioning_check.py to re-derive")
     print()
     print(f"  flag the riskiest 2%   : PPV {ppv2 * 100:.0f}%  ({enr2:.1f}x base)")
     print(

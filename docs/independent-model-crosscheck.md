@@ -44,7 +44,17 @@ wet-lab labels, and it is well above chance (CI excludes 0.50).
 - This is a heavily **out-of-distribution** use of AlphaGenome: a bare designed episomal
   enhancer in a 16 kb N-padded window is unlike the genomic context it was trained on. The 0.69
   is a floor, not a ceiling; a purpose-built AlphaGenome setup would likely do better.
-- AlphaGenome's 0.69 is lower than CisFalcon's cross-lab 0.80. The point of this cross-check is
+- **Matched, the two are statistically indistinguishable, and the naive ranking reverses.**
+  The **matched** comparison is the primary one: on the same committed 240 designs, CisFalcon
+  scores **0.6731** and AlphaGenome **0.6878**, a paired bootstrap difference of **+0.0147 with a
+  95% CI of [-0.0380, +0.0629]** (2,000 resamples, seed 0), which includes zero. So there is no
+  detected difference rather than a win for either, and the naive ordering actually points the
+  other way. Reproduce with `python alphagenome_matched.py` (no GPU, no API key; it asserts the
+  published AlphaGenome AUROC as a positive control first, which also pins the score orientation).
+  The **unmatched** "0.688 vs the flagship 0.80" comparison is a basis mismatch in our own favour
+  and is not evidence of anything: the 0.688 is measured on this 240-design stratified BALANCED
+  subsample (`base_fail` = 0.5), the 0.80 on the full 93,435 designs at a 6.29% base rate. The
+  point of this cross-check is
   the **agreement** (0.80 Spearman) and the above-chance independent signal, not that
   AlphaGenome matches CisFalcon on this task.
 - DNASE accessibility is a proxy for enhancer activity, not the MPRA readout itself.

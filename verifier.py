@@ -14,7 +14,9 @@ Two layers:
 
 Ground truth (leakage-immune, cross-lab): AUROC 0.80 discriminating measured specificity
 failures on 93,435 independent AI-designed enhancers (Gosai et al 2024, zero training overlap),
-vs 0.50 baselines. Triage ranker, not a hard gate: riskiest 2% -> 7.8x enrichment (PPV 0.49).
+vs 0.50 baselines. Triage ranker, not a hard gate: pooled, the riskiest 2% enrich 7.74x (PPV 0.49),
+but a sequence-free stratum-base-rate rule beats the pooled triage headline (91% vs 70% reduction), so
+the honest conditioned value is 41% macro reduction / 2.59x macro enrichment within (cell x generator).
 The per-sequence signal with cell and generator base-rates removed is 0.66. In-distribution
 0.896 is a sanity check with a near-duplicate-leakage caveat; the cross-lab number is flagship.
 """
@@ -103,8 +105,12 @@ GROUND_TRUTH = (
     "from a different lab, activity model, and generators the model never saw (Gosai et al 2024, "
     "Nature; zero training overlap), it discriminates measured wet-lab specificity failures at AUROC "
     "0.80, versus 0.50 for GC-content and length baselines. It is a triage RANKER, not a hard abort "
-    "gate: at the 6.3% base failure rate, flagging the riskiest 2% enriches for real failures 7.8x "
-    "(PPV 0.49) and the riskiest 10% captures 43% of all failures. The genuine per-sequence signal, "
+    "gate: pooled at the 6.3% base failure rate, flagging the riskiest 2% enriches for real failures "
+    "7.74x (PPV 0.49) and the riskiest 10% captures 43% of all failures. Those pooled triage figures "
+    "are NOT evidence of sequence-level discrimination: a sequence-free rule ranking by stratum base "
+    "rate alone achieves a 91% pooled reduction versus the model's 70%. Conditioned within "
+    "(cell x generator) the genuine triage value is 41% macro reduction and 2.59x macro enrichment, "
+    "with three strata below 1.0x. The genuine per-sequence signal, "
     "with both the target-cell and generator base-rates removed, is AUROC 0.66 (strong on failure-"
     "prone designs, near chance on the best-optimized ones). An in-distribution sanity check scores "
     "0.896 but carries a near-duplicate-leakage caveat, so the cross-lab number is the flagship. "

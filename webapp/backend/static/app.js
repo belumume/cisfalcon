@@ -676,15 +676,20 @@ async function scoreChunked(items, target_cell, R) {
 function renderBatchResult(rows, R) {
   const n = rows.length, nfail = rows.filter((r) => r.fail).length;
   const half = rows.slice(0, Math.max(1, Math.floor(n / 2)));
-  const halfFail = half.filter((r) => r.fail).length / half.length;
   const overall = n ? nfail / n : 0;
   const nlow = rows.filter((r) => r.low).length;
   const nlowc = rows.filter((r) => r.lowc).length;
-  const reduction = overall > 0 ? Math.round(100 * (1 - halfFail / overall)) : 0;
+  // NOT a measured reduction. rows are sorted by pred_gap and r.fail IS pred_gap <= 0, so every
+  // predicted failure lands in the riskiest half by construction whenever fewer than half the
+  // batch is flagged; the old "% fewer failures" tile therefore read 100% by arithmetic, not by
+  // measurement, and a user's own library carries no wet-lab labels to measure against.
+  // Report the batch's own predicted-failure rate against the benchmark base rate instead, and
+  // put the MEASURED reduction (from the cross-lab benchmark) in the fine print where it belongs.
+  const flaggedInRiskiestHalf = nfail - half.filter((r) => r.fail).length;
   let h = `<div class="big-stat">
-    <div class="s"><div class="v">${reduction}%</div><div class="l">fewer failures if you synthesize the safest half first</div></div>
+    <div class="s"><div class="v">${(overall * 100).toFixed(1)}%</div><div class="l">of this batch is <b>predicted</b> to fail, against a 6.29% base rate on the cross-lab benchmark</div></div>
     <div class="s"><div class="v">${nfail}/${n}</div><div class="l">predicted to miss their target cell</div></div>
-  </div><table><thead><tr><th>rank</th><th>design</th><th>gap</th><th>most-active</th><th>call</th></tr></thead><tbody>`;
+  </div><div class="dim" style="font-size:11px;margin-top:6px">${flaggedInRiskiestHalf} of ${nfail} predicted failures sort into the riskiest half here, which is by construction rather than a measured result: the ranking and the pass/fail call both come from the same predicted gap, and your library carries no wet-lab labels to score against. The <i>measured</i> safest-half reduction, on the 93,435-design cross-lab benchmark, is <b>41%</b> conditioned within (cell &times; generator) and 70% pooled, where a sequence-free stratum-prior rule reaches 91%.</div><table><thead><tr><th>rank</th><th>design</th><th>gap</th><th>most-active</th><th>call</th></tr></thead><tbody>`;
   h += rows.slice(0, 200).map((r) => `<tr><td>${r.rank}</td><td>${esc(r.id)}${r.lowc ? ` <span class="dim" style="font-size:10px">· degenerate</span>` : (r.low ? ` <span class="dim" style="font-size:10px">· weak</span>` : "")}</td><td>${r.gap >= 0 ? "+" : "−"}${Math.abs(r.gap).toFixed(2)}</td><td>${esc(r.cell)}</td><td><span class="tpill ${r.fail ? "FAIL" : "PASS"}">${r.fail ? "fail" : "pass"}</span></td></tr>`).join("");
   h += `</tbody></table><div class="dim" style="font-size:11px;margin-top:8px">ranked safest-first by predicted specificity gap. Synthesize from the top.${nlowc > 0 ? ` ${nlowc} of ${n} are degenerate or repetitive (marked <i>degenerate</i>): homopolymers or tandem repeats, not enhancer-like, so their specificity call is not meaningful.` : ""}${nlow > 0 ? ` ${nlow} of ${n} predicted weakly active in all cells (marked <i>weak</i>): not enhancer-like, so their specificity call is low-confidence.` : ""}${n > 200 ? ` Showing 200 of ${n}; download the full ranked CSV.` : ""}</div>`;
   h += `<div class="econ">
@@ -712,10 +717,14 @@ function renderEcon(rows) {
     out.innerHTML = `<div class="dim" style="font-size:12px">CisFalcon flags ${nfail}/${n} here. At ${money(cost)}/design, making all ${n} is ${money(n * cost)}. Too few flagged failures on this batch for triage to change the spend much; the value concentrates on failure-prone libraries.</div>`;
     return;
   }
+  // `avoided` counts PREDICTED failures, from the same score that did the ranking, so it is an
+  // upper bound that assumes every prediction is correct. It is not a measured saving. Scale it
+  // by the benchmark's measured precision for the realistic figure, and label both.
+  const PPV = 0.24; // measured on the cross-lab benchmark at recall 0.5 (see index.html bounds)
   out.innerHTML = `<div class="big-stat">
     <div class="s"><div class="v">${money(n * cost)}</div><div class="l">to synthesize all ${n} designs</div></div>
-    <div class="s"><div class="v">${money(avoided * cost)}</div><div class="l">wasted synthesis averted: about ${avoided.toFixed(1)} fewer broken designs made if you build CisFalcon's safest half instead of a random half</div></div>
-  </div><div class="dim" style="font-size:11px;margin-top:6px">You enter the cost; CisFalcon supplies the ranking. Averted = expected failures in a random half minus the failures left in CisFalcon's safest half, times your cost.</div>`;
+    <div class="s"><div class="v">${money(avoided * cost * PPV)}</div><div class="l">expected averted spend at the benchmark's measured precision (PPV 0.24 at recall 0.5)</div></div>
+  </div><div class="dim" style="font-size:11px;margin-top:6px">You enter the cost; CisFalcon supplies the ranking. About <b>${avoided.toFixed(1)}</b> <i>predicted</i> failures move out of the safest half, worth ${money(avoided * cost)} <i>if every prediction were correct</i>, which is an upper bound rather than a measured saving: these are the model's own calls on an unlabelled library, produced by the same score that ranked it. The figure above discounts that by the measured precision. Actual averted spend depends on how well the benchmark precision transfers to your library.</div>`;
 }
 
 $("#bt-upload").addEventListener("click", () => $("#bt-file").click());

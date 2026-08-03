@@ -7,7 +7,8 @@ figure). Runs in well under a minute.
     python bootstrap_ci.py
 
 Answers the two questions a computational-genomics reviewer asks first about the
-headline cross-lab AUROC 0.80 and the 7.8x triage enrichment: what is the
+headline cross-lab AUROC 0.80 and the pooled 7.74x triage enrichment (conditioned: 2.59x macro,
+see triage_conditioning_check.py): what is the
 uncertainty on those numbers, and is the separation from a trivial baseline
 statistically real. It reads the committed cross-lab scores and reports:
 

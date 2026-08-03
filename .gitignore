@@ -40,3 +40,12 @@ Thumbs.db
 webapp/backend/static/_pre-fable5-backup/
 .playwright-mcp/
 webapp/backend/_verify_proxy.py
+
+# local audit scratch (not part of the published artifact)
+.audit-findings/
+
+# result artifacts must never be silently dropped by the broad data/ ignore
+!data/gosai_designed/*.json
+
+# agent/session scratch: contains absolute local paths (username). Never publish.
+.claude/

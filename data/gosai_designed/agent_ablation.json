@@ -1,0 +1,576 @@
+{
+ "n": 16,
+ "n_errors": 0,
+ "overall_by_design_majority": {
+  "single": 9,
+  "panel": 7
+ },
+ "per_dimension_judge_votes": {
+  "mechanistic_specificity": {
+   "single": 22,
+   "tie": 17,
+   "panel": 9
+  },
+  "calibration": {
+   "tie": 13,
+   "single": 17,
+   "panel": 18
+  },
+  "adversarial_rigor": {
+   "single": 19,
+   "panel": 24,
+   "tie": 5
+  },
+  "wetlab_usefulness": {
+   "single": 37,
+   "panel": 3,
+   "tie": 8
+  }
+ },
+ "results": [
+  {
+   "id": "20211213_141749__270660__241::hmc__hepg2__0",
+   "cell": "HepG2",
+   "panel_is": "A",
+   "gate_verdict": true,
+   "overall_majority": "single",
+   "per_dim": {
+    "winner": [
+     "single",
+     "single",
+     "single"
+    ],
+    "mechanistic_specificity": [
+     "single",
+     "single",
+     "single"
+    ],
+    "calibration": [
+     "tie",
+     "single",
+     "tie"
+    ],
+    "adversarial_rigor": [
+     "single",
+     "single",
+     "single"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211210_221646__981484__487::hmc__k562__0",
+   "cell": "K562",
+   "panel_is": "A",
+   "gate_verdict": true,
+   "overall_majority": "single",
+   "per_dim": {
+    "winner": [
+     "single",
+     "single",
+     "single"
+    ],
+    "mechanistic_specificity": [
+     "single",
+     "tie",
+     "tie"
+    ],
+    "calibration": [
+     "single",
+     "single",
+     "single"
+    ],
+    "adversarial_rigor": [
+     "single",
+     "single",
+     "single"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211212_73316__958155__766::fsp__sknsh__2",
+   "cell": "SKNSH",
+   "panel_is": "B",
+   "gate_verdict": true,
+   "overall_majority": "panel",
+   "per_dim": {
+    "winner": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "mechanistic_specificity": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "calibration": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "adversarial_rigor": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "wetlab_usefulness": [
+     "panel",
+     "panel",
+     "panel"
+    ]
+   }
+  },
+  {
+   "id": "20211210_223825__729421__371::hmc__sknsh__0",
+   "cell": "SKNSH",
+   "panel_is": "B",
+   "gate_verdict": true,
+   "overall_majority": "panel",
+   "per_dim": {
+    "winner": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "mechanistic_specificity": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "calibration": [
+     "tie",
+     "tie",
+     "tie"
+    ],
+    "adversarial_rigor": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211207_163007__848589__4947::sa__sknsh__3",
+   "cell": "SKNSH",
+   "panel_is": "A",
+   "gate_verdict": true,
+   "overall_majority": "single",
+   "per_dim": {
+    "winner": [
+     "single",
+     "single",
+     "single"
+    ],
+    "mechanistic_specificity": [
+     "single",
+     "single",
+     "single"
+    ],
+    "calibration": [
+     "single",
+     "single",
+     "single"
+    ],
+    "adversarial_rigor": [
+     "single",
+     "single",
+     "single"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211207_224529__679056__4839::sa__k562__3",
+   "cell": "K562",
+   "panel_is": "A",
+   "gate_verdict": true,
+   "overall_majority": "single",
+   "per_dim": {
+    "winner": [
+     "single",
+     "single",
+     "single"
+    ],
+    "mechanistic_specificity": [
+     "tie",
+     "tie",
+     "tie"
+    ],
+    "calibration": [
+     "single",
+     "single",
+     "single"
+    ],
+    "adversarial_rigor": [
+     "single",
+     "single",
+     "single"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211214_111905__704605__316::sa_rep__sknsh__0",
+   "cell": "SKNSH",
+   "panel_is": "A",
+   "gate_verdict": true,
+   "overall_majority": "single",
+   "per_dim": {
+    "winner": [
+     "single",
+     "single",
+     "single"
+    ],
+    "mechanistic_specificity": [
+     "single",
+     "single",
+     "single"
+    ],
+    "calibration": [
+     "single",
+     "single",
+     "single"
+    ],
+    "adversarial_rigor": [
+     "tie",
+     "tie",
+     "tie"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211210_224050__335618__81::hmc__sknsh__0",
+   "cell": "SKNSH",
+   "panel_is": "B",
+   "gate_verdict": true,
+   "overall_majority": "panel",
+   "per_dim": {
+    "winner": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "mechanistic_specificity": [
+     "tie",
+     "tie",
+     "tie"
+    ],
+    "calibration": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "adversarial_rigor": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211212_73316__958155__1077::fsp__sknsh__3",
+   "cell": "SKNSH",
+   "panel_is": "A",
+   "gate_verdict": false,
+   "overall_majority": "single",
+   "per_dim": {
+    "winner": [
+     "single",
+     "single",
+     "single"
+    ],
+    "mechanistic_specificity": [
+     "single",
+     "single",
+     "single"
+    ],
+    "calibration": [
+     "tie",
+     "tie",
+     "tie"
+    ],
+    "adversarial_rigor": [
+     "single",
+     "single",
+     "single"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211212_14909__942569__1163::fsp__sknsh__0",
+   "cell": "SKNSH",
+   "panel_is": "B",
+   "gate_verdict": false,
+   "overall_majority": "panel",
+   "per_dim": {
+    "winner": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "mechanistic_specificity": [
+     "tie",
+     "tie",
+     "tie"
+    ],
+    "calibration": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "adversarial_rigor": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "wetlab_usefulness": [
+     "tie",
+     "tie",
+     "tie"
+    ]
+   }
+  },
+  {
+   "id": "20211212_52639__969454__516::fsp__hepg2__1",
+   "cell": "HepG2",
+   "panel_is": "B",
+   "gate_verdict": false,
+   "overall_majority": "panel",
+   "per_dim": {
+    "winner": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "mechanistic_specificity": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "calibration": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "adversarial_rigor": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "wetlab_usefulness": [
+     "tie",
+     "tie",
+     "tie"
+    ]
+   }
+  },
+  {
+   "id": "20211212_61436__944763__1442::fsp__hepg2__4",
+   "cell": "HepG2",
+   "panel_is": "B",
+   "gate_verdict": false,
+   "overall_majority": "single",
+   "per_dim": {
+    "winner": [
+     "single",
+     "single",
+     "single"
+    ],
+    "mechanistic_specificity": [
+     "single",
+     "single",
+     "single"
+    ],
+    "calibration": [
+     "tie",
+     "tie",
+     "tie"
+    ],
+    "adversarial_rigor": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211212_45907__313665__208::fsp__hepg2__0",
+   "cell": "HepG2",
+   "panel_is": "B",
+   "gate_verdict": false,
+   "overall_majority": "panel",
+   "per_dim": {
+    "winner": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "mechanistic_specificity": [
+     "tie",
+     "single",
+     "tie"
+    ],
+    "calibration": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "adversarial_rigor": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "tie",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211214_94001__624120__3993::sa_rep__k562__0",
+   "cell": "K562",
+   "panel_is": "A",
+   "gate_verdict": false,
+   "overall_majority": "single",
+   "per_dim": {
+    "winner": [
+     "single",
+     "single",
+     "single"
+    ],
+    "mechanistic_specificity": [
+     "tie",
+     "single",
+     "single"
+    ],
+    "calibration": [
+     "single",
+     "single",
+     "single"
+    ],
+    "adversarial_rigor": [
+     "single",
+     "tie",
+     "tie"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211207_85512__472183__1222::sa__hepg2__0",
+   "cell": "HepG2",
+   "panel_is": "B",
+   "gate_verdict": false,
+   "overall_majority": "panel",
+   "per_dim": {
+    "winner": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "mechanistic_specificity": [
+     "tie",
+     "tie",
+     "tie"
+    ],
+    "calibration": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "adversarial_rigor": [
+     "panel",
+     "panel",
+     "panel"
+    ],
+    "wetlab_usefulness": [
+     "tie",
+     "single",
+     "single"
+    ]
+   }
+  },
+  {
+   "id": "20211212_61436__944763__1220::fsp__hepg2__3",
+   "cell": "HepG2",
+   "panel_is": "A",
+   "gate_verdict": false,
+   "overall_majority": "single",
+   "per_dim": {
+    "winner": [
+     "single",
+     "single",
+     "single"
+    ],
+    "mechanistic_specificity": [
+     "single",
+     "single",
+     "single"
+    ],
+    "calibration": [
+     "tie",
+     "single",
+     "tie"
+    ],
+    "adversarial_rigor": [
+     "single",
+     "single",
+     "single"
+    ],
+    "wetlab_usefulness": [
+     "single",
+     "single",
+     "single"
+    ]
+   }
+  }
+ ]
+}

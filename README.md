@@ -2,7 +2,7 @@
 
 **Live tool: https://cisfalcon-lifesci.fly.dev/**
 
-![The CisFalcon Overview: catch the AI-designed enhancers that will fail before the lab synthesizes them. Cross-lab AUROC 0.80 on 93,435 held-out designs, about 70 percent fewer wasted syntheses by ranking safest-first, with a closed-loop verification card showing a real Gosai/Tewhey design re-scored to PASS at specificity gap +1.0.](docs/hero_overview.png)
+![The CisFalcon Overview: catch the AI-designed enhancers that will fail before the lab synthesizes them. Cross-lab AUROC 0.80 on 93,435 held-out designs, fewer wasted syntheses by ranking safest-first, with a closed-loop verification card showing a real Gosai/Tewhey design re-scored to PASS at specificity gap +1.0.](docs/hero_overview.png)
 
 *A real Gosai/Tewhey design that CisFalcon flags as off-target, diagnoses, and closes the loop on: disrupt the K562 driver motifs (GATA1, TAL1, GATA2), install the HepG2 grammar (HNF4A, HNF1A, CEBPA), and the same external model moves the predicted specificity gap from failing to passing. This is an in-silico consistency check on one design, not wet-lab validation, captured live from the tool.*
 
@@ -12,12 +12,12 @@
 
 **What it does.** CisFalcon reads a design and predicts that failure from sequence alone, before synthesis, so a lab spends its bench budget on the designs most likely to hold up.
 
-**The number, reported the honest way.** Cross-lab **AUROC 0.80 on 93,435 designs from a different lab** (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw, with zero sequence overlap. Rank safest-first and specificity failures in what you synthesize drop **70%** (6.29% to 1.91%); flag the riskiest 2% and about half truly fail (**7.8x** enrichment over the base rate). It is a triage ranker, not a hard gate, and every caveat is stated below and in `PREREG.md`.
+**The number, reported the honest way.** Cross-lab **AUROC 0.80 on 93,435 designs from a different lab** (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw, with zero sequence overlap. Rank safest-first and, within one target cell and one generator (how a lab actually deploys this), **specificity failures drop 41%** (macro across 14 strata) with 2.59x enrichment in the riskiest 2%. Pooled across a mixed batch those same rules read 70% and 7.74x, but we measured the null and report it: ranking by stratum base rate alone, with no access to sequence at all, achieves **91% pooled**, better than the model. So the pooled figures are not evidence of sequence-level discrimination, and 41% / 2.59x is the honest per-design number (`triage_conditioning_check.py`). It is a triage ranker, not a hard gate, and every caveat is stated below and in `PREREG.md`.
 
 **Try it, or reproduce it in one click:**
 - Reproduce the 0.80 in your browser, no install: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/belumume/cisfalcon/blob/main/reproduce_flagship.ipynb) fetches the committed scores from GitHub and prints AUROC 0.8013 in pure numpy.
 - Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (open Verify to see a real design batch scored and ranked live, click a flagged design to watch the closed-loop fix flip it or to run the live four-agent Claude diagnosis on it, or paste your own sequence). The Claude verifier runs in the product, not only the CLI: "Run Claude diagnosis" fires three Sonnet 5 reasoning lenses in parallel and an Opus 4.8 adjudicator, and the browser network tab shows the real `/api/diagnose` call return.
-- Or locally, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the 7.8x triage straight from the committed per-design scores.
+- Or locally, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the pooled 7.74x triage straight from the committed per-design scores, and `python triage_conditioning_check.py` re-derives the conditioned 41% / 2.59x and the 91% sequence-free null.
 - Uncertainty, in one command: `python bootstrap_ci.py` prints the 95% CIs (design-level and the honest cluster bootstrap over cell x generator strata) and the paired difference vs trivial baselines, all excluding zero (`docs/bootstrap_ci.png`).
 - Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md`.
 - **How it was built (the Claude Code + Claude Science collaboration):** [`HOW-BUILT.md`](HOW-BUILT.md). A Claude multi-agent verifier plus custom epistemic hooks, independently audited by a separate Claude Science session that re-derived every number and caught a real reproduction-claim conflation. Diffable audit table: [`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md).
@@ -82,8 +82,11 @@ FastSeqProp), with no sequence overlap with the model's training data.
 | cross-lab AUROC (n=93,435) | **0.8013**, 95% CI [0.796, 0.807] | `reproduce_flagship.py`, `bootstrap_ci.py` |
 | vs trivial baselines (GC / length / random) | 0.51 / 0.50 / 0.50 | `bootstrap_ci.py` |
 | fully-conditioned per-sequence signal | 0.66 | `cell_prior_baseline.py` |
-| safest-half failure reduction | **70%** (6.29% to 1.91%) | `triage_curve.py` |
-| riskiest-2% triage enrichment | **7.8x** (PPV 0.49) | `reproduce_flagship.py` |
+| safest-half failure reduction, conditioned (the honest one) | **41%** macro within (cell x generator) | `triage_conditioning_check.py` |
+| safest-half failure reduction, pooled | 70% (6.29% to 1.91%) | `triage_curve.py` |
+| sequence-free stratum-prior null, pooled | **91%** (beats the pooled 70%) | `triage_conditioning_check.py` |
+| riskiest-2% enrichment, conditioned | **2.59x** macro (3 strata below 1.0x) | `triage_conditioning_check.py` |
+| riskiest-2% enrichment, pooled | 7.74x (PPV 0.49) | `reproduce_flagship.py` |
 | held-out calibration error (ECE) | 0.0031 | `fit_calibration.py` |
 
 ![Safest-first triage vs synthesizing blind](docs/triage_curve.png)
@@ -93,7 +96,7 @@ FastSeqProp), with no sequence overlap with the model's training data.
 - **The number carries its uncertainty** (`bootstrap_ci.py`, 2000 resamples): the design-level 95% CI is
   [0.796, 0.807]; the honest cluster bootstrap over the 24 cell x generator strata is [0.614, 0.895], wide
   by construction because the ranker is strong on failure-prone generators and near-chance on the
-  best-optimized ones. Triage enrichment 7.74x [7.39, 8.14]; safest-half reduction 70% [68%, 72%]. The
+  best-optimized ones. Pooled triage enrichment 7.74x [7.39, 8.14] and pooled safest-half reduction 70% [68%, 72%]; conditioned within (cell x generator) these become 2.59x and 41%, against a 91% sequence-free stratum-prior null. The
   gap over every trivial baseline is +0.29 to +0.30 with each 95% CI excluding zero, so the separation is
   statistically real, not a large-n artifact.
 - **The signal is per-sequence, not just a base-rate prior.** Within each target cell (the cell prior
@@ -123,16 +126,30 @@ FastSeqProp), with no sequence overlap with the model's training data.
   AlphaGenome (Google DeepMind) using its predicted chromatin accessibility: on 240 designs its
   independent specificity gap agrees with CisFalcon's predicted gap at **Spearman 0.80** (Pearson 0.82),
   and on its own it separates the wet-lab failures at **AUROC 0.688** [95% CI 0.620, 0.752], above chance
-  even used far outside its training distribution. This is not fully orthogonal (both models learn
-  regulatory grammar from genomic data), so the honest independent floor is the 0.688, not the 0.80
-  agreement; the point is that a model built on different data with a different objective, that never saw
+  even used far outside its training distribution. Those 240 designs are a stratified **balanced**
+  subsample (50% failures by construction), so 0.688 is **not** comparable to the flagship 0.80, which is
+  measured on the full 93,435 designs at a 6.29% base rate. Matched on the same 240 rows, CisFalcon
+  scores **0.6731** and AlphaGenome **0.6878**: paired delta +0.0147, 95% CI [-0.0380, +0.0629], which
+  includes zero, so on this subsample the two are statistically indistinguishable rather than ranked.
+  This is also not fully orthogonal (both models learn regulatory grammar from genomic data); the point
+  is that a model built on different data with a different objective, that never saw
   an MPRA, ranks the same designs in the same order. Method and boundaries in
   [`docs/independent-model-crosscheck.md`](docs/independent-model-crosscheck.md); reproduce with
-  `alphagenome_crosscheck.py`.
-- **Triage value (the operating point that matters):** rank designs by CisFalcon and synthesize the
-  safest half first, and the specificity-failure rate in what you make drops from 6.29% to 1.91%, a
-  **70% reduction in failures**. Flag the riskiest 10% for redesign and you capture 43% of all failures
-  at 4.3x the base rate; tighten to the riskiest 2% and 49% of those truly fail (7.8x).
+  `alphagenome_crosscheck.py` and the matched comparison with `alphagenome_matched.py`.
+- **Triage value, conditioned the same way the AUROC is.** Pooled across a mixed batch, ranking by
+  CisFalcon and synthesizing the safest half first drops the specificity-failure rate from 6.29% to
+  1.91% (70%); the riskiest 10% capture 43% of all failures at 4.3x, and the riskiest 2% enrich 7.74x
+  (PPV 0.49). **Those pooled figures are not evidence of sequence-level discrimination, and we say so
+  because we measured it:** a sequence-free rule ranking by nothing but each stratum's base rate
+  achieves a **91% pooled reduction, higher than the model's 70%**. Holding both priors constant on
+  the same 14 within-(cell x generator) strata behind the 0.66 joint AUROC, the genuine per-item
+  triage value is a **41% macro reduction and 2.59x macro enrichment**. A lab deploys one generator
+  against one target cell, so 41% / 2.59x is the honest operating point. Per-stratum spread is
+  reported rather than averaged away: reduction runs from 91% (HepG2/hmc) down to 7% (SKNSH/sa_rep), and
+  three strata sit below 1.0x enrichment (SKNSH/fsp 0.65x, K562/sa_rep 0.60x, HepG2/sa_rep 0.90x),
+  i.e. no better than random within those strata. Reproduce with `triage_conditioning_check.py`, which
+  re-derives the published pooled figures to the digit as a positive control and refuses to print the
+  conditioned numbers if that assert fails.
 - Every cross-lab headline number here re-derives to 4 decimals directly from the committed per-design
   scores (`data/gosai_designed/designed_scored.csv`) with a plain rank-sum AUROC; it is not a pipeline artifact.
 - **Independently reproduced.** A separate Claude Science session cloned this repo from scratch and re-derived
@@ -211,11 +228,18 @@ it reaches an animal.
 
 CisFalcon already runs on a
 brain-derived line. Restricting the committed cross-lab scores to the SKNSH neuroblastoma designs
-(`python brain_triage.py`, no GPU): base failure rate 10.06%, cross-lab AUROC 0.73; synthesize the
-safest-ranked half and the brain-cell failure rate drops to 4.19% (**58% fewer**); the riskiest-2%
-flag is 48% real failures (4.8x). These are softer than the pooled numbers and reported as-is (SKNSH
-is a brain-derived cancer line, an in-vitro stand-in; a primary cortical-neuron MPRA is the honest
-next step). And it works live on a real brain design:
+(`python brain_triage.py`, no GPU): base failure rate 10.06%, cross-lab AUROC 0.73. Synthesizing the
+safest-ranked half cuts brain-cell failures by **32% macro** when conditioned within
+(SKNSH x generator), spanning 7% (sa_rep) to 67% (hmc) across the five generator strata. That macro
+figure is the honest per-design number. Pooled across generators the same operation reads 4.19%, a
+58% reduction, but a sequence-free rule that ranks only by each generator's base rate reaches 82%
+pooled within SKNSH, so the pooled 58% is mostly the ranker sorting easy generators above hard ones
+rather than discriminating designs. The riskiest-2% flag is 48% real failures (4.8x pooled, 1.90x
+macro conditioned). Reproduce the conditioning with `python brain_conditioning_check.py`, which
+asserts brain_triage.py's published pooled numbers as a positive control before printing anything
+conditioned. These are softer than the pooled numbers and reported as-is (SKNSH is a brain-derived
+cancer line, an in-vitro stand-in; a primary cortical-neuron MPRA is the honest next step). And it
+works live on a real brain design:
 
 ![CisFalcon flags a real brain-cell design as failing](docs/brain_fail_demo.png)
 
@@ -330,7 +354,8 @@ Repository guide (the no-GPU scripts a reviewer can run straight from the commit
 
 | script | what it produces |
 |---|---|
-| `reproduce_flagship.py` | the flagship AUROC 0.80, triage 7.8x, and safest-half 70%, from committed scores |
+| `reproduce_flagship.py` | the flagship AUROC 0.80, pooled triage 7.74x, and pooled safest-half 70%, from committed scores |
+| `triage_conditioning_check.py` | conditions the triage headline: 41% macro reduction, 2.59x macro enrichment, and the 91% sequence-free stratum-prior null |
 | `bootstrap_ci.py` | 95% CIs (design + cluster) and the paired difference vs trivial baselines |
 | `triage_curve.py` | the safest-first triage-value curve (`docs/triage_curve.png`) |
 | `brain_triage.py` | the SKNSH brain-cell triage operating point |

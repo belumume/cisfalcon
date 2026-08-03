@@ -18,6 +18,15 @@ significantly with measured effects in both cell types. The correlation is
 | **K562**  | 2,814 | **0.58** (0.53–0.62) | 0.28 (0.24–0.32) | 0.88 (0.85–0.92) |
 | Pooled    | 11,005 | 0.37 (0.34–0.39) | 0.24 (0.22–0.26) | 0.68 (0.66–0.70) |
 
+The n column counts ASSAY ROWS, not distinct variants. The Kircher resource measures the same SNV
+in more than one element, so 11,005 rows cover 5,065 distinct SNVs (HepG2 3,658; K562 1,407, each
+assayed exactly twice). Every duplicated key spans multiple elements and none spans multiple cells,
+so these are one variant in different regulatory contexts rather than technical replicates. They
+are still not independent, so the p-values above are inflated. Collapsing to one row per SNV and
+averaging both sides: K562 r = 0.601 (n = 1,407, p = 1.3e-138) and HepG2 r = 0.254 (n = 3,658,
+p = 6.6e-55), against 0.578 and 0.290 on all rows. The correlation survives and K562 improves; only
+the significance was overstated. See `docs/variant-effect-extension.md` for the full comparison.
+
 All Pearson/Spearman p-values ≤ 3×10⁻⁵¹. "Large-effect" = measured |log₂ effect| ≥ 1;
 AUROC uses |predicted effect| to rank large- vs small-effect variants.
 

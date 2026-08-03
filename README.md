@@ -169,8 +169,10 @@ model can be scored against it.
 ### Research-track extension: variant-effect prediction (a second, independent test)
 
 Beyond cell-type specificity, the same frozen model **ranks single-base variant effects** on a fully
-independent saturation-mutagenesis benchmark it never saw (Kircher et al. 2019, GSE126550; 11,005 SNVs):
-**K562 large-effect AUROC 0.88** (Pearson r = 0.58, n = 2,814), HepG2 0.64 (r = 0.29). It separates
+independent saturation-mutagenesis benchmark it never saw (Kircher et al. 2019, GSE126550; 11,005
+assay rows over 5,065 distinct SNVs, since the same variant is assayed in more than one element):
+**K562 large-effect AUROC 0.88** (Pearson r = 0.60 on 1,407 distinct SNVs, 0.58 on all 2,814 rows),
+HepG2 0.64 (r = 0.25 on 3,658 distinct, 0.29 on all 8,191 rows). It separates
 high- from low-impact variants well, the same triage signal; it does not calibrate absolute effect size
 (near-blind on LDLR, with an honest per-element breakdown in the doc). Model loading was confirmed
 bit-identical to the flagship scorer, and the K562 headline reproduces from the committed per-SNV data

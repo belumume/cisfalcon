@@ -4,8 +4,29 @@
 DHS64-MPRA CNN ensemble already used for cell-type-specificity scoring, with no
 retraining and never trained on variants, ranks single-base variant effects on
 independent saturation-mutagenesis MPRA data. The threshold-independent signal is
-the full-set rank correlation: **Pearson r = 0.58 in K562** (n = 2,814) and r =
-0.29 in HepG2 (n = 8,191), every p at most 3e-51. On the same data it also flags
+the full-set rank correlation: **Pearson r = 0.58 in K562** and r = 0.29 in HepG2.
+
+Those n are ROW counts, and rows are not independent variants. The Kircher resource assays the
+same SNV in more than one element, so 11,005 rows cover 5,065 distinct SNVs: K562's n = 2,814 is
+1,407 variants each measured in two elements, and HepG2's n = 8,191 is 3,658. Every duplicated
+key spans multiple elements and none spans multiple cells, so these are the same variant in
+different regulatory contexts rather than technical replicates, but they are still not
+independent and the row-count n inflates the p-values.
+
+Collapsing to one row per SNV, averaging both the predicted and the measured effect:
+
+| cell | basis | n | Pearson r | p |
+|---|---|---:|---:|---|
+| K562 | all rows (as first reported) | 2,814 | 0.578 | 1.0e-250 |
+| K562 | one row per SNV | 1,407 | **0.601** | 1.3e-138 |
+| HepG2 | all rows (as first reported) | 8,191 | 0.290 | 6.2e-158 |
+| HepG2 | one row per SNV | 3,658 | **0.254** | 6.6e-55 |
+
+The deduplicated figures are the honest ones and are quoted here as primary. The correlation
+survives: K562 rises slightly, HepG2 falls slightly, and every p stays far below any threshold
+that would change the conclusion. What was wrong was the significance, not the finding. Reported
+because an independent re-audit caught it, and because a reader who deduplicates should find the
+number already stated rather than discover it themselves. On the same data it also flags
 the high-impact variants: large-effect ranking AUROC is **0.88 in K562** at the
 standard |log2| >= 1 cutoff and 0.64 in HepG2. That AUROC is a thresholded metric,
 so it moves with the cutoff (a 0.73 to 0.93 band across |log2|

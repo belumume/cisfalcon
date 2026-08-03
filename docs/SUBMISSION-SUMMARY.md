@@ -154,7 +154,8 @@ adversary lenses plus a synthesizer), and the closed loop. Claude Science built 
 deliverables (this summary, the economics figure, the demo, the prepared Q&A) with a full
 provenance chain, and then, in a fresh session, cloned this public repo from scratch and
 re-derived every headline number to the decimal from the committed data alone (AUROC 0.8013,
-joint per-sequence 0.662, calibration ECE 0.0031, triage 7.74x, ScreenAudit 0.394), which is
+joint per-sequence 0.662, calibration ECE 0.0031, pooled triage 7.74x against 2.59x macro
+within (cell x generator), ScreenAudit 0.394), which is
 what surfaced the final reproducibility fixes. Both are the builder's own Claude stack, not a
 third party; the value is a fresh-context, separate-harness reproduction, not external
 independence.

@@ -52,9 +52,12 @@ print(f"\n{bar}")
 print("At scale: on 93,435 designs from this independent lab (a different model and")
 print("generators the gate never saw), ranking by CisFalcon and making the safest half")
 print(
-    "first cuts specificity failures 70% (6.3% -> 1.9%). Cross-lab AUROC 0.80, grounded"
+    "first cuts specificity failures 70% POOLED (6.3% -> 1.9%). Cross-lab AUROC 0.80,"
 )
 print(
-    "in real wet-lab measurement -- a signal a generic AI-reviewing-AI does not have."
+    "grounded in real wet-lab measurement -- a signal a generic AI-reviewing-AI lacks."
 )
+print("Conditioned within one cell and one generator that reduction is 41%, and a")
+print("sequence-free stratum-prior rule scores ~90% pooled, beating the 70%, so the")
+print("pooled figure is not per-design skill. See triage_conditioning_check.py.")
 print(bar)

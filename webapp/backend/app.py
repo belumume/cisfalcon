@@ -39,7 +39,20 @@ HEADLINE = {
     "crosslab_n": 93435,
     "base_fail_rate": 0.0629,
     "safest_half_fail_rate": 0.0191,
+    # POOLED. Kept under its original key so any existing caller keeps working, but a machine
+    # consumer reading only this number gets the same unconditioned figure every human-readable
+    # surface has already been corrected away from, so the conditioned pair travels with it.
+    # Conditioning does not propagate: an API field inherits none of the caveats on the page.
     "failure_reduction_pct": 70,
+    "failure_reduction_pct_basis": "pooled across cells and generators",
+    "failure_reduction_pct_conditioned": 41,
+    "failure_reduction_pct_conditioned_basis": "macro-average within (cell x generator), 14 strata",
+    "sequence_free_stratum_prior_null_pct": 91,
+    "null_note": (
+        "A rule using the stratum prior and NO sequence scores 91% pooled, which beats the "
+        "pooled 70%. The pooled figure therefore is not evidence of per-sequence skill; the "
+        "41% conditioned figure is. See triage_conditioning_check.py and PREREG-ERRATA.md."
+    ),
     "riskiest10_ppv": 0.27,
     "source": "93,435 independent designs (Gosai/Tewhey 2024; BODA/Malinois; zero sequence overlap)",
 }
@@ -59,8 +72,37 @@ _verifier_rule = verifier.CisFalconVerifier(use_agents=False)
 _warm = {"models": False}
 
 
-def _agents_available() -> bool:
+# A key being SET is not the same as a call SUCCEEDING, and conflating the two is what put a
+# 500 on the two buttons the README tells readers to click: the key was present and valid, the
+# account had no credit balance, so /api/health advertised agents:true, the frontend rendered the
+# buttons, and every click raised. The graceful fallback existed but was gated on the key being
+# ABSENT, so it could never fire for a failing call. Track the failure and let the same fallback
+# carry it.
+_agents_degraded: dict[str, object] = {"reason": None, "since": None}
+
+
+def _mark_agents_degraded(exc: Exception) -> None:
+    msg = str(exc)
+    if "credit balance" in msg.lower():
+        reason = "the Anthropic account backing this deployment is out of credit"
+    elif "authentication" in msg.lower() or "401" in msg:
+        reason = "the Anthropic API key is not accepted"
+    elif "rate" in msg.lower() and "limit" in msg.lower():
+        reason = "the Anthropic API is rate limiting this deployment"
+    else:
+        reason = f"the Anthropic API call failed: {type(exc).__name__}"
+    _agents_degraded["reason"] = reason
+    _agents_degraded["since"] = time.time()
+
+
+def _agents_configured() -> bool:
+    """Is a key present? Configuration only. Says nothing about whether a call works."""
     return bool(os.environ.get("ANTHROPIC_API_KEY"))
+
+
+def _agents_available() -> bool:
+    """Can the agent layer actually serve a request right now?"""
+    return _agents_configured() and _agents_degraded["reason"] is None
 
 
 def _get_agent_verifier() -> verifier.CisFalconVerifier:
@@ -129,7 +171,13 @@ def health():
     return {
         "ok": True,
         "models_warm": _warm["models"],
+        # `agents` answers "can it serve a request", which is what the frontend needs in order to
+        # decide whether to offer the buttons. `agents_configured` answers the separate and much
+        # weaker question "is a key present". Reporting only the second is what advertised a
+        # capability that raised on every click.
         "agents": _agents_available(),
+        "agents_configured": _agents_configured(),
+        "agents_degraded_reason": _agents_degraded["reason"],
     }
 
 
@@ -247,8 +295,22 @@ def diagnose(req: PredictReq):
             429, "diagnosis rate limit reached; try the fast gate check"
         )
     t0 = time.time()
-    v = _get_agent_verifier()
-    out = v.verify(seq, cell)
+    try:
+        v = _get_agent_verifier()
+        out = v.verify(seq, cell)
+    # Deliberately broad: the contract is that NO upstream failure reaches the user as a 500.
+    # Narrowing this to known Anthropic exception types would reintroduce the defect for every
+    # failure mode not yet seen, which is the one class that matters here.
+    except Exception as exc:
+        _mark_agents_degraded(exc)
+        out = _verifier_rule.verify(seq, cell)
+        out["agents"] = False
+        out["agents_note"] = (
+            f"Agent layer unavailable: {_agents_degraded['reason']}. "
+            "This is the deterministic gate verdict, which needs no API and is what every "
+            "published number in this repo is computed from."
+        )
+        return out
     out["agents"] = True
     # when the gate predicts a problem, add JASPAR-grounded motif evidence + a grounded redesign
     if out["gate"]["predicted_fail"] or out["gate"]["predicted_specificity_gap"] < 0.5:
@@ -373,9 +435,10 @@ def rescue(req: PredictReq):
     seq = _clean_seq(req.sequence)
     cell = _check_target(req.target_cell)
     if not _agents_available():
-        raise HTTPException(
-            503, "Claude rescue needs the agent layer (ANTHROPIC_API_KEY not set)"
-        )
+        # The old text asserted the key was unset, which is the wrong diagnosis whenever the key
+        # is present and the call is what failed. Report the reason actually observed.
+        why = _agents_degraded["reason"] or "ANTHROPIC_API_KEY is not set"
+        raise HTTPException(503, f"Claude rescue needs the agent layer: {why}")
     if not _rate_ok():
         raise HTTPException(429, "rescue rate limit reached; try again shortly")
     import closed_loop
@@ -391,9 +454,16 @@ def rescue(req: PredictReq):
         }
 
     t0 = time.time()
-    out = closed_loop.claude_rescue(
-        seq, cell, max_rounds=4, score_fn=_local_score, client=v._client
-    )
+    try:
+        out = closed_loop.claude_rescue(
+            seq, cell, max_rounds=4, score_fn=_local_score, client=v._client
+        )
+    # Same contract as /api/diagnose: an upstream failure becomes an honest 503, never a 500.
+    except Exception as exc:
+        _mark_agents_degraded(exc)
+        raise HTTPException(
+            503, f"Claude rescue is unavailable: {_agents_degraded['reason']}"
+        ) from exc
     out["ms"] = int((time.time() - t0) * 1000)
     return out
 

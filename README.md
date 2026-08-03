@@ -72,6 +72,22 @@ scale). See `demo.py`.
 
 ## Results (independently reproducible)
 
+**What reproduces from a clean clone, and what does not.** Stated up front because the distinction
+is the first thing a skeptic should be told rather than discover.
+
+Every number below reproduces with no GPU, no API key and no model weights. The evidence scripts
+read committed per-design scores, so `reproduce_flagship.py`, `triage_conditioning_check.py`,
+`brain_conditioning_check.py`, `economics_table.py` and `alphagenome_matched.py` all run from a
+fresh checkout in seconds. An independent blind audit confirmed this by re-deriving the headline
+AUROC, the conditioned figures and the sequence-free null from committed data alone.
+
+Two things do NOT reproduce, and neither affects the numbers. The trained fold weights under
+`models/` are about 480MB and are not published, so `docker build` fails at its `COPY models/` step
+and the container cannot be rebuilt from the repository. Retraining is likewise not reproducible:
+the upstream DHS training data is public and fetchable, but no training script is committed and the
+weights themselves are unpublished. What you can check is every claim computed FROM the model, not
+the model itself. Publishing the weights is the fix and has not been done.
+
 Cross-lab validation is the flagship: a frozen published activity model, scored on **93,435 designs from
 a different lab, a different design process, and generators it never saw** (Gosai et al. 2024; the BODA
 design framework built on the Malinois activity model, via AdaLead, Simulated Annealing, Hamiltonian MC,

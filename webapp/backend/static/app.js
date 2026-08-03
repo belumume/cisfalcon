@@ -720,11 +720,17 @@ function renderEcon(rows) {
   // `avoided` counts PREDICTED failures, from the same score that did the ranking, so it is an
   // upper bound that assumes every prediction is correct. It is not a measured saving. Scale it
   // by the benchmark's measured precision for the realistic figure, and label both.
-  const PPV = 0.24; // measured on the cross-lab benchmark at recall 0.5 (see index.html bounds)
+  // Precision of the call actually being discounted. `avoided` counts the model's own FAIL
+  // calls (pred_gap <= 0) displaced out of the safest half, so the right multiplier is that
+  // flag's precision, measured 0.1982 on the cross-lab benchmark (flags 19.2% of designs at
+  // recall 0.606). It is NOT 0.24: that belongs to the top 13.2% by risk, which is the
+  // recall-0.5 threshold and a different operation. Using it here overstated the figure ~1.2x.
+  // Reproduce: PPV of (pred_gap <= 0) over data/gosai_designed/designed_scored.csv.
+  const PPV = 0.198;
   out.innerHTML = `<div class="big-stat">
     <div class="s"><div class="v">${money(n * cost)}</div><div class="l">to synthesize all ${n} designs</div></div>
-    <div class="s"><div class="v">${money(avoided * cost * PPV)}</div><div class="l">expected averted spend at the benchmark's measured precision (PPV 0.24 at recall 0.5)</div></div>
-  </div><div class="dim" style="font-size:11px;margin-top:6px">You enter the cost; CisFalcon supplies the ranking. About <b>${avoided.toFixed(1)}</b> <i>predicted</i> failures move out of the safest half, worth ${money(avoided * cost)} <i>if every prediction were correct</i>, which is an upper bound rather than a measured saving: these are the model's own calls on an unlabelled library, produced by the same score that ranked it. The figure above discounts that by the measured precision. Actual averted spend depends on how well the benchmark precision transfers to your library.</div>`;
+    <div class="s"><div class="v">${money(avoided * cost * PPV)}</div><div class="l">expected averted spend at the measured precision of the fail call itself (PPV 0.198)</div></div>
+  </div><div class="dim" style="font-size:11px;margin-top:6px">You enter the cost; CisFalcon supplies the ranking. About <b>${avoided.toFixed(1)}</b> <i>predicted</i> failures move out of the safest half, worth ${money(avoided * cost)} <i>if every prediction were correct</i>, which is an upper bound rather than a measured saving: these are the model's own calls on an unlabelled library, produced by the same score that ranked it. The figure above discounts that by the precision of the same fail call, 0.198 measured across the cross-lab benchmark. That precision is POOLED over all cell types and generators, so like the pooled triage figures it is an optimistic basis for a single lab running one generator against one target cell. Actual averted spend depends on how well it transfers to your library.</div>`;
 }
 
 $("#bt-upload").addEventListener("click", () => $("#bt-file").click());

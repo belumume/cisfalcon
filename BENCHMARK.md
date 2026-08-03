@@ -5,7 +5,12 @@ test for: **given a designed regulatory sequence, will it fire in the wrong cell
 synthesize it?**
 
 `data/gosai_designed/designed_benchmark.csv` holds **93,435 AI-designed enhancers** with per-cell
-measured MPRA activity, a transparent failure label, and reproducible splits.
+measured MPRA activity and a transparent failure label.
+
+The splits below are NOT a column in that file. They are produced deterministically by
+`build_benchmark.py` from a fixed seed, so anyone re-running it gets the same assignment. Looking
+for a `split` column in the CSV and finding none does not mean the splits are missing; run the
+script.
 
 ## Why this benchmark exists
 

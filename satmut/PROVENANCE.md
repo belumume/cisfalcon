@@ -61,9 +61,26 @@ Inputs: `pred_effect` (CisFalcon ensemble alt−ref activity at the K562 index) 
 
 ## Files in this bundle
 
+Paths are given as they exist in the repository. An earlier version of this list named six files
+that are not at the paths it stated, so a reviewer opening `satmut/` to check the provenance behind
+the variant-effect claim found most of it apparently absent. Three were merely elsewhere or renamed,
+and three are regenerable outputs that are deliberately not committed.
+
+Committed, in `satmut/`:
 - `build_windows.py`, `score_variants_gpu.py`, `correlate.py` — the pipeline
-- `variant_windows.csv.gz` — 11,005 ref/alt 500 bp windows + measured effects
-- `variant_scored.csv.gz` — windows + predicted activities and effects
-- `correlation_summary.csv`, `correlation_per_element.csv` — results
-- `fig_variant_effect_scatter.png`, `fig_per_element_correlation.png` — figures
-- `FINDING.md` — the honest written finding
+- `PROVENANCE.md`, `FINDING.md` — this file and the written finding
+
+Committed, elsewhere in the repo:
+- `data/variant_scored.csv.gz` — windows plus predicted activities and effects. In `data/`, not
+  `satmut/`; `correlate.py` resolves it against the repo root so it runs from any directory.
+- `docs/variant_effect_scatter.png` and `docs/variant_effect_per_element.png` — the two figures,
+  under those names rather than the `fig_` prefix this list used to give them.
+
+Regenerable, NOT committed, with the command that produces each:
+- `variant_windows.csv.gz` — the 11,005 ref/alt 500 bp windows plus measured effects.
+  `python satmut/build_windows.py`
+- `satmut/correlation_summary.csv` and `satmut/correlation_per_element.csv` — the results tables.
+  `python satmut/correlate.py`, which writes them beside the script.
+
+Note the row-count caveat in `FINDING.md`: those 11,005 rows cover 5,065 distinct SNVs, because the
+same variant is assayed in more than one element.

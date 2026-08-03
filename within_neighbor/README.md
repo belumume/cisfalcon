@@ -24,23 +24,38 @@ This directory answers that with an **in-vivo** test, using a model **independen
 
 ## Result (reproducible)
 
-| Predictor | AUROC | 95% CI | type |
-|---|---|---|---|
-| **DeepBICCN2 specificity gap (sequence-only)** | **0.706** | [0.631, 0.771] | predicted |
-| measured max-accessibility | 0.698 | [0.620, 0.777] | measured |
-| measured gini (accessibility specificity) | 0.746 | [0.673, 0.815] | measured |
-| GC content | 0.318 | [0.240, 0.401] | trivial |
+All four are now reported on the SAME 204 rows. The first version of this table scored the gap on
+204 and the baselines on 211, because seven enhancers have no DeepBICCN2 head for their target
+subclass and drop out of the gap. Comparing across different subsets is not like for like, and
+`PREREG-ERRATA.md` retracted it on 2026-07-16.
+
+| Predictor | AUROC (matched, n=204) | paired delta vs gap | 95% CI | type |
+|---|---|---|---|---|
+| **DeepBICCN2 specificity gap (sequence-only)** | **0.7056** | reference | | predicted |
+| measured gini (accessibility specificity) | 0.7308 | +0.026 | [-0.066, +0.115] | measured |
+| measured max-accessibility | 0.6872 | -0.018 | [-0.103, +0.067] | measured |
+| GC content | 0.3130 | -0.390 | [-0.507, -0.270] | trivial |
+
+Paired bootstrap, 2000 resamples, seed 0. Reproduce with `python within_neighbor/matched_paired.py`.
 
 Incremental value (5-fold CV logistic): gap-only 0.701, accessibility-only 0.674, **gap+accessibility
 0.704**. Combining measured accessibility with the sequence gap adds almost nothing, i.e. the sequence
 gap already captures the accessibility signal.
 
 **Honest read.** From sequence alone, before synthesis or any assay, the specificity-gap paradigm
-predicts in-vivo cortical On-vs-Off-target at about 0.70 (CI excludes chance), **comparable to** what
-you get from having already measured the enhancer's accessibility, and **below** the best measured
-cross-cell specificity feature (gini, 0.75). So it is a real, honest, *directional* generalization to
-in-vivo within-cortex neighbor resolution. It is **not** a demonstration that the sequence model beats
-measured assays. The value is that it needs only the sequence, pre-synthesis.
+predicts in-vivo cortical On-vs-Off-target at about 0.70, with a CI excluding chance. Matched and
+paired against both measured accessibility features, the deltas span zero, so the sequence gap and
+the measured features are **statistically indistinguishable** on this set rather than ranked. The
+gap does decisively beat GC content, whose CI excludes zero.
+
+An earlier version of this section said the gap fell **below** the best measured feature. That
+claim came from the unmatched comparison and does not survive matching; it is retracted here and in
+`PREREG-ERRATA.md`. Correcting it makes the result modestly stronger than pre-registered, which is
+exactly why it is recorded rather than quietly applied.
+
+This is a real, directional generalization to in-vivo within-cortex neighbor resolution. It is
+**not** a demonstration that the sequence model beats measured assays. The value is that it needs
+only the sequence, pre-synthesis.
 
 **Caveats (stated, not hidden):**
 - DeepBICCN2 predicts *accessibility*, a proxy for the in-vivo functional readout.

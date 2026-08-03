@@ -47,7 +47,16 @@ HEADLINE = {
     "failure_reduction_pct_basis": "pooled across cells and generators",
     "failure_reduction_pct_conditioned": 41,
     "failure_reduction_pct_conditioned_basis": "macro-average within (cell x generator), 14 strata",
-    "sequence_free_stratum_prior_null_pct": 91,
+    # Tie-break dependent, so it travels with its spread rather than as a point estimate. Every
+    # design inside a stratum ties on the prior (the prior IS the score), so the safer half is
+    # decided by the shuffle: 90.3 to 90.7 across 12 seeds of the repo's own pandas sample, mean
+    # 90.5. The 91 this used to report was seed 0 formatted to zero decimals, i.e. the top of the
+    # range rounding up. A sweep keyed on "91%" missed this because the field is a bare number.
+    "sequence_free_stratum_prior_null_pct": 90.5,
+    "sequence_free_stratum_prior_null_range_pct": [90.3, 90.7],
+    "sequence_free_stratum_prior_null_basis": (
+        "pooled; tie-break dependent, range over 12 seeds (triage_conditioning_check.py)"
+    ),
     "null_note": (
         "A rule using the stratum prior and NO sequence scores about 90% pooled, which beats the "
         "pooled 70%. The pooled figure therefore is not evidence of per-sequence skill; the "

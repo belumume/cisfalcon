@@ -2,7 +2,7 @@
 
 **Live tool: https://cisfalcon-lifesci.fly.dev/**
 
-![The CisFalcon Overview: catch the AI-designed enhancers that will fail before the lab synthesizes them. Cross-lab AUROC 0.80 on 93,435 held-out designs, fewer wasted syntheses by ranking safest-first, with a closed-loop verification card showing a real Gosai/Tewhey design re-scored to PASS at specificity gap +1.0.](docs/hero_overview.png)
+![The CisFalcon Overview tab: catch the AI-designed enhancers that will fail before the lab synthesizes them. A frozen measured-activity model gives cross-lab AUROC 0.80 against 0.50 chance on 93,435 held-out designs. Ranking safest-first and synthesizing the safer half cuts failures 41% conditioned within one target cell and one generator; pooled across a mixed batch it reads 70% (6.29% to 1.91%), but a sequence-free rule using only the stratum base rates scores 91% pooled, so the pooled number is not evidence of per-design skill.](docs/hero_overview.png)
 
 *A real Gosai/Tewhey design that CisFalcon flags as off-target, diagnoses, and closes the loop on: disrupt the K562 driver motifs (GATA1, TAL1, GATA2), install the HepG2 grammar (HNF4A, HNF1A, CEBPA), and the same external model moves the predicted specificity gap from failing to passing. This is an in-silico consistency check on one design, not wet-lab validation, captured live from the tool.*
 
@@ -81,12 +81,18 @@ read committed per-design scores, so `reproduce_flagship.py`, `triage_conditioni
 fresh checkout in seconds. An independent blind audit confirmed this by re-deriving the headline
 AUROC, the conditioned figures and the sequence-free null from committed data alone.
 
-Two things do NOT reproduce, and neither affects the numbers. The trained fold weights under
-`models/` are about 480MB and are not published, so `docker build` fails at its `COPY models/` step
-and the container cannot be rebuilt from the repository. Retraining is likewise not reproducible:
-the upstream DHS training data is public and fetchable, but no training script is committed and the
-weights themselves are unpublished. What you can check is every claim computed FROM the model, not
-the model itself. Publishing the weights is the fix and has not been done.
+One thing does NOT reproduce, and it does not affect the numbers: **retraining**. The upstream DHS
+training data is public and fetchable, but no training script is committed here, so you cannot
+re-derive the weights from scratch. What you can check is every claim computed FROM the model.
+
+The weights themselves are NOT ours and are NOT unpublished, which an earlier version of this
+section got wrong in the direction that undersold the project. They are the third-party atlas
+DHS64-MPRA fold models, public at Zenodo record 17410822. `python fetch_models.py` downloads all
+six (503,079,216 bytes total, which is 503 MB decimal or 480 MiB), verifies each against a pinned
+sha256, and applies the one filename rename `gate.py` requires. Running it populates `models/`,
+which is the precondition the Dockerfile's `COPY models/ ./models/` was failing on, so the step
+that used to break a clean-clone build now has its input. Stated at exactly that strength on
+purpose: the fetch and the hashes are verified, a full `docker build` has not been re-run since.
 
 Cross-lab validation is the flagship: a frozen published activity model, scored on **93,435 designs from
 a different lab, a different design process, and generators it never saw** (Gosai et al. 2024; the BODA
@@ -198,7 +204,7 @@ reduction; run `triage_conditioning_check.py` for the per-stratum table.*
 - **Independently reproduced, and the audit's scope is stated because it does not cover the current
   headline.** A separate Claude Science session cloned this repo from scratch and re-derived every
   number in the **pre-conditioning** release to the decimal from the committed data alone (AUROC
-  0.8013, joint per-sequence 0.662, calibration ECE 0.0031, triage 7.75x, ScreenAudit 0.394;
+  0.8013, joint per-sequence 0.662, calibration ECE 0.0031, triage 7.74x, ScreenAudit 0.394;
   [`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md)). It is a fresh-harness reproduction on separate
   infrastructure, and it is what surfaced the final reproducibility fixes in this repo. The
   conditioned figures this README now leads with (41%, 2.59x, the 91% sequence-free null) **post-date
@@ -353,9 +359,12 @@ A real, directional in-vivo within-cortex generalization of the paradigm, stated
 honest next step is a functional (not accessibility) within-cortex model. Pre-registered method and the
 full baseline decomposition are in [`within_neighbor/`](within_neighbor/).
 
-One honest scope point, stated plainly: CisFalcon scores specificity as argmax over three
+One honest scope point, stated plainly. Every *validated* number here is argmax over the three
 MPRA-measured cell types (K562, HepG2, SKNSH), which are three different lineages (blood, liver,
-neural). That makes it a detector of gross cross-lineage misfires, the case where a design meant for
+neural), because those are the three the cross-lab benchmark measures. The deployed tool computes
+the gap over all ten target-eligible lines, so it can name an off-target cell outside that trio
+(SJCRH30 or MCF7, say). That call is a useful pointer and it is *not* covered by the validation
+below, which is the distinction this paragraph exists to make. That makes it a detector of gross cross-lineage misfires, the case where a design meant for
 one tissue fires strongly in an unrelated one. It is a weaker proxy for the harder within-tissue
 specificity that dominates in-vivo enhancer-AAV failure, where the off-target is a neighboring cell in
 the same tissue (astrocyte versus oligodendrocyte, one cortical interneuron subtype versus another); the

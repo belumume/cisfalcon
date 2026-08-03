@@ -30,7 +30,7 @@ the significance was overstated. See `docs/variant-effect-extension.md` for the 
 All Pearson/Spearman p-values ≤ 3×10⁻⁵¹. "Large-effect" = measured |log₂ effect| ≥ 1;
 AUROC uses |predicted effect| to rank large- vs small-effect variants.
 
-### Per-element (all p < 3×10⁻³)
+### Per-element (all p < 0.05; weakest LDLR.2 p = 0.022, six of eight at p ≤ 10⁻³⁷)
 
 | Element | Cell | n | Pearson r |
 |---------|------|--:|----------:|

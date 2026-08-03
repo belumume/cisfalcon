@@ -53,7 +53,7 @@ lentiMPRA is 200 bp with **no per-single-nucleotide-variant data**. The
 saturation-mutagenesis benchmark is **Kircher et al. 2019** (*Nat Commun* 10:3583;
 GSE126550), which Agarwal 2025 itself uses as its ref. 45 to validate its
 MPRALegNet variant predictions (F9/LDLR/SORT1 in HepG2, PKLR in K562). We scored
-that Kircher resource directly (11,005 SNVs across 8 elements), so this test
+that Kircher resource directly (11,005 assay rows over 5,065 distinct SNVs across 8 elements), so this test
 uses fully public, paper-faithful ground truth. Model loading was confirmed
 bit-identical to the committed flagship scorer (re-scoring the committed designs
 reproduced `pred_gap` to max |Δ| = 1.2×10⁻⁵). See [`satmut/PROVENANCE.md`](../satmut/PROVENANCE.md)

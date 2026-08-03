@@ -291,8 +291,16 @@ function buildInspector(item, rep, scan) {
 
   const validated = VALIDATED_CELLS.includes(rep.target_cell);
   const probPct = (rep.calibrated_fail_probability * 100).toFixed(0);
+  // Above ~0.6 the reliability curve is thinly measured: held out, the 0.6-0.7 bin runs 0.696
+  // predicted against 0.619 observed on 42 designs and 0.7-0.8 runs 0.760 against 0.500 on 18.
+  // The low ECE is driven by the lowest bin, which holds 36,912 of 46,718 designs. That caveat
+  // was already carried on four surfaces; this is the one where the user actually decides
+  // whether to synthesize, and it was the only one printing the number unhedged.
+  const thinlyMeasured = rep.calibrated_fail_probability > 0.6;
   const calibNote = validated
-    ? `Calibrated failure probability ${probPct}%.`
+    ? thinlyMeasured
+      ? `Calibrated failure probability ${probPct}% (above ~60% the calibration is thinly measured, so trust the ranking rather than the absolute number).`
+      : `Calibrated failure probability ${probPct}%.`
     : `Failure probability ${probPct}% (calibration fit on the 3 cross-lab cells K562, HepG2, SKNSH; extrapolated to ${esc(rep.target_cell)}).`;
   const statusLine = rep.low_complexity
     ? `Degenerate or repetitive sequence (k-mer complexity ${rep.complexity}, a homopolymer or tandem repeat rather than a diverse enhancer-like sequence). This is not a credible enhancer design, so the specificity call is not meaningful — real designs use over 80% of their k-mer vocabulary; this one is far below that.`

@@ -17,6 +17,14 @@ design:
 - A **Claude Opus 4.8** adjudicator synthesizes the gate report and the three independent reviews
   into one calibrated verdict.
 
+Both model names are frozen experimental parameters rather than a dependency nobody has updated.
+`PREREG.md` section 12 names the Opus 4.8 adjudicator as the arm under test, and every committed
+agent-layer result was produced by this exact pair: the blind-judged panel-vs-single ablation, the
+raw four-agent sample in `samples/`, and the powered closed-loop null. Repointing them at a newer
+model would make all three unreproducible and would contradict a hash-locked document that cannot be
+reissued, so a model change is a re-run plus a dated entry in
+[`PREREG-ERRATA.md`](PREREG-ERRATA.md), not an edit to a constant.
+
 The shape is deliberate: a fan-out to three reviewers, then a fan-in to one adjudicator (the
 orchestrator-workers pattern). The lenses run in parallel and never see each other's output, so each
 reasons from a distinct stance (mechanism, precedent, adversary) rather than converging on one. They
@@ -51,7 +59,7 @@ driver TFs, all real JASPAR motifs, no invented sequence), calls the gate to re-
 specificity gap, and iterates until the design passes or it aborts. That is a capability the frozen
 gate alone does not have. We then powered the honest question rather than trusting a small number: on
 97 failing designs at an equal 4-round budget, Claude's adaptive motif search rescues 26.8% versus a
-fixed greedy rule's 24.7% (delta +2.1 points, 95% CI [-0.04, +0.08], which includes zero). So the
+fixed greedy rule's 24.7% (delta +2.1 percentage points, 95% CI [-4.2, +8.3] points, which includes zero). So the
 adaptive agent does not beat a fixed rule at equal budget, and we report that null instead of the
 underpowered n=20 count it replaces. It is also an in-silico consistency loop, the same frozen gate
 that flagged the design agrees the rescue passes, not wet-lab validation. So the honest answer to
@@ -81,10 +89,16 @@ over-solved instead of settled at the first passing number.
 ## Claude Science was the independent auditor and a second researcher
 
 A separate Claude Science session, on separate infrastructure, cloned the public repo from scratch
-and independently re-derived every committed number to the decimal. The captured table is in
-[`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md); anyone can diff it against the repo. Every row
-matched, and its verdict on the flagship was "honest, presented more conservatively than it needs
-to be, no overclaim."
+and independently re-derived every committed number in the **pre-conditioning** release to the
+decimal. The captured table is in [`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md); anyone can diff
+it against the repo. Every row matched, and its verdict on the flagship was "honest, presented more
+conservatively than it needs to be, no overclaim."
+
+Scope, because the headline moved afterwards: the conditioned figures the README now leads with
+(41% macro reduction, 2.59x macro enrichment, the 91% sequence-free stratum-prior null) post-date
+that audit and are **not** covered by it. The audit table marks the 2.59x row "added post-audit" and
+has no row for the other two. Those are reproduced by `triage_conditioning_check.py`, which asserts
+the audited pooled figures as a positive control first.
 
 Two things it did that a linter cannot:
 

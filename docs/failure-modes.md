@@ -19,6 +19,12 @@ orientation-verified). Reproduce with `python findings_failure_modes.py`; figure
 | AdaLead | 2.3% | 0.613 |
 | FastSeqProp | 0.7% | 0.625 |
 
+Scope: these are the five main generator codes, covering 92,537 of the 93,435 designs. The benchmark
+carries three more, the low-n unconstrained variants `al_uc`, `fsp_uc` and `sa_uc` (298 / 300 / 300
+designs, measured failure 1.01% / 0.00% / 0.00%), excluded here as underpowered. The 30x is the
+spread over the five main codes (22.28 / 0.68 = 32.7x); across all eight it is unbounded, since two
+of the small codes record zero failures.
+
 A design's odds of firing in the wrong cell depend heavily on how it was generated, from under 1%
 to over 22%. A lab picking a generator is also picking a specificity-failure rate, and today that
 choice is usually made blind.
@@ -31,8 +37,9 @@ choice is usually made blind.
 | HepG2 (liver) | 8.2% |
 | K562 (blood) | 0.6% |
 
-Designs for brain and liver cells, the two most gene-therapy-relevant targets here, fail 10 to 15
-times more often than blood-cell designs. The worst single combination is Hamiltonian-MC-designed
+Designs for brain and liver cells, the two most gene-therapy-relevant targets here, fail about 14 to
+17 times more often than blood-cell designs (10.06 / 0.59 = 17.0x for brain, 8.20 / 0.59 = 13.9x for
+liver, from `data/gosai_designed/designed_scored.csv`). The worst single combination is Hamiltonian-MC-designed
 brain enhancers, where roughly **1 in 3 fails** (32.7%). This is exactly where a pre-synthesis
 verifier earns its cost: the hardest, most clinically important designs are the ones most likely to
 be quietly broken.

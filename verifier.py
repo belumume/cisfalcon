@@ -28,6 +28,14 @@ import numpy as np, pandas as pd
 import gate  # local: encoder + ensembled model + specificity_gap
 
 _DATA = pathlib.Path(__file__).parent / "data"
+# These two pins are FROZEN EXPERIMENTAL PARAMETERS, not an un-maintained dependency.
+# PREREG.md section 12 (hash-locked) names the Opus 4.8 adjudicator as the arm under test, and
+# every committed agent-layer result was produced by this exact pair: the blind-judged panel-vs-
+# single ablation (data/gosai_designed/agent_ablation.json), the raw four-agent sample
+# (samples/diagnose_flagship_sample.json), and the powered closed-loop null
+# (data/gosai_designed/closed_loop_powered.json). Repointing either constant makes all three
+# unreproducible and silently contradicts a document whose hash cannot be reissued.
+# Moving to a newer model is a re-run plus a dated PREREG-ERRATA.md entry, never an edit here.
 ORCH_MODEL = "claude-opus-4-8"  # synthesizer / adjudicator
 LENS_MODEL = "claude-sonnet-5"  # parallel reasoning lenses
 
@@ -116,9 +124,11 @@ GROUND_TRUTH = (
     "0.896 but carries a near-duplicate-leakage caveat, so the cross-lab number is the flagship. "
     "Failure is defined transparently: a design FAILS if it is not most-active in its intended target "
     "cell (specificity gap <= 0). The emitted failure probability is calibrated marginally on this "
-    "design population (a design it prints as 70% risk fails about 70% of the time across the "
-    "population), not conditioned per target cell, so treat its absolute value as a population-level "
-    "estimate.\n\n"
+    "design population (held-out ECE 0.0031), not conditioned per target cell. Marginal calibration "
+    "is dominated by the low-risk bin, which holds 79% of held-out designs, so the middle of the "
+    "range is close to exact (0.4-0.5 bin: 0.420 predicted, 0.420 observed, n=355) while the "
+    "high-risk tail is thinly measured (0.6-0.7 bin: 0.696 predicted, 0.619 observed, n=42). Treat "
+    "the ranking as the reliable signal and an absolute risk above ~0.6 as noisy.\n\n"
     "PLAUSIBILITY PRE-CHECK (do this FIRST): the report carries two flags. If low_complexity is "
     "true the sequence is degenerate or repetitive (a homopolymer like poly-A or a short-period "
     "tandem repeat), not a diverse enhancer-like sequence. If low_activity is true it is predicted "

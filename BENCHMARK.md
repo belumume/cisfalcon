@@ -7,10 +7,13 @@ synthesize it?**
 `data/gosai_designed/designed_benchmark.csv` holds **93,435 AI-designed enhancers** with per-cell
 measured MPRA activity and a transparent failure label.
 
-The splits below are NOT a column in that file. They are produced deterministically by
-`build_benchmark.py` from a fixed seed, so anyone re-running it gets the same assignment. Looking
-for a `split` column in the CSV and finding none does not mean the splits are missing; run the
-script.
+The splits below are NOT a column in that file. `python make_splits.py` regenerates both from the
+committed CSV alone, from a fixed seed, and prints a sha256 of the assignment so two submitters can
+confirm they scored the same partition. Looking for a `split` column in the CSV and finding none
+does not mean the splits are missing; run the script.
+
+Corrections and the dated record of what in this repository has been retracted or re-derived live in
+[`PREREG-ERRATA.md`](PREREG-ERRATA.md); read it alongside anything below.
 
 ## Why this benchmark exists
 
@@ -42,20 +45,37 @@ set is a genuine cross-lab generalization measurement that memorization cannot i
 The label is **fully transparent and reconstructable** from the activity columns; it does not depend
 on any model's opaque specificity score.
 
+One rounding caveat, because it changes a count: `measured_gap` ships rounded to 4 decimals (max
+deviation from the recomputed value 5.0e-4), so five rows with a genuinely positive gap round to
+exactly 0.0. `(measured_gap <= 0).sum()` is therefore 5,879 while the shipped `measured_fail` label
+sums to 5,874. Recomputing the gap from the three activity columns reproduces 5,874 exactly.
+**Recompute from `K562`/`HepG2`/`SKNSH`, or use `measured_fail` directly; do not re-derive the label
+from the rounded `measured_gap`.** The base rate rounds to 6.29% either way, so no headline moves.
+
 ## The task
 
 Predict `measured_fail` from `sequence` alone, before synthesis, so a lab can triage a design library
 and spend synthesis budget on the designs most likely to work. Report AUROC/AUPRC against
 `measured_fail`, and rank by predicted specificity gap.
 
-## Splits (`build_benchmark.py`)
+## Splits (`make_splits.py`)
 
-- **Primary (stratified random 70/30, fixed seed):** calibration/test have matched failure
-  distributions, stratified by target cell x method x fail, so discrimination is measured free of an
-  easy/hard-cell confound.
-- **Secondary (leave-cell-types-out):** a held-out set of target cells the model never calibrated on,
-  a generalization stress test. Failure rate is strongly cell-type-dependent, so this is reported
-  separately, never as the headline.
+Run `python make_splits.py` (no GPU, seconds) to print both splits and their sha256, or
+`python make_splits.py --write` to emit `data/gosai_designed/designed_splits.csv` keyed by `id`.
+
+- **Primary `split` (stratified random 70/30, seed 0):** calibration 65,404 / test 28,031, stratified
+  by target cell x method x `measured_fail`, so both sides carry matched failure distributions
+  (6.29% each) and discrimination is measured free of an easy/hard-cell confound. Rows are sorted by
+  `id` before assignment, so the partition does not depend on the CSV's row order.
+- **Secondary `split_lco` (leave-cell-out):** this benchmark has exactly three target cells, so
+  leave-cell-out is three folds rather than one fixed held-out set. Calibrate on two cells, test on
+  the third, three times. Failure rate is strongly cell-dependent (K562 0.59%, HepG2 8.20%,
+  SKNSH 10.06%), so report the three folds separately and never pool them into a headline.
+
+`build_benchmark.py` does **not** produce these splits. It builds a separate in-distribution
+benchmark from the atlas supplementary `media-10.xlsx` (not committed here) and writes
+`data/benchmark.csv`; its held-out cell list names MCF7, which is not one of this benchmark's three
+cells. Use `make_splits.py` for this file.
 
 ## Reference baseline
 
@@ -70,7 +90,15 @@ open baseline for other models to beat.
 ### Leaderboard (the reference is 0.80; beat it)
 
 Scored on the same 93,435-design failure-prediction task. The evaluation scope differs by row and is
-stated, so the numbers are honest rather than implied to be one eval:
+stated, so the numbers are honest rather than implied to be one eval.
+
+**Read these with the right interval, or you will read a difference that is not there.** At n=93,435
+the design-level 95% CI is about +/-0.005 (the reference baseline's is [0.796, 0.807]), which makes
+small gaps look decisive. The honest interval for "does this generalize" is the cluster bootstrap
+over the 24 cell x generator strata, and for the reference baseline that is **[0.614, 0.895]** wide,
+because the ranker is strong on failure-prone generators and near chance on the best-optimized ones
+(`bootstrap_ci.py`, 2000 resamples, seed 0). So treat sub-0.02 differences between rows as not
+separable, and report both intervals for any model you add.
 
 | Model | Cross-lab AUROC | Evaluated on |
 |---|---:|---|
@@ -87,7 +115,9 @@ wet-lab failures well above chance is the evidence the signal is real, not one m
 
 ## Use / cite
 
-- Score your model on `sequence`, evaluate against `measured_fail`, report on both splits.
+- Score your model on `sequence`, evaluate against `measured_fail`, and report on both splits from
+  `python make_splits.py` (quote the printed sha256 so the partition is checkable). Report the
+  design-level and the cluster CI, not just the point estimate.
 - Source designs + measured MPRA: Gosai et al. / Tewhey (Zenodo 10698014). Scoring atlas:
   Castillo-Hair et al. 2025 (Zenodo 17410822). This benchmark packaging + the transparent
   gap/fail label: this repository (`github.com/belumume/cisfalcon`), MIT-licensed.

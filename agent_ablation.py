@@ -24,7 +24,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(__file__))
 import anthropic
 
-BASE = "https://cisfalcon-lifesci.fly.dev"
+BASE = os.environ.get("CISFALCON_BASE", "https://cisfalcon-lifesci.fly.dev")
 UA = {"User-Agent": "Mozilla/5.0", "Content-Type": "application/json"}
 OPUS = "claude-opus-4-8"
 K = int(os.environ.get("ABL_K", "12"))

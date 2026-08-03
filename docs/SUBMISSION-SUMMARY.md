@@ -1,7 +1,14 @@
 # CisFalcon: a pre-synthesis failure-risk triage for AI-designed regulatory DNA
 
-**Built with Claude: Life Sciences (Builder track), solo, Jul 7 to 13 2026.**
+**Built with Claude: Life Sciences (Builder track), solo, during the Jul 7 to 13 2026 window.**
 **Live tool: https://cisfalcon-lifesci.fly.dev/**
+
+Corrections and added analyses dated after that window, including the within-tissue matched/paired
+retraction (2026-07-16) and the triage conditioning that produced the 41% / 2.59x / 91% figures this
+document now leads with (2026-08-03), are recorded in
+[`PREREG-ERRATA.md`](../PREREG-ERRATA.md). They post-date the build window and are labelled there
+rather than folded silently into it, so a reader can tell which results were produced inside the
+declared window and which are later corrections.
 
 ## What it does
 
@@ -39,7 +46,11 @@ trained on. Overlap with CisFalcon's training data is zero, so the number cannot
 inflated by memorized sequences.
 
 - Cross-lab AUROC 0.80 at predicting which designs fail wet-lab specificity. Trivial
-  baselines on the same task: GC-content 0.51, sequence-length 0.50, random 0.50.
+  baselines on the same task: GC-content 0.51, sequence-length 0.50, random 0.50. Two
+  intervals, both reported: the design-level 95% CI is [0.796, 0.807], and the honest
+  cluster bootstrap over the 24 cell x generator strata is **[0.614, 0.895]**, wide by
+  construction because the ranker is strong on failure-prone generators and near chance on
+  the best-optimized ones (`bootstrap_ci.py`).
 - The 0.80 is per-sequence signal, not just a shared cell-line prior. Within each target
   cell (the cell prior removed) the gate still separates failures at macro-AUROC 0.75; a
   cell-prior-only baseline (the target cell's base fail-rate, no sequence at all) reaches
@@ -61,7 +72,7 @@ inflated by memorized sequences.
   as the pooled 70%, so the conditioned range is the one to quote.
 - The failure-risk probability the tool emits is genuinely calibrated, not asserted: it is fit by isotonic
   regression on the cross-lab (predicted-gap, measured-failure) pairs, with held-out calibration error
-  (ECE) 0.0031, so a design shown "70% risk" fails close to 70% of the time. The live tool is serving this
+  (ECE) 0.0031 (mean of both split directions). Near the middle of the range it is close to exact (the 0.4-0.5 bin: 0.420 predicted, 0.420 observed, n=355); the high-risk tail is thinly measured, with the 0.6-0.7 bin at 0.696 predicted against 0.619 observed on n=42, so trust the ranking rather than an absolute number above ~0.6. The live tool is serving this
   map (`fit_calibration.py`; held-out reliability diagram in `docs/cisfalcon_calibration.png`).
 - The signal does not rest on one model. A zero-parameter rank-average of the frozen activity head and a
   cheaper chromatin-accessibility head lifts the cross-lab AUROC to 0.806, with the paired 95% CI on the

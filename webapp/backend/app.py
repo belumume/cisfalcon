@@ -465,7 +465,7 @@ def example():
         "id": "20211213_141901__715602__47::hmc__hepg2__0",
         "target_cell": "HepG2",
         "measured": {"HepG2": -0.1, "K562": 6.5, "SKNSH": -0.4},
-        "note": "A real BODA/Malinois design optimized for HepG2 specificity. Measured: barely touches HepG2, fires 6.5-fold in K562.",
+        "note": "A real BODA/Malinois design optimized for HepG2 specificity. Measured: barely touches HepG2, fires ~90x (log2FC 6.5) in K562.",
     }
 
 

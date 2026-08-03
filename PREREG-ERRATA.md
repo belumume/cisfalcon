@@ -106,6 +106,78 @@ cisfalcon-lifesci.fly.dev still serves the pre-correction numbers until the next
 hero image in this repo is a screenshot of that pre-correction page.** Stating otherwise would
 claim a correction that has not shipped. `PREREG.md` itself is untouched by this correction.
 
+> **Status update, 2026-08-03 (later the same day).** The two sentences in bold above are no longer
+> true and are kept as written rather than edited, because the point of this file is that its record
+> is auditable. The deploy shipped: the live page now returns the conditioned figures (5 occurrences
+> of "41%", 2 of "2.59", 3 of "sequence-free", 0 of "70% FEWER" and 0 of "7.8x"; fetched HTTP 200,
+> 44,756 bytes), and the live batch calculator serves the corrected `const PPV = 0.198`. The hero
+> image was re-captured from the corrected page by `docs/recapture_hero.py`, which asserts the
+> corrected figures are present and the disowned ones absent before it writes the file.
+
+---
+
+## 2026-08-03 — Section 11 (closed-loop): the delta and its interval are on different scales
+
+`PREREG.md` section 11 reports the powered equal-budget comparison as:
+
+> Claude 26.8% vs fixed-rule 24.7%, delta +2.1 points, 95% CI [-0.04, +0.08], which INCLUDES ZERO.
+
+The point estimate is in **percentage points** and the interval is in **proportions**. Read
+literally the estimate sits about 26x outside its own interval, which is a contradiction a reader
+derives from two numbers inside one parenthesis. Nothing about the analysis is wrong; only the
+reporting units are mixed.
+
+The committed artifact `data/gosai_designed/closed_loop_powered.json` records
+`delta = 0.0206`, `delta_ci95 = [-0.0415, 0.0825]`, `n = 97`. On one scale that is:
+
+| form | delta | 95% CI |
+|---|---:|---|
+| percentage points | +2.1 | [-4.2, +8.3] |
+| proportions | +0.021 | [-0.042, +0.083] |
+
+The conclusion is unchanged and was already stated correctly: the interval includes zero, so the
+adaptive agent does not beat the fixed rule at equal budget. `README.md` and `HOW-BUILT.md` now
+report percentage points on both halves; `PREREG.md` is frozen, so the correction lives here.
+
+**Reproduce:** `python closed_loop_powered.py`, or read the committed JSON directly.
+
+---
+
+## 2026-08-03 — Section 12 (calibration): the reliability quote selects four of ten bins
+
+`PREREG.md` reports the held-out reliability as "near-diagonal across bins" and quotes four of the
+ten. The three bins with the largest gaps are not among the four. ECE 0.0031 is an n-weighted
+marginal average and the lowest bin holds 36,912 of the 46,718 held-out designs (79%), so a very
+small ECE is fully compatible with a large gap in the sparsely populated high-risk tail. All ten
+bins, printed by `fit_calibration.py` (fit A, eval B):
+
+| bin | n | predicted | observed |
+|---|---:|---:|---:|
+| [0.0, 0.1) | 36,912 | 0.029 | 0.029 |
+| [0.1, 0.2) | 7,114 | 0.138 | 0.130 |
+| [0.2, 0.3) | 983 | 0.238 | 0.228 |
+| [0.3, 0.4) | 950 | 0.318 | 0.281 |
+| [0.4, 0.5) | 355 | 0.420 | 0.420 |
+| [0.5, 0.6) | 259 | 0.574 | 0.517 |
+| [0.6, 0.7) | 42 | 0.696 | 0.619 |
+| [0.7, 0.8) | 18 | 0.760 | 0.500 |
+| [0.8, 0.9) | 42 | 0.854 | 0.690 |
+| [0.9, 1.0) | 43 | 0.949 | 0.930 |
+
+**Consequence.** The repeated illustration "a design labelled 70% risk fails close to 70% of the
+time" is not supported at the region it names: the 0.6-0.7 bin is 0.696 predicted against 0.619
+observed, and 0.7-0.8 is 0.760 against 0.500. Those bins hold 42 and 18 designs, so the observed
+values are themselves noisy, which is the honest reading rather than a claim that the model is
+badly miscalibrated up there. The 0.4-0.5 bin is exactly diagonal (0.420 / 0.420, n=355) and is now
+the illustration used in `README.md`, `verifier.py`, `index.html` and `docs/SUBMISSION-SUMMARY.md`,
+each stating that an absolute risk above about 0.6 is thinly measured. The ECE itself is unchanged.
+
+Separately, `docs/cisfalcon_calibration.png` was titled with the fit-A/eval-B value 0.0029 while
+every prose surface quoted 0.0031, the mean of the two directions, so a reader opening the cited
+figure to check 0.0031 found the more favourable single direction. The figure now states both.
+
+**Reproduce:** `python fit_calibration.py` (prints all ten bins and both ECE directions).
+
 ---
 
 ## 2026-08-03 — the integrity hash reproduced only on Windows

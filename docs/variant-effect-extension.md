@@ -35,12 +35,15 @@ report the cutoff-free r as the primary number and the AUROC as a supporting vie
 never the headline. Ranking the strong-effect variants correctly is exactly the
 signal CisFalcon's pre-synthesis triage flag needs. **The honest
 caveat in the same breath:** the model *ranks* variants but does *not* calibrate
-absolute effect size, predicted magnitudes are compressed ~6–9× (predicted σ
-≈ 0.06–0.09 vs measured σ ≈ 0.50–0.56 log₂), so a raw predicted Δ is not a
+absolute effect size, predicted magnitudes are compressed about **6× in K562 and 10× in HepG2**
+(K562 measured σ 0.500 against predicted σ 0.090 = 5.6×; HepG2 measured σ 0.564 against predicted
+σ 0.057 = 9.9×; from `data/variant_scored.csv.gz`), so a raw predicted Δ is not a
 quantitative effect size; performance is element-dependent (SORT1 enhancer r ≈
 0.42, F9 promoter 0.41, PKLR 0.54–0.62), it is near-blind on LDLR (r ≈ 0.08),
 and HepG2 overall is modest (0.29 pooled). Every element is significant at p <
 0.05 (weakest, LDLR.2, p = 0.022); most are far stronger (p ≤ 10⁻³⁷).
+
+![Predicted vs measured single-nucleotide variant effect on the Kircher et al. 2019 saturation-mutagenesis MPRA, one panel per cell. K562 (n = 2,814 assay rows) reaches Pearson r = 0.58; HepG2 (n = 8,191 rows) reaches 0.29. Both axes are log2 effect, alt minus ref. The predicted axis spans a far narrower range than the measured one, which is the magnitude compression the text quantifies.](variant_effect_scatter.png)
 
 ![Per-element predicted-vs-measured variant effect: K562 (PKLR) and the SORT1 / F9 elements carry strong signal, LDLR is near-blind. The figure shows exactly where the flag is trustworthy and where it is not.](variant_effect_per_element.png)
 

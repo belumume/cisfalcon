@@ -8,18 +8,18 @@
 
 ## In 60 seconds
 
-**The problem.** AI now designs synthetic enhancers: short DNA meant to switch a gene on in one cell type and stay silent everywhere else, the targeting step of gene therapy. About **1 in 16** of those designs is secretly broken and fires in the wrong cell. You only find out after you synthesize and assay it, weeks and hundreds of dollars later.
+**The problem.** AI now designs synthetic enhancers: short DNA meant to switch a gene on in one cell type and stay silent everywhere else, the targeting step of gene therapy. In the one published library where this has been measured end to end (93,435 Gosai/Tewhey designs, scored cross-lineage in vitro), about **1 in 16** of those designs is secretly broken and fires in the wrong cell; in-vivo cortical screens report far higher failure rates still (see Why it matters below, and `docs/failure-modes.md` for the 0.7% to 22.3% spread by generator inside this one library). You only find out after you synthesize and assay it, weeks and hundreds of dollars later.
 
 **What it does.** CisFalcon reads a design and predicts that failure from sequence alone, before synthesis, so a lab spends its bench budget on the designs most likely to hold up.
 
-**The number, reported the honest way.** Cross-lab **AUROC 0.80 on 93,435 designs from a different lab** (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw, with zero sequence overlap. Rank safest-first and, within one target cell and one generator (how a lab actually deploys this), **specificity failures drop 41%** (macro across 14 strata) with 2.59x enrichment in the riskiest 2%. Pooled across a mixed batch those same rules read 70% and 7.74x, but we measured the null and report it: ranking by stratum base rate alone, with no access to sequence at all, achieves **91% pooled**, better than the model. So the pooled figures are not evidence of sequence-level discrimination, and 41% / 2.59x is the honest per-design number (`triage_conditioning_check.py`). It is a triage ranker, not a hard gate, and every caveat is stated below and in `PREREG.md`.
+**The number, reported the honest way.** Cross-lab **AUROC 0.80 on 93,435 designs from a different lab** (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw, with zero sequence overlap. Rank safest-first and, within one target cell and one generator (how a lab actually deploys this), **specificity failures drop 41%** (macro across the 14 strata that carry at least 10 failures and 10 passes, covering 87,573 of the 93,435 designs, 94%) with 2.59x enrichment in the riskiest 2%. Pooled across a mixed batch those same rules read 70% and 7.74x, but we measured the null and report it: ranking by stratum base rate alone, with no access to sequence at all, achieves **91% pooled**, better than the model. So the pooled figures are not evidence of sequence-level discrimination, and 41% / 2.59x is the honest per-design number (`triage_conditioning_check.py`). It is a triage ranker, not a hard gate, and every caveat is stated below and in `PREREG.md` (frozen, hash-locked) together with [`PREREG-ERRATA.md`](PREREG-ERRATA.md), which carries dated corrections to two of its reported figures.
 
 **Try it, or reproduce it in one click:**
 - Reproduce the 0.80 in your browser, no install: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/belumume/cisfalcon/blob/main/reproduce_flagship.ipynb) fetches the committed scores from GitHub and prints AUROC 0.8013 in pure numpy.
 - Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (open Verify to see a real design batch scored and ranked live, click a flagged design to watch the closed-loop fix flip it or to run the live four-agent Claude diagnosis on it, or paste your own sequence). The Claude verifier runs in the product, not only the CLI: "Run Claude diagnosis" fires three Sonnet 5 reasoning lenses in parallel and an Opus 4.8 adjudicator, and the browser network tab shows the real `/api/diagnose` call return.
 - Or locally, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the pooled 7.74x triage straight from the committed per-design scores, and `python triage_conditioning_check.py` re-derives the conditioned 41% / 2.59x and the 91% sequence-free null.
 - Uncertainty, in one command: `python bootstrap_ci.py` prints the 95% CIs (design-level and the honest cluster bootstrap over cell x generator strata) and the paired difference vs trivial baselines, all excluding zero (`docs/bootstrap_ci.png`).
-- Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md`.
+- Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md` (frozen, hash-locked) plus [`PREREG-ERRATA.md`](PREREG-ERRATA.md) for its dated corrections. Read the pair; the frozen file still states two figures the project has since corrected.
 - **How it was built (the Claude Code + Claude Science collaboration):** [`HOW-BUILT.md`](HOW-BUILT.md). A Claude multi-agent verifier plus custom epistemic hooks, independently audited by a separate Claude Science session that re-derived every number and caught a real reproduction-claim conflation. Diffable audit table: [`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md).
 
 **Why it matters.** Enhancers are the targeting element of brain / heart / immune enhancer-AAV gene therapy, where the field's own stated bottleneck is that many designs fail specificity. That is the spend CisFalcon triages, and it already runs on a brain-derived cell (the SKNSH neuroblastoma line, cross-lab 0.73; a primary-neuron MPRA is the honest next step).
@@ -98,19 +98,24 @@ FastSeqProp), with no sequence overlap with the model's training data.
 | cross-lab AUROC (n=93,435) | **0.8013**, 95% CI [0.796, 0.807] | `reproduce_flagship.py`, `bootstrap_ci.py` |
 | vs trivial baselines (GC / length / random) | 0.51 / 0.50 / 0.50 | `bootstrap_ci.py` |
 | fully-conditioned per-sequence signal | 0.66 | `cell_prior_baseline.py` |
-| safest-half failure reduction, conditioned (the honest one) | **41%** macro within (cell x generator) | `triage_conditioning_check.py` |
+| safest-half failure reduction, conditioned (the honest one) | **41%** macro over 14 (cell x generator) strata, 87,573 of 93,435 designs (94%); per stratum 7% to 91% | `triage_conditioning_check.py` |
 | safest-half failure reduction, pooled | 70% (6.29% to 1.91%) | `triage_curve.py` |
 | sequence-free stratum-prior null, pooled | **91%** (beats the pooled 70%) | `triage_conditioning_check.py` |
 | riskiest-2% enrichment, conditioned | **2.59x** macro (3 strata below 1.0x) | `triage_conditioning_check.py` |
 | riskiest-2% enrichment, pooled | 7.74x (PPV 0.49) | `reproduce_flagship.py` |
 | held-out calibration error (ECE) | 0.0031 | `fit_calibration.py` |
 
-![Safest-first triage vs synthesizing blind](docs/triage_curve.png)
+![Safest-first triage vs synthesizing blind, POOLED across the mixed 93,435-design batch: the safest half fails at 1.9% against a 6.29% blind base rate, a 70% reduction. This is the pooled basis the table above disowns as evidence of sequence-level signal. Conditioned within one cell and one generator the reduction is 41% macro, and a sequence-free stratum-prior rule scores 91% pooled.](docs/triage_curve.png)
+
+*The curve is pooled across a mixed batch, which is the basis a sequence-free stratum-prior rule
+beats at 91%. The honest per-design figure, conditioned within (cell x generator), is a 41% macro
+reduction; run `triage_conditioning_check.py` for the per-stratum table.*
 
 - **Cross-lab AUROC 0.8013, AUPRC 0.293** (n=93,435; base failure rate 6.29%). Beats trivial baselines
   decisively (GC-content 0.51, sequence-length 0.50, random 0.50).
 - **The number carries its uncertainty** (`bootstrap_ci.py`, 2000 resamples): the design-level 95% CI is
-  [0.796, 0.807]; the honest cluster bootstrap over the 24 cell x generator strata is [0.614, 0.895], wide
+  [0.796, 0.807]; the honest cluster bootstrap over the 24 cell x generator strata (3 cells x 8 generator
+  codes) is [0.614, 0.895], wide
   by construction because the ranker is strong on failure-prone generators and near-chance on the
   best-optimized ones. Pooled triage enrichment 7.74x [7.39, 8.14] and pooled safest-half reduction 70% [68%, 72%]; conditioned within (cell x generator) these become 2.59x and 41%, against a 91% sequence-free stratum-prior null. The
   gap over every trivial baseline is +0.29 to +0.30 with each 95% CI excluding zero, so the separation is
@@ -121,18 +126,30 @@ FastSeqProp), with no sequence overlap with the model's training data.
   within-(cell x generator) stratum) leaves genuine per-sequence discrimination of 0.66, still well above
   0.50 and every trivial baseline. So the pooled 0.80 is the deployment number for a mixed batch and 0.66
   is the fully-conditioned per-sequence signal; both are reported, not just the higher one
-  (`cell_prior_baseline.py`).
+  (`cell_prior_baseline.py`). The 0.66 is a **macro average over the 14 of those 24 strata carrying at
+  least 10 failures and 10 passes** (94% of designs), and the individual strata run 0.53 (SKNSH x al) to
+  0.96 (HepG2 x hmc), 7 of the 14 below 0.59. It is not a single pooled quantity, and the range is the
+  same fact the triage spread reports from the other side.
 
 ![Where the signal lives: the pooled 0.80 decomposed. Remove the cell base rate and per-sequence discrimination is 0.75; remove both cell and generator base rates and it is 0.66, still well above every trivial baseline.](docs/decomposition.png)
-- **The failure risk it prints is calibrated, not asserted.** The emitted probability is fit by isotonic
-  regression on held-out cross-lab data: held-out calibration error (ECE) is 0.0031, so a design it labels
-  70% risk fails close to 70% of the time across this design population (reliability diagram in
-  `docs/cisfalcon_calibration.png`; `fit_calibration.py`). It is a population-level estimate, calibrated
+- **The failure risk it prints is calibrated, not asserted, and the tail is thinly measured.** The emitted
+  probability is fit by isotonic regression on held-out cross-lab data: held-out calibration error (ECE) is
+  0.0031, the mean of the two split directions (0.0029 fit-A/eval-B, 0.0032 fit-B/eval-A; the figure panel
+  plots the first, so its title reads 0.0029). Near the middle of the range it is close to exact: the
+  0.4-0.5 bin runs predicted 0.420 against observed 0.420 on n=355. **The high-risk tail is a different
+  story and the ECE cannot show it**, because ECE is an n-weighted marginal average and the lowest bin holds
+  36,912 of the 46,718 held-out designs (79%). Held out, the 0.6-0.7 bin runs predicted 0.696 against
+  observed 0.619 on n=42, and 0.7-0.8 runs 0.760 against 0.500 on n=18. Those bins are small enough that the
+  observed values are themselves noisy, which is the honest reading: trust the ranking and the low-risk
+  bins, treat an absolute number above about 0.6 as thinly measured. All ten bins are printed by
+  `fit_calibration.py` and tabulated in [`PREREG-ERRATA.md`](PREREG-ERRATA.md); reliability diagram in
+  `docs/cisfalcon_calibration.png`. It is a population-level estimate, calibrated
   marginally on the Gosai distribution and not conditioned per target cell. The fit uses the three
   measured cross-lab cells (K562, HepG2, SKNSH); for a design targeting one of the other cell types the
   tool still prints a probability but labels it extrapolated rather than calibrated.
 - **The deployed two-head combination beats either model alone, with nothing trained.** A cheaper
-  chromatin-accessibility model gets close cross-lab (0.789 vs the activity 0.802), a fair question for
+  chromatin-accessibility model gets close cross-lab (0.789 vs the activity 0.8016 on the ensemble's own
+  independent code path; the flagship path prints 0.8013 for the same model), a fair question for
   any reviewer. A zero-parameter, a-priori rank-average of the two frozen heads, fixed before the number
   was read, lifts the cross-lab AUROC to 0.806, above both single heads: the paired 95% CI on the
   difference over the best single head is [+0.003, +0.007] (excludes zero), and it beats accessibility
@@ -166,12 +183,29 @@ FastSeqProp), with no sequence overlap with the model's training data.
   i.e. no better than random within those strata. Reproduce with `triage_conditioning_check.py`, which
   re-derives the published pooled figures to the digit as a positive control and refuses to print the
   conditioned numbers if that assert fails.
-- Every cross-lab headline number here re-derives to 4 decimals directly from the committed per-design
-  scores (`data/gosai_designed/designed_scored.csv`) with a plain rank-sum AUROC; it is not a pipeline artifact.
-- **Independently reproduced.** A separate Claude Science session cloned this repo from scratch and re-derived
-  every number to the decimal from the committed data alone (AUROC 0.8013, joint per-sequence 0.662, calibration
-  ECE 0.0031, triage 7.75x, ScreenAudit 0.394). It is a fresh-harness reproduction on separate infrastructure,
-  and it is what surfaced the final reproducibility fixes in this repo.
+
+![Triage economics on a 200-design batch, flagging the riskiest 2%. The conditioned within-(cell x generator) operating point (2.59x, PPV 0.163) averts an estimated $458 to $1,796 net of a cheap orthogonal recheck on the flags; the pooled point (7.74x, PPV 0.487) gives $1,690 to $6,336 but is an upper bound on the disowned mixed-batch basis. Both columns are shown at a low spend basis of $950 per pursued design and a high basis of $3,500.](docs/cisfalcon_economics.png)
+
+*The conditioned column is the number to quote. Assumptions and both bases are in
+`docs/cisfalcon_triage_economics.csv`, regenerated by `python economics_table.py`.*
+
+- Every **flagship** cross-lab number (the 0.8013 AUROC, the triage figures, the calibration) re-derives to
+  4 decimals directly from the committed per-design scores (`data/gosai_designed/designed_scored.csv`) with a
+  plain rank-sum AUROC; it is not a pipeline artifact. Two families sit on other committed files and are named
+  here so nobody wastes time re-deriving them from the wrong one: the two-head ensemble (0.8064, activity
+  0.8016, accessibility 0.789) comes from `data/gosai_designed/design_gaps.csv` via `ensemble_ci.py`, and the
+  AlphaGenome cross-check (0.688, matched 0.6731) from `data/gosai_designed/alphagenome_crosscheck.json`.
+- **Independently reproduced, and the audit's scope is stated because it does not cover the current
+  headline.** A separate Claude Science session cloned this repo from scratch and re-derived every
+  number in the **pre-conditioning** release to the decimal from the committed data alone (AUROC
+  0.8013, joint per-sequence 0.662, calibration ECE 0.0031, triage 7.75x, ScreenAudit 0.394;
+  [`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md)). It is a fresh-harness reproduction on separate
+  infrastructure, and it is what surfaced the final reproducibility fixes in this repo. The
+  conditioned figures this README now leads with (41%, 2.59x, the 91% sequence-free null) **post-date
+  that audit** and are not in it: the audit table marks the 2.59x row "added post-audit" and carries
+  no row for the other two. They are reproduced instead by `triage_conditioning_check.py`, which
+  asserts the audited pooled figures as a positive control and refuses to print the conditioned
+  numbers if that control fails.
 
 ### The benchmark is public
 
@@ -199,13 +233,13 @@ with one command. See [`docs/variant-effect-extension.md`](docs/variant-effect-e
 Using the same committed data, CisFalcon produces a systematic result the scattered dataset does not give
 on its own. Today's AI enhancer-design methods vary about **30x** in specificity-failure rate (FastSeqProp
 0.7% to Hamiltonian MC 22.3%), and the disease-relevant targets are the hardest: brain (SK-N-SH, **10.1%**)
-and liver (HepG2, 8.2%) designs fail 10 to 15 times more often than blood (K562, 0.6%), and the worst
+and liver (HepG2, 8.2%) designs fail about 14 to 17 times more often than blood (K562, 0.6%), and the worst
 single combination, Hamiltonian-MC brain enhancers, fails **1 in 3**. CisFalcon's discrimination is highest
 exactly where the failures cluster (AUROC 0.92 on the worst generator). The failure labels are Gosai/Tewhey
 wet-lab measurements; the systematic map and the frozen verifier that predicts it are the contribution.
 Reproduce with `python findings_failure_modes.py`.
 
-![Specificity-failure rate by AI design method and by target cell: brain and liver designs, and the Hamiltonian-MC and SA generators, fail most.](docs/failure_modes.png)
+![Specificity-failure rate by AI design method and by target cell. Brain (SK-N-SH 10.1%) and liver (HepG2 8.2%) designs fail most by target; Hamiltonian MC (22.3%) and replicate-SA (16.9%) fail most by generator, while plain SA (2.5%), AdaLead (2.3%) and FastSeqProp (0.7%) each fail under 3%.](docs/failure_modes.png)
 
 See [`docs/failure-modes.md`](docs/failure-modes.md).
 
@@ -222,16 +256,32 @@ Honest boundaries, stated up front:
   caveat (the atlas CV split removes exact duplicates
   but not near-duplicate generative families). The cross-lab result is immune by construction.
 
-Full methodology, every caveat, and the pre-committed vs post-hoc labels are in `PREREG.md`.
+Full methodology, every caveat, and the pre-committed vs post-hoc labels are in `PREREG.md` (frozen,
+hash-locked), read together with [`PREREG-ERRATA.md`](PREREG-ERRATA.md). The frozen file still
+reports the pooled 70% / 7.8x headline and the unmatched within-tissue decomposition; both are
+corrected in the errata rather than edited in place, because editing the frozen file would break its
+hash.
 
 ## Brain-cell relevance, shown not argued
 
 Enhancer specificity is the targeting element of brain / heart / immune enhancer-AAV gene therapy,
-where the field's own stated bottleneck is that many designs fail specificity: Mich et al. 2025 report
-about half of astrocyte / oligodendrocyte enhancers fail in vivo, and Ben-Simon et al. 2024 tested 682
-enhancers selected for cortical-cell-type open-chromatin specificity and reached only ~30% success (so
-about 70% fail), as reported in the mammalian-cortex enhancer-prediction benchmark (bioRxiv
-2024.08.21.609075).
+where the field's own stated bottleneck is that many designs fail specificity. Two independent screens,
+each cited to the paper the counts actually come from:
+
+- **Mich et al. 2025 (eLife)**: in an enhancer-AAV screen, about half of candidate brain-cell enhancers
+  drove the wrong cell type or nothing at all, at **astrocyte 25 of 50** and **oligodendrocyte 21 of 43**.
+  (This is a different paper from the Dravet result below, which is Mich, Ting, Lein et al., *Sci Transl
+  Med* 2025; do not read the DOI on that one as the source of these counts.)
+- **The mammalian-cortex enhancer-prediction benchmark (bioRxiv 2024.08.21.609075)**: **682** enhancers
+  selected for cortical-cell-type open-chromatin specificity reached only about **30% success**, so
+  roughly 70% failed. The 682 is that benchmark's count, not the Ben-Simon screen's.
+
+The Ben-Simon screen this repository actually scores is a separate, later artifact and is cited as
+**Ben-Simon et al., *Cell* 2025** everywhere below. Its counts, each with its scope, so three different
+numbers for "the screen" do not read as a contradiction: about **677** enhancers with sequences in the
+release, **532** used here, **211** carrying a hard in-vivo On-Target or Off-Target label (143 On, 68
+Off), and **204** of those whose target subclass the scoring model has an output head for (140 On, 64
+Off), which is the set every AUROC in this repository is computed on.
 
 Wrong-cell-type firing is not a cosmetic QC issue; in a real therapy it is a safety failure. In an
 interneuron-specific enhancer-AAV gene therapy for Dravet syndrome (a severe childhood epilepsy with a
@@ -274,14 +324,18 @@ distant lineages, not cortical subclasses), so we tested whether the specificity
 transfers, scored by a cortex-appropriate model that is fully independent of CisFalcon: DeepBICCN2, a
 mouse-cortex snATAC model (aertslab) with per-subclass outputs for astrocyte, oligodendrocyte, OPC,
 microglia, and neuron subtypes. We scored the 532 in-vivo AAV-screened cortical enhancers of the
-Allen/BICCN benchmark (Ben-Simon et al. 2025, the clean-labelled subset of their ~677-enhancer
+Allen/BICCN benchmark (Ben-Simon et al., *Cell* 2025, the clean-labelled subset of their ~677-enhancer
 screen); of the **211 with a hard in-vivo On-Target or Off-Target label** (143 On, 68 Off), 204 carry a
 target subclass DeepBICCN2 has an output head for, and on those (140 On, 64 Off) the sequence-derived
 specificity gap separates On-vs-Off at **AUROC 0.7056 (95% CI [0.63, 0.77], excludes chance)**.
 
 Reported honestly, with the caveats elevated not buried:
 - This is the **paradigm generalizing via a different model**, not CisFalcon-the-tool working in brain.
-- It **ties** a measured-accessibility feature on the same set (0.70). Against the best measured
+- It **ties** a measured-accessibility feature on the same 204 rows: accessibility reads **0.687**
+  there, against the gap's 0.7056, paired delta **-0.018, 95% CI [-0.103, +0.067], includes zero**.
+  (The 0.6983 that appears in `result_brain_invivo.json` is that feature's UNMATCHED score on all 211
+  hard-labelled rows, seven of which the gap cannot score at all, so it is not a like-for-like number
+  and this bullet used to quote it while saying "on the same set".) Against the best measured
   cross-cell specificity feature (gini) the comparison has to be matched and paired to mean anything:
   the 0.746 gini figure is scored on all 211 rows, including 7 whose target subclass the gap cannot
   score at all. On the same 204 scorable enhancers gini reads 0.7308 against the gap's 0.7056, and a
@@ -347,7 +401,7 @@ cheapest stage, which is where a triage gate belongs.
    +1.03), re-scored by the same frozen gate and described in full under Safety below; keep the two
    apart when reading the numbers. We then powered the obvious question instead of trusting a small
    number: on 97 failing designs, at an **equal 4-round budget**, Claude's adaptive motif search rescues
-   26.8% versus a fixed greedy rule's 24.7% (delta +2.1 points, 95% CI [-0.04, +0.08], **includes
+   26.8% versus a fixed greedy rule's 24.7% (delta +2.1 percentage points, 95% CI [-4.2, +8.3] points, **includes
    zero**). So the adaptive agent does **not** beat a fixed rule at equal budget, and we report that null
    rather than the underpowered n=20 headline it replaces. The honest value here is the **live agentic
    tool-use loop itself** (you can watch Claude drive a scientific optimization), and it is in-silico
@@ -357,7 +411,7 @@ cheapest stage, which is where a triage gate belongs.
 ## Reproduce
 
 ```bash
-# gate + demo (needs TensorFlow 2.14; models via the download script below)
+# gate + demo (needs TensorFlow 2.14; get the six weight files first with `python fetch_models.py`, see DATA.md)
 python demo.py            # full run incl. the agent layer (needs an Anthropic API key)
 python demo.py --no-agents # gate-only, no API
 ```

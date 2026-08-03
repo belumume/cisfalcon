@@ -132,7 +132,7 @@
                   <div class="num">41%</div>
                   <div class="cap">FEWER FAILURES</div>
                 </div>
-                <div class="body">Rank safest-first and synthesize the safer half. Measured within one target cell and one generator, the honest conditioned reduction is 41%. Pooled across a mixed batch it reads 70% (6.29% to 1.91%), but a sequence-free rule using only stratum base rates scores 91% pooled, so the pooled number is not per-design signal.</div>
+                <div class="body">Rank safest-first and synthesize the safer half. Measured within one target cell and one generator, the honest conditioned reduction is 41%. Pooled across a mixed batch it reads 70% (6.29% to 1.91%), but a sequence-free rule using only stratum base rates scores 91% pooled, so the pooled number is not per-design signal. <b>41% is a macro average over 14 (cell &times; generator) strata covering 87,573 of 93,435 designs; per stratum it runs 7% (SKNSH/sa_rep) to 91% (HepG2/hmc)</b>, so what one lab gets depends on which stratum it deploys in. Reproduce the per-stratum table with <code>triage_conditioning_check.py</code>.</div>
               </div>
             </div>
 
@@ -146,7 +146,7 @@
               </button>
               <button class="linkbtn" data-view="validation">See the validation</button>
             </div>
-            <div class="ov-fine">Triage ranker, not a hard gate. The pooled 0.80 is the mixed-batch number; fully conditioned per-sequence it is 0.66, still above the 0.50 chance line.</div>
+            <div class="ov-fine">Triage ranker, not a hard gate. The pooled 0.80 is the mixed-batch number; fully conditioned per-sequence it is 0.66 macro across 14 strata (range 0.53 to 0.96), still above the 0.50 chance line.</div>
           </div>
 
           <!-- LIVE PROOF CARD (scripted animation of the REAL hero's numbers) -->
@@ -276,17 +276,17 @@
             <div class="stat-card">
               <div class="v">6.29%</div>
               <div class="k">BASE FAILURE RATE</div>
-              <div class="d">about 1 in 16 designs misfires in the wrong cell type</div>
+              <div class="d">about 1 in 16 designs misfires in the wrong cell type, in this one library (93,435 Gosai/Tewhey designs, cross-lineage in vitro). In-vivo cortical screens report far higher failure rates.</div>
             </div>
             <div class="stat-card">
               <div class="v green">41%</div>
               <div class="k">FEWER FAILURES</div>
-              <div class="d">conditioned within cell x generator (the deployment case). Pooled it reads 70%, but a sequence-free stratum-prior rule beats that at 91%.</div>
+              <div class="d">macro across 14 cell x generator strata (the deployment case), covering 87,573 of 93,435 designs. Per stratum it runs <b>7% to 91%</b>, so a lab in SKNSH/sa_rep gets 7%. Pooled it reads 70%, but a sequence-free stratum-prior rule beats that at 91%.</div>
             </div>
             <div class="stat-card">
               <div class="v">2.59&times;</div>
               <div class="k">RISKIEST-2% ENRICHMENT</div>
-              <div class="d">macro across cell x generator strata (the deployment case). Pooled it reads 7.74&times; at PPV 0.487, on the same mixed-batch basis the 70% figure above is disowned for.</div>
+              <div class="d">macro across the same 14 strata (the deployment case). <b>Three of them enrich below 1.0&times;</b> (SKNSH/fsp 0.65&times;, K562/sa_rep 0.60&times;, HepG2/sa_rep 0.90&times;), i.e. no better than random within those strata. Pooled it reads 7.74&times; at PPV 0.487, on the same mixed-batch basis the 70% figure above is disowned for.</div>
             </div>
             <div class="stat-card">
               <div class="v">43%</div>
@@ -391,7 +391,8 @@
               </svg>
               <div style="flex:1">
                 <div class="big">0.8013</div>
-                <div class="subl">cross-lab AUROC · 95% CI [0.796, 0.807]</div>
+                <div class="subl">cross-lab AUROC · design-level 95% CI [0.796, 0.807]</div>
+                <div class="subl">cluster 95% CI over the 24 cell &times; generator strata: <b>[0.614, 0.895]</b>, the honest one, wide because the ranker is strong on failure-prone generators and near chance on the best-optimized ones (<code>bootstrap_ci.py</code>)</div>
                 <div class="lines">
                   <div>n = 93,435 designs</div>
                   <div>held-out lab · Gosai/Tewhey 2024</div>
@@ -426,18 +427,18 @@
                   <div class="bar"><div class="fill" style="width:40%;background:#8A9098"></div></div>
                 </div>
               </div>
-              <div class="fine">left edge = 0.50 chance · every level clears it</div>
+              <div class="fine">left edge = 0.50 chance · every level clears it. The bottom row is a <b>macro average over 14 (cell &times; generator) strata running 0.53 to 0.96</b>, not a single pooled quantity; 7 of the 14 sit below 0.59. <code>cell_prior_baseline.py</code></div>
             </div>
           </div>
 
           <div class="val-3">
             <div class="c">
               <div class="cap">TWO-HEAD ENSEMBLE</div>
-              <div class="d">activity <b>0.802</b> and accessibility <b>0.789</b>, rank-averaged to <b class="green">0.806</b>. Nothing trained, fixed before the number was read.</div>
+              <div class="d">activity <b>0.8016</b> and accessibility <b>0.789</b>, rank-averaged to <b class="green">0.8064</b>. Nothing trained, fixed before the number was read. These three come from the ensemble's own code path over <code>design_gaps.csv</code> (<code>ensemble_ci.py</code>); the 0.8013 headline elsewhere on this page is the same model on the flagship path over <code>designed_scored.csv</code>.</div>
             </div>
             <div class="c">
               <div class="cap">CALIBRATED, NOT ASSERTED</div>
-              <div class="d">held-out calibration error <b>ECE 0.0031</b> (isotonic). A design labelled 70% risk fails close to 70% of the time.</div>
+              <div class="d">held-out calibration error <b>ECE 0.0031</b> (isotonic; mean of both split directions, 0.0029 / 0.0032). Near the middle it is close to exact: the 0.4-0.5 bin runs predicted 0.420 against observed 0.420 on n=355. The high-risk tail is thinly measured and ECE cannot show it, since 79% of held-out designs sit in the lowest bin: 0.6-0.7 runs 0.696 predicted against 0.619 observed on n=42. Trust the ranking; treat an absolute number above ~0.6 as noisy.</div>
             </div>
             <div class="c">
               <div class="cap">BRAIN-DERIVED LINE</div>
@@ -447,7 +448,7 @@
 
           <div class="decomp" style="margin-bottom:22px">
             <div class="cap">IN-VIVO WITHIN-CORTEX · NEIGHBOR RESOLUTION</div>
-            <div class="lead">The paradigm, not this tool, tested one tissue deeper: an independent cortical model (DeepBICCN2, per-subclass for astrocyte, oligodendrocyte, and neuron subtypes) scores 532 in-vivo AAV-screened enhancers (Ben-Simon et al. 2025). Scored here on <b>204 of the 211</b> hard-labelled enhancers (140 On / 64 Off) whose target subclass DeepBICCN2 can score; the other 7 have no output head for their subclass. All three bars are matched on those same 204 rows and paired, so they are like-for-like.</div>
+            <div class="lead">The paradigm, not this tool, tested one tissue deeper: an independent cortical model (DeepBICCN2, per-subclass for astrocyte, oligodendrocyte, and neuron subtypes) scores 532 in-vivo AAV-screened enhancers (Ben-Simon et al., <i>Cell</i> 2025). Scored here on <b>204 of the 211</b> hard-labelled enhancers (140 On / 64 Off) whose target subclass DeepBICCN2 can score; the other 7 have no output head for their subclass. All three bars are matched on those same 204 rows and paired, so they are like-for-like.</div>
             <div class="rows">
               <div class="drow">
                 <div class="top"><span class="k">specificity gap · sequence only</span><span class="v green">0.706</span></div>
@@ -614,7 +615,7 @@
               <div class="rows">
                 <div><b>Cross-lab benchmark:</b> Gosai et al. 2024 MPRA, 93,435 designs, a different lab and design process the model never saw.</div>
                 <div><b>One command, no GPU:</b> <code>reproduce_flagship.py</code> re-derives AUROC 0.8013 in pure numpy from the committed per-design scores. One-click Colab in the browser.</div>
-                <div><b>We verify the verifier:</b> a separate Claude Science session independently re-derived every number to the decimal from the committed data. Built with Claude Code; full methodology and every caveat in PREREG.md.</div>
+                <div><b>We verify the verifier:</b> a separate Claude Science session independently re-derived every number in the pre-conditioning release to the decimal from the committed data (<code>docs/SCIENCE-AUDIT.md</code>). The conditioned figures above (41%, 2.59&times;, the 91% null) post-date that audit and are reproduced instead by <code>triage_conditioning_check.py</code>, which asserts the audited pooled figures as a positive control. Built with Claude Code; full methodology in PREREG.md (frozen, hash-locked) plus PREREG-ERRATA.md, which carries dated corrections to two of its reported figures.</div>
               </div>
             </div>
             <div class="r">

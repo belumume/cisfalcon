@@ -52,13 +52,28 @@ input is public.
 ## Cross-lab designs (Gosai et al. 2024)
 
 Gosai et al. 2024 (Nature 10.1038/s41586-024-08070-z), Zenodo record **10698014**, OL46
-validation MPRA, BODA/Malinois designs. The built benchmark (`data/gosai_designed/*.csv`) is
-reproduced by `build_benchmark.py` + `score_designed.py`. The full 93,435-design cross-lab GPU
-scoring run is the Kaggle kernel `ubaidullahshuaib/cisfalcon-gosai-crosslab`, reading the Kaggle
-dataset `ubaidullahshuaib/cisfalcon-designed-benchmark`. The per-design activity and accessibility
-specificity gaps used by the two-head ensemble (`data/gosai_designed/design_gaps.csv`, keyed by design
-id) come from the Kaggle kernel `ubaidullahshuaib/cisfalcon-ensemble-gaps`; once committed, `ensemble_ci.py`
-reproduces the ensemble and its paired CI with no GPU.
+validation MPRA, BODA/Malinois designs.
+
+**The cross-lab benchmark table was assembled off-repo and no committed script rebuilds it from
+Zenodo.** `data/gosai_designed/designed_benchmark.csv` (93,435 rows; methods `al`, `al_uc`, `fsp`,
+`fsp_uc`, `hmc`, `sa`, `sa_rep`, `sa_uc`) was assembled off-repo from the OL46 release and uploaded
+as the Kaggle dataset `ubaidullahshuaib/cisfalcon-designed-benchmark`, which the GPU scoring kernel
+`ubaidullahshuaib/cisfalcon-gosai-crosslab` then reads. `score_designed.py` CONSUMES that table; it
+does not produce it. The table itself is committed here, so every no-GPU number re-derives from this
+repo, but no committed script and no named kernel rebuilds it from the raw Zenodo archive, so that
+one step is currently not reproducible by a third party. Stated plainly rather than implied.
+
+**`build_benchmark.py` is a different builder and does not touch this file.** It turns the atlas
+supplementary `media-10.xlsx` (not committed) into `data/benchmark.csv`, a separate in-distribution
+benchmark: it filters to sources `{fsp, den, motif_embedding}`, keys off `log2FC_` columns, and
+writes the columns `[id, target_cell, source, gap, fail, split, split_lco]`. An earlier version of
+this section named it as the builder for the cross-lab table, which it provably is not. The
+cross-lab splits come from `make_splits.py` (see [`BENCHMARK.md`](BENCHMARK.md)).
+
+The per-design activity and accessibility specificity gaps used by the two-head ensemble come from
+the Kaggle kernel `ubaidullahshuaib/cisfalcon-ensemble-gaps` and are committed here as
+`data/gosai_designed/design_gaps.csv` (keyed by design id), so `ensemble_ci.py` reproduces the
+ensemble and its paired CI with no GPU and no download.
 
 ## Motifs
 

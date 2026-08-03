@@ -61,11 +61,11 @@ def main() -> None:
     print(f"  cross-lab AUROC (risk vs measured failure)       : {auroc:.4f}")
     print(f"    random-score baseline                          : {auroc_random:.4f}")
     print()
-    print(f"  TRIAGE, riskiest 2% flagged (n={k2:,})")
+    print(f"  TRIAGE, riskiest 2% flagged (n={k2:,})  [POOLED]")
     print(f"    of those, truly fail                           : {ppv2 * 100:.1f}%")
     print(f"    enrichment over base rate                      : {ppv2 / base:.2f}x")
     print()
-    print(f"  RANK safest-first, synthesize the safer half")
+    print(f"  RANK safest-first, synthesize the safer half  [POOLED]")
     print(
         f"    failure rate in what you make                  : {safe_half_fail * 100:.2f}%"
     )
@@ -73,10 +73,19 @@ def main() -> None:
         f"    reduction vs unranked                          : {(1 - safe_half_fail / base) * 100:.0f}%"
     )
     print(line)
-    print("  These are the deployment numbers for a mixed batch. Conditioning")
-    print("  the AUROC on the cell and generator base-rates (cell_prior_baseline.py)")
-    print("  leaves a per-sequence signal of 0.66, still well above 0.50. Full")
-    print("  methodology, caveats, and pre-registered threshold are in PREREG.md.")
+    print("  Everything above is POOLED across cells and generators, which is how")
+    print("  a mixed batch arrives. Pooled figures partly measure how far apart the")
+    print("  strata sit, so each one is conditioned separately and BOTH are reported:")
+    print("    AUROC, conditioned on cell and generator base-rates")
+    print("      (cell_prior_baseline.py)                     : 0.66 per-sequence")
+    print("    safest-half reduction, macro within (cell x generator)")
+    print("      (triage_conditioning_check.py)               : 41%  <- the honest one")
+    print("    a sequence-free stratum-prior null, pooled     : 91%  <- beats the 70%")
+    print("  That last line is the one to read first: a rule using no sequence at all")
+    print("  scores higher pooled than the model does, so the pooled reduction above")
+    print("  is not evidence of per-sequence skill. The 41% macro figure is.")
+    print("  Full methodology, caveats, and pre-registered threshold are in PREREG.md;")
+    print("  the correction itself is dated in PREREG-ERRATA.md.")
     print(line)
 
 

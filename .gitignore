@@ -49,3 +49,4 @@ webapp/backend/_verify_proxy.py
 
 # agent/session scratch: contains absolute local paths (username). Never publish.
 .claude/
+.audit-findings-pass2/

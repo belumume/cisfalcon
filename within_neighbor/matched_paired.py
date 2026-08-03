@@ -18,10 +18,13 @@ zero. So the sequence gap and the measured feature are statistically indistingui
 on this set. They are not ranked. Reproducible; pandas + numpy only, no GPU.
 """
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
-DATA = "within_neighbor/kaggle_brain/out/brain_gaps_with_baselines.csv"
+HERE = Path(__file__).resolve().parent
+DATA = HERE / "kaggle_brain" / "out" / "brain_gaps_with_baselines.csv"
 GAP = "gap"
 BASELINES = ["gini_index", "max_scaled_acc_mouse", "GC.content"]
 N_BOOT = 2000

@@ -5,12 +5,33 @@ hundreds of MB). They come from public sources and are downloaded separately.
 
 ## Models (frozen atlas DHS64-MPRA activity models)
 
-Castillo-Hair et al. 2025 (bioRxiv 2025.09.30.679565). Six fold models
-(`dhs64_mpra_split{0,1,3}.h5` for the MPRA activity head, `dhs64_split{0,1,3}.h5` for the
-accessibility head) from Zenodo record **17410822**. Place them in `models/`.
+Castillo-Hair et al. 2025 (bioRxiv 2025.09.30.679565), Zenodo record **17410822**, CC-BY 4.0.
+Six fold models, about 503MB total. They are third-party artifacts, not trained here.
 
-The deployed web tool (`webapp/backend`) needs the three `dhs64_mpra_split*.h5` files in
-`models/`. The `Dockerfile` copies `models/` into the image; download the models before building.
+**Run `python fetch_models.py`.** It downloads all six, applies the rename below, and verifies
+each against a pinned sha256. Nothing else is needed.
+
+**The rename is mandatory and is the reason a manual download fails.** Zenodo ships different
+filenames from the ones `gate.py` requires, so downloading exactly what the record offers and
+placing it in `models/` produces a load failure with no hint why. An earlier version of this
+section listed the post-rename names as if they were the Zenodo names, which is precisely the
+trap.
+
+| on Zenodo | must be saved as | head |
+|---|---|---|
+| `dhs64_mpra_data_split_0.h5` | `dhs64_mpra_split0.h5` | MPRA activity |
+| `dhs64_mpra_data_split_1.h5` | `dhs64_mpra_split1.h5` | MPRA activity |
+| `dhs64_mpra_data_split_3.h5` | `dhs64_mpra_split3.h5` | MPRA activity |
+| `dhs64_data_split_0.h5` | `dhs64_split0.h5` | accessibility |
+| `dhs64_data_split_1.h5` | `dhs64_split1.h5` | accessibility |
+| `dhs64_data_split_3.h5` | `dhs64_split3.h5` | accessibility |
+
+Verified against the live record on 2026-08-03: all six names above exist on it. The record also
+carries `dhs733_*`, `dhs64_nofilt_*` and a pretrained zip, which this project does not use.
+
+The deployed web tool (`webapp/backend`) needs the three `dhs64_mpra_split*.h5` files. The
+`Dockerfile` does `COPY models/`, so `fetch_models.py` must run before `docker build`; the
+weights are not in git and the build fails at that line without them.
 
 ## Reproducing the numbers (what needs what)
 

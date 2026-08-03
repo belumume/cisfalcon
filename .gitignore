@@ -46,6 +46,10 @@ webapp/backend/_verify_proxy.py
 
 # result artifacts must never be silently dropped by the broad data/ ignore
 !data/gosai_designed/*.json
+# ...but a local re-run's output is not a result artifact. closed_loop_powered.py writes here by
+# default so that reproducing it cannot overwrite the committed evidence; without this line the
+# negation above would track that scratch file.
+data/gosai_designed/*.local.json
 
 # agent/session scratch: contains absolute local paths (username). Never publish.
 .claude/

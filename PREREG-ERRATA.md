@@ -139,7 +139,12 @@ The conclusion is unchanged and was already stated correctly: the interval inclu
 adaptive agent does not beat the fixed rule at equal budget. `README.md` and `HOW-BUILT.md` now
 report percentage points on both halves; `PREREG.md` is frozen, so the correction lives here.
 
-**Reproduce:** `python closed_loop_powered.py`, or read the committed JSON directly.
+**Reproduce:** `python closed_loop_powered.py`, or read the committed JSON directly. The two are
+now genuinely independent: the script writes to `closed_loop_powered.local.json` and leaves the
+committed evidence alone unless you pass `--overwrite-committed`. Until 2026-08-03 it wrote
+straight over the committed file, so taking the first option destroyed the second. It also needs a
+funded Anthropic API key; without one it now fails loudly rather than writing a file of NaNs and
+exiting 0.
 
 ---
 

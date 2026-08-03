@@ -28,8 +28,24 @@ import motifs
 N = int(os.environ.get("CLP_N", "100"))
 MAX_ROUNDS = 4
 CONC = int(os.environ.get("CLP_CONC", "6"))
-OUT = os.path.join(
+# The committed evidence. PREREG-ERRATA.md offers a reader the choice "run this, or read the
+# committed JSON" - and running it used to destroy the second option before producing the first,
+# because both the periodic partial dump and the final write targeted this path. A reproduce
+# command must never be able to overwrite the evidence it exists to reproduce.
+COMMITTED = os.path.join(
     os.path.dirname(__file__), "data", "gosai_designed", "closed_loop_powered.json"
+)
+# Default output is a separate, gitignored file. Pass --overwrite-committed deliberately to
+# refresh the evidence itself.
+OUT = (
+    COMMITTED
+    if "--overwrite-committed" in sys.argv
+    else os.path.join(
+        os.path.dirname(__file__),
+        "data",
+        "gosai_designed",
+        "closed_loop_powered.local.json",
+    )
 )
 
 
@@ -137,6 +153,23 @@ def main():
 
     ok = [r for r in results if "error" not in r]
     errs = [r for r in results if "error" in r]
+    # A run where every call failed used to print "100/100 done", emit every statistic as NaN, and
+    # exit 0. A green exit on zero usable results is worse than a crash: it reads as a successful
+    # reproduction. Fail loudly instead, and say what actually went wrong.
+    if not ok:
+        first = errs[0].get("error") if errs else "unknown"
+        print(
+            f"\nFAILED: {len(errs)} of {len(results)} attempts errored and none produced a "
+            f"scorable result, so there is nothing to compare.\nFirst error: {first}",
+            file=sys.stderr,
+        )
+        print(
+            f"No statistics were written; {OUT} left untouched.",
+            file=sys.stderr,
+        )
+        return 1
+    if errs:
+        print(f"note: {len(errs)} of {len(results)} attempts errored and are excluded")
     a = np.array([r["claude_passed"] for r in ok])
     b = np.array([r["det_passed"] for r in ok])
     stats = paired_boot(a, b)
@@ -174,4 +207,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()'s return value used to be discarded, so a non-zero return would still have exited 0.
+    raise SystemExit(main() or 0)

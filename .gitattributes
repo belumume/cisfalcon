@@ -1,0 +1,11 @@
+# PREREG.md carries a published SHA-256 in PREREG.sha256, so its BYTES are the artifact,
+# not just its text. Without this line git stores LF and checks out CRLF on Windows, which
+# gives the same file two different hashes: a Linux or macOS reviewer computes one value and
+# a Windows checkout computes another. Only one of them can match whatever is published, so
+# the integrity record fails for most reviewers and reads as "they edited the frozen
+# document", which is precisely the accusation a pre-registration exists to pre-empt.
+#
+# Pinning eol=lf makes `sha256sum PREREG.md` return the same value on every platform.
+PREREG.md text eol=lf
+PREREG.sha256 text eol=lf
+PREREG-ERRATA.md text eol=lf

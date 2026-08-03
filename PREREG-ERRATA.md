@@ -5,7 +5,7 @@ hash certifies the methodology was fixed before the numbers were read. Editing i
 correct a reporting error would destroy exactly that property, so corrections are recorded
 here instead: dated, with the evidence, and reproducible from the committed data.
 
-`PREREG.md` and its hash are unchanged.
+`PREREG.md`'s CONTENT is unchanged. Its recorded hash was corrected once, on 2026-08-03, because the original digest was computed over CRLF bytes and so reproduced only on Windows; the superseded digest is retained in `PREREG.sha256` so the change is traceable rather than silent. See the 2026-08-03 entry below.
 
 ---
 
@@ -104,4 +104,29 @@ Repository sources (README, `verifier.py`, `docs/`, and the web app's `index.htm
 to lead with the conditioned figures and to disclose the 91% null. **The DEPLOYED tool at
 cisfalcon-lifesci.fly.dev still serves the pre-correction numbers until the next deploy, and the
 hero image in this repo is a screenshot of that pre-correction page.** Stating otherwise would
-claim a correction that has not shipped. `PREREG.md` and its hash are unchanged.
+claim a correction that has not shipped. `PREREG.md` itself is untouched by this correction.
+
+---
+
+## 2026-08-03 — the integrity hash reproduced only on Windows
+
+`PREREG.sha256` recorded `98b7cce2...ea2f`. That digest is over CRLF bytes. Git stores `PREREG.md`
+with LF, so a Linux or macOS clone computed `ad77f065...e69d` and saw a mismatch against the
+published value. Only a Windows checkout, where git converts to CRLF, could reproduce the recorded
+hash.
+
+This is the worst possible failure mode for a pre-registration, because a hash mismatch on a frozen
+document reads as evidence that the document was edited after the fact, which is precisely the
+accusation the freeze exists to pre-empt. Most reviewers would have hit it.
+
+**The document was never edited.** The two byte streams are identical after normalising line
+endings; converting either way and re-hashing reproduces the other digest exactly. Only the
+representation differed, and with it the digest.
+
+Fixed by pinning `PREREG.md` to LF in `.gitattributes`, so every platform checks out the same bytes,
+and recording the LF digest `ad77f065...e69d`. The superseded CRLF digest is kept in the header of
+`PREREG.sha256` so a reviewer who saw the old value can confirm what changed and why.
+
+Verify: `sha256sum PREREG.md` should now print `ad77f065...e69d` on any platform.
+
+Found by an independent blind re-audit of the repository, not by the authors.

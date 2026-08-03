@@ -26,3 +26,7 @@ webapp/backend/static/*.png
 .playwright-mcp/
 webapp/backend/static/_pre-fable5-backup
 webapp/backend/_verify_proxy.py
+
+# tracked for reproducibility, NOT needed at runtime: keep them out of the image.
+# The scripts stay; only their bulky outputs are excluded.
+within_neighbor/**/out/

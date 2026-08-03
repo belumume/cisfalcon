@@ -18,9 +18,10 @@ the deployment number for a mixed batch; 0.662 is the fully-conditioned per-sequ
 discrimination. Reproducible; no sklearn.
 """
 
-import csv, sys
+import csv, os, sys
 
-SCORED = "data/gosai_designed/designed_scored.csv"
+HERE = os.path.dirname(os.path.abspath(__file__))
+SCORED = os.path.join(HERE, "data", "gosai_designed", "designed_scored.csv")
 MIN_PER_CLASS = 10  # a stratum needs >=10 fail and >=10 pass to yield a stable AUROC
 
 

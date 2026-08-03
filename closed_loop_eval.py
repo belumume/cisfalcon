@@ -112,7 +112,13 @@ def main():
     print("\n=== SUMMARY ===")
     print(json.dumps(summary, indent=2))
     out = os.path.join(
-        os.path.dirname(__file__), "data", "gosai_designed", "closed_loop_eval.json"
+        os.path.dirname(__file__),
+        "data",
+        "gosai_designed",
+        # Never overwrite the committed evidence from a routine run; --overwrite-committed opts in.
+        "closed_loop_eval.json"
+        if "--overwrite-committed" in sys.argv
+        else "closed_loop_eval.local.json",
     )
     json.dump({"summary": summary, "rows": rows}, open(out, "w"), indent=2)
     print(f"\nwrote {out}")

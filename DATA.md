@@ -86,3 +86,8 @@ JASPAR access at runtime. `webapp/backend/motifs.py` re-fetches any missing PWM 
 Live from the BioGRID ORCS REST API (`orcsws.thebiogrid.org`), needs a free ORCS access key.
 `screenaudit/run_screenaudit.py` computes the cross-screen hit-call discordance; the committed
 `screenaudit/screenaudit_result.json` is the result over four cell lines.
+
+`screenaudit/gate_screenaudit.py` is a standalone re-thresholding kernel that shows the gate half
+of the verifier pattern in this second domain. It is deliberately not imported by `verifier.py` or
+by `run_screenaudit.py`, and no published number depends on it; it is here to be read, not run as
+part of the pipeline.

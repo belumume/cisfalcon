@@ -131,15 +131,19 @@ def main():
     print(f"  reduction using ONLY the generator prior: {null_red:.0f}%")
 
     # ---- the decomposition the brain headline needs -----------------------
-    print(f"\nDECOMPOSITION OF THE {red:.0f}% BRAIN HEADLINE")
-    print(f"  pooled within {CELL} (published headline)   {red:.0f}%")
-    print(f"  generator-prior-only null (pooling alone)  {null_red:.0f}%")
-    print(f"  within-stratum macro (per-item signal)     {macro:.0f}%")
-    print(f"  headline minus within-stratum              {red - macro:.0f} points")
+    # Derive the printed difference from the ROUNDED operands. Computing it on the
+    # unrounded values printed "27 points" beside a displayed 58 and 32, so a reader
+    # subtracting what was on screen got 26.
+    red_r, null_r, macro_r = round(red), round(null_red), round(macro)
+    print(f"\nDECOMPOSITION OF THE {red_r:.0f}% BRAIN HEADLINE")
+    print(f"  pooled within {CELL} (published headline)   {red_r:.0f}%")
+    print(f"  generator-prior-only null (pooling alone)  {null_r:.0f}%")
+    print(f"  within-stratum macro (per-item signal)     {macro_r:.0f}%")
+    print(f"  headline minus within-stratum              {red_r - macro_r:.0f} points")
     print(
-        f"  verdict: the sequence-free null ({null_red:.0f}%) "
-        f"{'BEATS' if null_red > red else 'does not beat'} the published headline "
-        f"({red:.0f}%); the honest per-design figure is the macro {macro:.0f}%"
+        f"  verdict: the sequence-free null ({null_r:.0f}%) "
+        f"{'BEATS' if null_r > red_r else 'does not beat'} the published headline "
+        f"({red_r:.0f}%); the honest per-design figure is the macro {macro_r:.0f}%"
     )
 
 

@@ -80,7 +80,7 @@ def main() -> None:
     print("      (cell_prior_baseline.py)                     : 0.66 per-sequence")
     print("    safest-half reduction, macro within (cell x generator)")
     print("      (triage_conditioning_check.py)               : 41%  <- the honest one")
-    print("    a sequence-free stratum-prior null, pooled     : 91%  <- beats the 70%")
+    print("    a sequence-free stratum-prior null, pooled     : ~90.5% <- beats the 70%")
     print("  That last line is the one to read first: a rule using no sequence at all")
     print("  scores higher pooled than the model does, so the pooled reduction above")
     print("  is not evidence of per-sequence skill. The 41% macro figure is.")

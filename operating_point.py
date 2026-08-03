@@ -4,10 +4,13 @@ invariant and hides this. Compute AUPRC, confusion matrix at operating points,
 per-generator AUPRC with positive counts, and cross-lab baselines (GC, random).
 No sklearn dependency (manual metrics)."""
 
+from pathlib import Path
 import numpy as np, pandas as pd
 
-df = pd.read_csv("data/gosai_designed/designed_scored.csv")
-bench = pd.read_csv("data/gosai_designed/designed_benchmark.csv")[["id", "sequence"]]
+HERE = Path(__file__).resolve().parent
+
+df = pd.read_csv(HERE / "data" / "gosai_designed" / "designed_scored.csv")
+bench = pd.read_csv(HERE / "data" / "gosai_designed" / "designed_benchmark.csv")[["id", "sequence"]]
 df = df.merge(bench, on="id")
 score = -df["pred_gap"].values  # higher = more likely to FAIL
 fail = df["measured_fail"].values.astype(int)

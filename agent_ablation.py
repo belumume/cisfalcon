@@ -28,8 +28,23 @@ BASE = os.environ.get("CISFALCON_BASE", "https://cisfalcon-lifesci.fly.dev")
 UA = {"User-Agent": "Mozilla/5.0", "Content-Type": "application/json"}
 OPUS = "claude-opus-4-8"
 K = int(os.environ.get("ABL_K", "12"))
-OUT = os.path.join(
+# The committed evidence. Same defect closed in closed_loop_powered.py: a reproduce command
+# must never be able to overwrite the artifact it exists to reproduce. Both the periodic
+# partial dump and the final write used to target the committed path unconditionally, with
+# no guard on n_errors, so a fully-failed API run replaced real evidence with a stub.
+COMMITTED = os.path.join(
     os.path.dirname(__file__), "data", "gosai_designed", "agent_ablation.json"
+)
+# Default output is a separate, gitignored file. Pass --overwrite-committed deliberately.
+OUT = (
+    COMMITTED
+    if "--overwrite-committed" in sys.argv
+    else os.path.join(
+        os.path.dirname(__file__),
+        "data",
+        "gosai_designed",
+        "agent_ablation.local.json",
+    )
 )
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
@@ -214,6 +229,19 @@ def main():
                 json.dump({"partial": results}, open(OUT, "w"), indent=1)
 
     ok = [r for r in results if "error" not in r]
+    errs = [r for r in results if "error" in r]
+    # A run where every call failed must not be reported as success, and must not write.
+    if not ok:
+        first = errs[0].get("error") if errs else "unknown"
+        print(
+            f"\nFAILED: {len(errs)} of {len(results)} attempts errored and none produced a "
+            f"scorable result.\nFirst error: {first}\n"
+            f"No statistics were written; {OUT} left untouched.",
+            file=sys.stderr,
+        )
+        return 1
+    if errs:
+        print(f"note: {len(errs)} of {len(results)} attempts errored and are excluded")
     import collections
 
     overall = collections.Counter(r["overall_majority"] for r in ok)
@@ -246,4 +274,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

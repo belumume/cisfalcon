@@ -7,8 +7,14 @@ Dempster 2019 Nat Commun): gene SCORES are often concordant, but the binary HIT
 CALL is method-dependent - that fragility is exactly what a scientist needs flagged.
 
 Data: BioGRID ORCS per-screen rows carry per-gene score.1-5 + the authors' HIT flag.
-Pluggable into verifier.py's agent layer: the finding (per-screen discordance +
-example flipped hits) is what the mechanism/precedent/adversary lenses reason over.
+
+STATUS, stated plainly because the previous version of this docstring did not: this module is
+NOT wired into verifier.py. It is a standalone, self-contained re-thresholding kernel that
+demonstrates the gate half of the verifier pattern in a disjoint domain. `verifier.py` does not
+import it, and nothing in the published ScreenAudit result depends on it; the committed
+`screenaudit_result.json` comes from `run_screenaudit.py`. The earlier line "Pluggable into
+verifier.py's agent layer" described an intent, not a wiring, and reading it as a wiring made the
+generality argument look implemented when only its deterministic half is.
 """
 
 from __future__ import annotations

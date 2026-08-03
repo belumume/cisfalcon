@@ -11,7 +11,7 @@ triage. The gap between the two curves is the wasted synthesis CisFalcon saves.
 The curve is POOLED across the mixed 93,435-design batch, and the repo disowns the pooled
 figure as evidence of sequence-level signal, so the figure has to say which basis it is on.
 It used to annotate a bare "70% fewer" with no basis label while the README table two lines
-above it published the conditioned 41% and the 91% sequence-free null, so a reader
+above it published the conditioned 41% and the ~90% sequence-free null, so a reader
 combining the two derived a contradiction with nothing on the figure to resolve it.
 
 Both counterparts are RECOMPUTED here rather than pasted in, using the same min-count filter

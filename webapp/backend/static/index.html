@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=20260803a">
+<link rel="stylesheet" href="/styles.css?v=20260804a">
 </head>
 <body>
 <div class="app">
@@ -132,7 +132,7 @@
                   <div class="num">41%</div>
                   <div class="cap">FEWER FAILURES</div>
                 </div>
-                <div class="body">Rank safest-first and synthesize the safer half. Measured within one target cell and one generator, the honest conditioned reduction is 41%. Pooled across a mixed batch it reads 70% (6.29% to 1.91%), but a sequence-free rule using only stratum base rates scores 91% pooled, so the pooled number is not per-design signal. <b>41% is a macro average over 14 (cell &times; generator) strata covering 87,573 of 93,435 designs; per stratum it runs 7% (SKNSH/sa_rep) to 91% (HepG2/hmc)</b>, so what one lab gets depends on which stratum it deploys in. Reproduce the per-stratum table with <code>triage_conditioning_check.py</code>.</div>
+                <div class="body">Rank safest-first and synthesize the safer half. Measured within one target cell and one generator, the honest conditioned reduction is 41%. Pooled across a mixed batch it reads 70% (6.29% to 1.91%), but a sequence-free rule using only stratum base rates scores about 90% pooled, so the pooled number is not per-design signal. <b>41% is a macro average over 14 of the 24 (cell &times; generator) strata, the ones with at least 10 failures and 10 passes, covering 87,573 of 93,435 designs; per stratum it runs 7% (SKNSH/sa_rep) to 91% (HepG2/hmc)</b>, so what one lab gets depends on which stratum it deploys in. Reproduce the per-stratum table with <code>triage_conditioning_check.py</code>.</div>
               </div>
             </div>
 
@@ -146,7 +146,7 @@
               </button>
               <button class="linkbtn" data-view="validation">See the validation</button>
             </div>
-            <div class="ov-fine">Triage ranker, not a hard gate. The pooled 0.80 is the mixed-batch number; fully conditioned per-sequence it is 0.66 macro across 14 strata (range 0.53 to 0.96), still above the 0.50 chance line.</div>
+            <div class="ov-fine">Triage ranker, not a hard gate. The pooled 0.80 is the mixed-batch number; fully conditioned per-sequence it is 0.66 macro across 14 of the 24 strata (range 0.53 to 0.96), still above the 0.50 chance line.</div>
           </div>
 
           <!-- LIVE PROOF CARD (scripted animation of the REAL hero's numbers) -->
@@ -281,7 +281,7 @@
             <div class="stat-card">
               <div class="v green">41%</div>
               <div class="k">FEWER FAILURES</div>
-              <div class="d">macro across 14 cell x generator strata (the deployment case), covering 87,573 of 93,435 designs. Per stratum it runs <b>7% to 91%</b>, so a lab in SKNSH/sa_rep gets 7%. Pooled it reads 70%, but a sequence-free stratum-prior rule beats that at 91%.</div>
+              <div class="d">macro across 14 of the 24 cell x generator strata (the deployment case), covering 87,573 of 93,435 designs. Per stratum it runs <b>7% to 91%</b>, so a lab in SKNSH/sa_rep gets 7%. Pooled it reads 70%, but a sequence-free stratum-prior rule beats that at about 90%.</div>
             </div>
             <div class="stat-card">
               <div class="v">2.59&times;</div>
@@ -392,7 +392,7 @@
               <div style="flex:1">
                 <div class="big">0.8013</div>
                 <div class="subl">cross-lab AUROC · design-level 95% CI [0.796, 0.807]</div>
-                <div class="subl">cluster 95% CI over the 24 cell &times; generator strata: <b>[0.614, 0.895]</b>, the honest one, wide because the ranker is strong on failure-prone generators and near chance on the best-optimized ones (<code>bootstrap_ci.py</code>)</div>
+                <div class="subl">cluster 95% CI over all 24 cell &times; generator strata (3 cells &times; 8 generators): <b>[0.614, 0.895]</b>, the honest one, wide because the ranker is strong on failure-prone generators and near chance on the best-optimized ones (<code>bootstrap_ci.py</code>)</div>
                 <div class="lines">
                   <div>n = 93,435 designs</div>
                   <div>held-out lab · Gosai/Tewhey 2024</div>
@@ -427,7 +427,7 @@
                   <div class="bar"><div class="fill" style="width:40%;background:#8A9098"></div></div>
                 </div>
               </div>
-              <div class="fine">left edge = 0.50 chance · every level clears it. The bottom row is a <b>macro average over 14 (cell &times; generator) strata running 0.53 to 0.96</b>, not a single pooled quantity; 7 of the 14 sit below 0.59. <code>cell_prior_baseline.py</code></div>
+              <div class="fine">left edge = 0.50 chance · every level clears it. The bottom row is a <b>macro average over the 14 of those 24 strata that carry at least 10 failures and 10 passes, running 0.53 to 0.96</b>, not a single pooled quantity; 7 of the 14 sit below 0.59. <code>cell_prior_baseline.py</code></div>
             </div>
           </div>
 
@@ -520,7 +520,7 @@
               <div style="border:1px solid rgba(20,23,27,.12);border-radius:11px;padding:16px 17px;background:#F2EFE7">
                 <div style="font-family:'Space Grotesk';font-weight:700;font-size:29px;letter-spacing:-.02em;color:#14171B">0.64</div>
                 <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#7A8089;margin:5px 0 8px">HepG2 AUROC</div>
-                <div style="font-size:12px;line-height:1.4;color:#5A616B">Pearson r 0.29</div>
+                <div style="font-size:12px;line-height:1.4;color:#5A616B">Pearson r 0.25 on 3,658 distinct variants. On all 8,191 assay rows it reads 0.29, but rows repeat a variant across elements.</div>
               </div>
             </div>
             <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
@@ -636,6 +636,6 @@
   </div>
 </div>
 
-<script src="/app.js?v=20260803a"></script>
+<script src="/app.js?v=20260804a"></script>
 </body>
 </html>

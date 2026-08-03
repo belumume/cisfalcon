@@ -15,7 +15,7 @@ Two layers:
 Ground truth (leakage-immune, cross-lab): AUROC 0.80 discriminating measured specificity
 failures on 93,435 independent AI-designed enhancers (Gosai et al 2024, zero training overlap),
 vs 0.50 baselines. Triage ranker, not a hard gate: pooled, the riskiest 2% enrich 7.74x (PPV 0.49),
-but a sequence-free stratum-base-rate rule beats the pooled triage headline (91% vs 70% reduction), so
+but a sequence-free stratum-base-rate rule beats the pooled triage headline (about 90% vs 70% reduction), so
 the honest conditioned value is 41% macro reduction / 2.59x macro enrichment within (cell x generator).
 The per-sequence signal with cell and generator base-rates removed is 0.66. In-distribution
 0.896 is a sanity check with a near-duplicate-leakage caveat; the cross-lab number is flagship.

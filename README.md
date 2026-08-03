@@ -2,7 +2,7 @@
 
 **Live tool: https://cisfalcon-lifesci.fly.dev/**
 
-![The CisFalcon Overview tab: catch the AI-designed enhancers that will fail before the lab synthesizes them. A frozen measured-activity model gives cross-lab AUROC 0.80 against 0.50 chance on 93,435 held-out designs. Ranking safest-first and synthesizing the safer half cuts failures 41% conditioned within one target cell and one generator; pooled across a mixed batch it reads 70% (6.29% to 1.91%), but a sequence-free rule using only the stratum base rates scores 91% pooled, so the pooled number is not evidence of per-design skill.](docs/hero_overview.png)
+![The CisFalcon Overview tab: catch the AI-designed enhancers that will fail before the lab synthesizes them. A frozen measured-activity model gives cross-lab AUROC 0.80 against 0.50 chance on 93,435 held-out designs. Ranking safest-first and synthesizing the safer half cuts failures 41% conditioned within one target cell and one generator; pooled across a mixed batch it reads 70% (6.29% to 1.91%), but a sequence-free rule using only the stratum base rates scores about 90% pooled, so the pooled number is not evidence of per-design skill.](docs/hero_overview.png)
 
 *A real Gosai/Tewhey design that CisFalcon flags as off-target, diagnoses, and closes the loop on: disrupt the K562 driver motifs (GATA1, TAL1, GATA2), install the HepG2 grammar (HNF4A, HNF1A, CEBPA), and the same external model moves the predicted specificity gap from failing to passing. This is an in-silico consistency check on one design, not wet-lab validation, captured live from the tool.*
 
@@ -12,12 +12,12 @@
 
 **What it does.** CisFalcon reads a design and predicts that failure from sequence alone, before synthesis, so a lab spends its bench budget on the designs most likely to hold up.
 
-**The number, reported the honest way.** Cross-lab **AUROC 0.80 on 93,435 designs from a different lab** (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw, with zero sequence overlap. Rank safest-first and, within one target cell and one generator (how a lab actually deploys this), **specificity failures drop 41%** (macro across the 14 strata that carry at least 10 failures and 10 passes, covering 87,573 of the 93,435 designs, 94%) with 2.59x enrichment in the riskiest 2%. Pooled across a mixed batch those same rules read 70% and 7.74x, but we measured the null and report it: ranking by stratum base rate alone, with no access to sequence at all, achieves **91% pooled**, better than the model. So the pooled figures are not evidence of sequence-level discrimination, and 41% / 2.59x is the honest per-design number (`triage_conditioning_check.py`). It is a triage ranker, not a hard gate, and every caveat is stated below and in `PREREG.md` (frozen, hash-locked) together with [`PREREG-ERRATA.md`](PREREG-ERRATA.md), which carries dated corrections to two of its reported figures.
+**The number, reported the honest way.** Cross-lab **AUROC 0.80 on 93,435 designs from a different lab** (Gosai/Tewhey 2024), a different design model, and generators the scorer never saw, with zero sequence overlap. Rank safest-first and, within one target cell and one generator (how a lab actually deploys this), **specificity failures drop 41%** (macro across the 14 strata that carry at least 10 failures and 10 passes, covering 87,573 of the 93,435 designs, 94%) with 2.59x enrichment in the riskiest 2%. Pooled across a mixed batch those same rules read 70% and 7.74x, but we measured the null and report it: ranking by stratum base rate alone, with no access to sequence at all, achieves **about 90% pooled**, better than the model. So the pooled figures are not evidence of sequence-level discrimination, and 41% / 2.59x is the honest per-design number (`triage_conditioning_check.py`). It is a triage ranker, not a hard gate, and every caveat is stated below and in `PREREG.md` (frozen, hash-locked) together with [`PREREG-ERRATA.md`](PREREG-ERRATA.md), which carries dated corrections to two of its reported figures.
 
 **Try it, or reproduce it in one click:**
 - Reproduce the 0.80 in your browser, no install: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/belumume/cisfalcon/blob/main/reproduce_flagship.ipynb) fetches the committed scores from GitHub and prints AUROC 0.8013 in pure numpy.
 - Live tool, no install: https://cisfalcon-lifesci.fly.dev/ (open Verify to see a real design batch scored and ranked live, click a flagged design to watch the closed-loop fix flip it or to run the live four-agent Claude diagnosis on it, or paste your own sequence). The Claude verifier runs in the product, not only the CLI: "Run Claude diagnosis" fires three Sonnet 5 reasoning lenses in parallel and an Opus 4.8 adjudicator, and the browser network tab shows the real `/api/diagnose` call return.
-- Or locally, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the pooled 7.74x triage straight from the committed per-design scores, and `python triage_conditioning_check.py` re-derives the conditioned 41% / 2.59x and the 91% sequence-free null.
+- Or locally, no GPU and no API key, about 1 second: `python reproduce_flagship.py` re-derives the 0.80 AUROC and the pooled 7.74x triage straight from the committed per-design scores, and `python triage_conditioning_check.py` re-derives the conditioned 41% / 2.59x and the ~90% sequence-free null.
 - Uncertainty, in one command: `python bootstrap_ci.py` prints the 95% CIs (design-level and the honest cluster bootstrap over cell x generator strata) and the paired difference vs trivial baselines, all excluding zero (`docs/bootstrap_ci.png`).
 - Pre-registered threshold, full methodology, and the independent Claude Science re-derivation: `PREREG.md` (frozen, hash-locked) plus [`PREREG-ERRATA.md`](PREREG-ERRATA.md) for its dated corrections. Read the pair; the frozen file still states two figures the project has since corrected.
 - **How it was built (the Claude Code + Claude Science collaboration):** [`HOW-BUILT.md`](HOW-BUILT.md). A Claude multi-agent verifier plus custom epistemic hooks, independently audited by a separate Claude Science session that re-derived every number and caught a real reproduction-claim conflation. Diffable audit table: [`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md).
@@ -106,12 +106,12 @@ FastSeqProp), with no sequence overlap with the model's training data.
 | fully-conditioned per-sequence signal | 0.66 | `cell_prior_baseline.py` |
 | safest-half failure reduction, conditioned (the honest one) | **41%** macro over 14 (cell x generator) strata, 87,573 of 93,435 designs (94%); per stratum 7% to 91% | `triage_conditioning_check.py` |
 | safest-half failure reduction, pooled | 70% (6.29% to 1.91%) | `triage_curve.py` |
-| sequence-free stratum-prior null, pooled | **91%** (beats the pooled 70%) | `triage_conditioning_check.py` |
+| sequence-free stratum-prior null, pooled | **~90.5%** (90.3-90.7 across tie-break seeds; beats the pooled 70%) | `triage_conditioning_check.py` |
 | riskiest-2% enrichment, conditioned | **2.59x** macro (3 strata below 1.0x) | `triage_conditioning_check.py` |
 | riskiest-2% enrichment, pooled | 7.74x (PPV 0.49) | `reproduce_flagship.py` |
 | held-out calibration error (ECE) | 0.0031 | `fit_calibration.py` |
 
-![Safest-first triage vs synthesizing blind, POOLED across the mixed 93,435-design batch: the safest half fails at 1.9% against a 6.29% blind base rate, a 70% reduction. This is the pooled basis the table above disowns as evidence of sequence-level signal. Conditioned within one cell and one generator the reduction is 41% macro, and a sequence-free stratum-prior rule scores 91% pooled.](docs/triage_curve.png)
+![Safest-first triage vs synthesizing blind, POOLED across the mixed 93,435-design batch: the safest half fails at 1.9% against a 6.29% blind base rate, a 70% reduction. This is the pooled basis the table above disowns as evidence of sequence-level signal. Conditioned within one cell and one generator the reduction is 41% macro, and a sequence-free stratum-prior rule scores about 90% pooled.](docs/triage_curve.png)
 
 *The curve is pooled across a mixed batch, which is the basis a sequence-free stratum-prior rule
 beats at 91%. The honest per-design figure, conditioned within (cell x generator), is a 41% macro
@@ -123,7 +123,7 @@ reduction; run `triage_conditioning_check.py` for the per-stratum table.*
   [0.796, 0.807]; the honest cluster bootstrap over the 24 cell x generator strata (3 cells x 8 generator
   codes) is [0.614, 0.895], wide
   by construction because the ranker is strong on failure-prone generators and near-chance on the
-  best-optimized ones. Pooled triage enrichment 7.74x [7.39, 8.14] and pooled safest-half reduction 70% [68%, 72%]; conditioned within (cell x generator) these become 2.59x and 41%, against a 91% sequence-free stratum-prior null. The
+  best-optimized ones. Pooled triage enrichment 7.74x [7.39, 8.14] and pooled safest-half reduction 70% [68%, 72%]; conditioned within (cell x generator) these become 2.59x and 41%, against a ~90% sequence-free stratum-prior null. The
   gap over every trivial baseline is +0.29 to +0.30 with each 95% CI excluding zero, so the separation is
   statistically real, not a large-n artifact.
 - **The signal is per-sequence, not just a base-rate prior.** Within each target cell (the cell prior
@@ -141,7 +141,8 @@ reduction; run `triage_conditioning_check.py` for the per-stratum table.*
 - **The failure risk it prints is calibrated, not asserted, and the tail is thinly measured.** The emitted
   probability is fit by isotonic regression on held-out cross-lab data: held-out calibration error (ECE) is
   0.0031, the mean of the two split directions (0.0029 fit-A/eval-B, 0.0032 fit-B/eval-A; the figure panel
-  plots the first, so its title reads 0.0029). Near the middle of the range it is close to exact: the
+  plots the first, so its title gives 0.0031 as the headline and 0.0029 as this panel's own value). Near
+  the middle of the range it is close to exact: the
   0.4-0.5 bin runs predicted 0.420 against observed 0.420 on n=355. **The high-risk tail is a different
   story and the ECE cannot show it**, because ECE is an n-weighted marginal average and the lowest bin holds
   36,912 of the 46,718 held-out designs (79%). Held out, the 0.6-0.7 bin runs predicted 0.696 against
@@ -173,8 +174,9 @@ reduction; run `triage_conditioning_check.py` for the per-stratum table.*
   This is also not fully orthogonal (both models learn regulatory grammar from genomic data); the point
   is that a model built on different data with a different objective, that never saw
   an MPRA, ranks the same designs in the same order. Method and boundaries in
-  [`docs/independent-model-crosscheck.md`](docs/independent-model-crosscheck.md); reproduce with
-  `alphagenome_crosscheck.py` and the matched comparison with `alphagenome_matched.py`.
+  [`docs/independent-model-crosscheck.md`](docs/independent-model-crosscheck.md); regenerate with
+  `alphagenome_crosscheck.py` (needs a free `ALPHA_GENOME_API_KEY`) and check it offline with no key
+  using `alphagenome_matched.py`, which carries its own positive control against the published 0.6878.
 - **Triage value, conditioned the same way the AUROC is.** Pooled across a mixed batch, ranking by
   CisFalcon and synthesizing the safest half first drops the specificity-failure rate from 6.29% to
   1.91% (70%); the riskiest 10% capture 43% of all failures at 4.3x, and the riskiest 2% enrich 7.74x
@@ -207,7 +209,7 @@ reduction; run `triage_conditioning_check.py` for the per-stratum table.*
   0.8013, joint per-sequence 0.662, calibration ECE 0.0031, triage 7.74x, ScreenAudit 0.394;
   [`docs/SCIENCE-AUDIT.md`](docs/SCIENCE-AUDIT.md)). It is a fresh-harness reproduction on separate
   infrastructure, and it is what surfaced the final reproducibility fixes in this repo. The
-  conditioned figures this README now leads with (41%, 2.59x, the 91% sequence-free null) **post-date
+  conditioned figures this README now leads with (41%, 2.59x, the ~90% sequence-free null) **post-date
   that audit** and are not in it: the audit table marks the 2.59x row "added post-audit" and carries
   no row for the other two. They are reproduced instead by `triage_conditioning_check.py`, which
   asserts the audited pooled figures as a positive control and refuses to print the conditioned
@@ -391,7 +393,9 @@ cheapest stage, which is where a triage gate belongs.
    twice, honestly, instead of asserting value. First, against the gate (`run_ablation.py`): the agents
    do **not** improve classification accuracy over the deterministic gate, so the ranking accuracy comes
    from the gate, not from Claude. Second, the multi-agent structure against a single Opus call
-   (`agent_ablation.py`, 16 designs, a blind panel of 3 Opus judges, A/B order randomized): overall the
+   (`agent_ablation.py`, 16 designs, a blind panel of 3 Opus judges, A/B order randomized; re-running it
+   needs `ANTHROPIC_API_KEY` with credit and POSTs to the live deployment, so the offline check is the
+   committed `data/gosai_designed/agent_ablation.json` these counts are computed from): overall the
    single call wins slightly (9 designs to 7) and is more concise for a wet-lab decision, so the panel is
    **not** a blanket win. Its one measured advantage is exactly the property it was built for: the
    dedicated adversary lens raises more genuine calibration and out-of-distribution caveats before
@@ -420,10 +424,19 @@ cheapest stage, which is where a triage gate belongs.
 ## Reproduce
 
 ```bash
+# the reviewer path: every published number, from committed data, no GPU and no API key
+python -m pip install -r requirements.txt   # numpy, pandas, matplotlib, scikit-learn, scipy
+python reproduce_flagship.py
+
 # gate + demo (needs TensorFlow 2.14; get the six weight files first with `python fetch_models.py`, see DATA.md)
-python demo.py            # full run incl. the agent layer (needs an Anthropic API key)
+export ANTHROPIC_API_KEY=...   # the agent layer reads this exact variable name
+python demo.py            # full run incl. the agent layer (needs an Anthropic API key + credit)
 python demo.py --no-agents # gate-only, no API
 ```
+
+The one-click Colab notebook needs none of that; it installs nothing and fetches the scores over
+the network. `requirements.txt` covers the local reviewer scripts only. `webapp/backend/requirements.txt`
+is the separate deployment environment and pins TensorFlow, which the reviewer path does not need.
 
 - The 3 fold models and the designed benchmark are large. The full cross-lab GPU run is the Kaggle
   kernel `ubaidullahshuaib/cisfalcon-gosai-crosslab`, reading the Kaggle dataset
@@ -431,23 +444,35 @@ python demo.py --no-agents # gate-only, no API
 - Source data: atlas models (Zenodo 17410822), Gosai et al. cross-lab MPRA (Zenodo 10698014).
 - Per-design scores used for every headline number: `data/gosai_designed/designed_scored.csv`.
 
-Repository guide (the no-GPU scripts a reviewer can run straight from the committed data):
+Repository guide, part 1: **runs straight from the committed data**, no GPU, no API key, no model
+weights. `pip install -r requirements.txt` first (numpy + pandas, plus matplotlib for the figures and
+scikit-learn where marked):
 
 | script | what it produces |
 |---|---|
 | `reproduce_flagship.py` | the flagship AUROC 0.80, pooled triage 7.74x, and pooled safest-half 70%, from committed scores |
-| `triage_conditioning_check.py` | conditions the triage headline: 41% macro reduction, 2.59x macro enrichment, and the 91% sequence-free stratum-prior null |
-| `bootstrap_ci.py` | 95% CIs (design + cluster) and the paired difference vs trivial baselines |
+| `triage_conditioning_check.py` | conditions the triage headline: 41% macro reduction, 2.59x macro enrichment, and the ~90% sequence-free stratum-prior null |
+| `bootstrap_ci.py` | 95% CIs (design + cluster) and the paired difference vs trivial baselines, on both bases. Takes about two minutes; everything else here is seconds |
 | `triage_curve.py` | the safest-first triage-value curve (`docs/triage_curve.png`) |
 | `brain_triage.py` | the SKNSH brain-cell triage operating point |
 | `ensemble_ci.py` | the frozen two-head ensemble (activity + accessibility) and its paired CI vs the best single head |
 | `cell_prior_baseline.py` | the fully-conditioned per-sequence signal 0.66 (cell/generator prior removed) |
 | `threshold_robustness.py` | AUROC stability across the fail-label threshold |
-| `fit_calibration.py` | isotonic calibration fit + held-out ECE 0.0031 |
-| `verifier.py` | the four-agent diagnosis harness; `gate.py` the frozen encoder + ensemble |
+| `economics_table.py` | the conditioned and pooled dollar columns; the conditioned one is the number to quote |
+| `fit_calibration.py` | isotonic calibration fit + held-out ECE 0.0031. **Needs scikit-learn** |
+| `within_neighbor/matched_paired.py` | the matched, paired within-tissue comparison against the measured baselines |
 | `PREREG.md` | frozen methodology, every caveat, pre-committed vs post-hoc labels |
 | `PREREG-ERRATA.md` | dated corrections to the frozen PREREG (it is hash-locked, so errors are recorded here rather than edited in place) |
-| `within_neighbor/matched_paired.py` | the matched, paired within-tissue comparison against the measured baselines |
+
+Repository guide, part 2: **needs more than the committed data.** These are listed so the boundary is
+explicit; none of the published numbers depends on a reader running them:
+
+| script | additionally needs |
+|---|---|
+| `verifier.py`, `gate.py` | TensorFlow 2.14 **and** the six weight files (`python fetch_models.py`; `models/` is not committed). `verifier.py` also takes `--seq`/`--target`, e.g. `python verifier.py --seq <500bp> --target HepG2 --no-agents`; without `--no-agents` it needs `ANTHROPIC_API_KEY` |
+| `demo.py`, `closed_loop.py` | the same TensorFlow + weights, plus `ANTHROPIC_API_KEY` for the agent layer |
+| `agent_ablation.py`, `closed_loop_powered.py`, `closed_loop_eval.py` | `ANTHROPIC_API_KEY` with paid credit. `agent_ablation.py` also POSTs to the live deployment (`CISFALCON_BASE`). Their results are committed under `data/gosai_designed/`, which is what a reader checks offline; a re-run writes to a `.local.json` beside the committed file unless you pass `--overwrite-committed` |
+| `alphagenome_crosscheck.py` | a free `ALPHA_GENOME_API_KEY`. `alphagenome_matched.py` re-derives the same 0.6878 offline with no key and carries its own positive control |
 
 ## Generality
 

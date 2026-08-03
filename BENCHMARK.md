@@ -45,7 +45,7 @@ set is a genuine cross-lab generalization measurement that memorization cannot i
 The label is **fully transparent and reconstructable** from the activity columns; it does not depend
 on any model's opaque specificity score.
 
-One rounding caveat, because it changes a count: `measured_gap` ships rounded to 4 decimals (max
+One rounding caveat, because it changes a count: `measured_gap` ships rounded to 3 decimals (max
 deviation from the recomputed value 5.0e-4), so five rows with a genuinely positive gap round to
 exactly 0.0. `(measured_gap <= 0).sum()` is therefore 5,879 while the shipped `measured_fail` label
 sums to 5,874. Recomputing the gap from the three activity columns reproduces 5,874 exactly.
@@ -62,6 +62,12 @@ and spend synthesis budget on the designs most likely to work. Report AUROC/AUPR
 
 Run `python make_splits.py` (no GPU, seconds) to print both splits and their sha256, or
 `python make_splits.py --write` to emit `data/gosai_designed/designed_splits.csv` keyed by `id`.
+
+The split assignment sha256 is pinned to
+`5628e8ca09d0d33ef49e50d8d699409e3127a2169edf3c87ce1a1c9143fea331`. `make_splits.py` asserts
+against that value and exits non-zero on a mismatch, so an environment that produces a different
+partition fails loudly instead of printing a different hash under the same reassuring caption. If
+it mismatches, report that rather than a leaderboard number: the partition is not comparable.
 
 - **Primary `split` (stratified random 70/30, seed 0):** calibration 65,404 / test 28,031, stratified
   by target cell x method x `measured_fail`, so both sides carry matched failure distributions

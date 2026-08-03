@@ -6,9 +6,10 @@ Result (93,435 Gosai designs): AUROC stays in a 0.73-0.85 band across thresholds
 gap<=1.0, including marginal near-boundary calls), far above the 0.50 trivial baselines
 at every threshold. The 0.80 is an honest middle, not a cherry-picked cutoff. No sklearn."""
 
-import csv, sys
+import csv, os, sys
 
-SCORED = "data/gosai_designed/designed_scored.csv"
+HERE = os.path.dirname(os.path.abspath(__file__))
+SCORED = os.path.join(HERE, "data", "gosai_designed", "designed_scored.csv")
 
 
 def auroc(labels, scores):
@@ -36,7 +37,13 @@ def main(path=SCORED):
     with open(path, encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
             try:
-                rows.append((float(r["measured_gap"]), float(r["pred_gap"])))
+                rows.append(
+                    (
+                        float(r["measured_gap"]),
+                        float(r["pred_gap"]),
+                        int(float(r["measured_fail"])),
+                    )
+                )
             except Exception:
                 pass
     print(f"n = {len(rows)}")
@@ -44,10 +51,18 @@ def main(path=SCORED):
         "FAILURE-THRESHOLD ROBUSTNESS (fail := measured_gap <= t); score = -pred_gap:"
     )
     for t in [-0.5, 0.0, 0.5, 1.0]:
-        labels = [1 if mg <= t else 0 for mg, _ in rows]
-        a = auroc(labels, [-pg for _, pg in rows])
+        # BENCHMARK.md: measured_gap ships rounded to 3 decimals, so re-deriving the label
+        # from it puts five genuinely-positive-gap rows on the wrong side of zero and gives
+        # 5,879 where the committed label sums to 5,874. At the committed threshold, use the
+        # committed label - this row is the anchor every other script is reconciled against.
+        if t == 0.0:
+            labels = [mf for _, _, mf in rows]
+            star = "  <- committed threshold (committed measured_fail label)"
+        else:
+            labels = [1 if mg <= t else 0 for mg, _, _ in rows]
+            star = ""
+        a = auroc(labels, [-pg for _, pg, _ in rows])
         rate = sum(labels) / len(labels)
-        star = "  <- committed threshold" if t == 0.0 else ""
         print(
             f"  t={t:+.1f}: AUROC {a:.4f}  (fail rate {rate:.3f}, n_fail {sum(labels)}){star}"
         )

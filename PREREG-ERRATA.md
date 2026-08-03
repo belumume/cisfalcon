@@ -82,7 +82,7 @@ numbers if that assert fails.
 | quantity | value |
 |---|---|
 | pooled safest-half reduction (as pre-registered) | 70% |
-| **sequence-free stratum-prior null, pooled** | **91%** |
+| **sequence-free stratum-prior null, pooled** | **~90.5%** (90.3-90.7 over seeds) |
 | within-(cell x generator) macro reduction | **41%** |
 | pooled riskiest-2% enrichment (as pre-registered) | 7.74x |
 | within-(cell x generator) macro enrichment | **2.59x** |
@@ -91,7 +91,7 @@ numbers if that assert fails.
 held constant, on the same 14 strata behind the pre-registered 0.66 joint AUROC.
 
 **And the pooled headline does not measure it.** A rule with no access to sequence at all, ranking
-only by each stratum's base rate, achieves a 91% pooled reduction, higher than the model's 70%. So
+only by each stratum's base rate, achieves about 90% pooled (90.3-90.7 across tie-break seeds), higher than the model's 70%. So
 the pooled 70% and 7.74x cannot be cited as evidence of sequence-level discrimination in either
 direction. A lab deploys one generator against one target cell, so 41% / 2.59x is the operating
 point that describes deployment.
@@ -205,5 +205,30 @@ and recording the LF digest `ad77f065...e69d`. The superseded CRLF digest is kep
 `PREREG.sha256` so a reviewer who saw the old value can confirm what changed and why.
 
 Verify: `sha256sum PREREG.md` should now print `ad77f065...e69d` on any platform.
+
+Found by an independent blind re-audit of the repository, not by the authors.
+## 2026-08-03 — every `cisfalcon/` code path in PREREG.md resolves one directory too deep
+
+PREREG.md cites this repository's own scripts under a `cisfalcon/` prefix, in eight places:
+
+`cisfalcon/accessibility_baseline.py`, `cisfalcon/bootstrap_ci.py`, `cisfalcon/cell_prior_baseline.py`,
+`cisfalcon/ensemble_ci.py`, `cisfalcon/fit_calibration.py`, `cisfalcon/gate.py`,
+`cisfalcon/molab_verify_port.py`, `cisfalcon/threshold_robustness.py`.
+
+There is no `cisfalcon/` subdirectory in a clone. The repository root **is** cisfalcon, so each of
+those resolves to `<name>.py` at the root: `cisfalcon/gate.py` is `gate.py`, and so on. PREREG.md was
+written while the working tree was nested inside a parent directory of that name, and the prefix
+survived into the frozen text.
+
+This matters because a reviewer using the hash-locked pre-registration to locate the code behind a
+pre-committed method looks for a directory that is not there, and the natural reading of a missing
+path is that the method was never implemented.
+
+Not fixed in place: PREREG.md is hash-locked, and editing it to correct a path prefix would break the
+integrity record for a cosmetic gain. Strip the `cisfalcon/` prefix when following any code reference
+in that file.
+
+Note this is NOT the same class as PREREG.md's references to `src/sequence.py`, which correctly name a
+file in the upstream atlas repository rather than in this one.
 
 Found by an independent blind re-audit of the repository, not by the authors.

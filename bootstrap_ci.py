@@ -2,7 +2,8 @@
 """Bootstrap 95% confidence intervals for every CisFalcon flagship number.
 
 No GPU, no model download, no API key. Needs numpy + pandas (+ matplotlib for the
-figure). Runs in well under a minute.
+figure). Takes about two minutes (2000 bootstrap reps over 93,435 designs); every other
+advertised script is seconds, so budget for this one.
 
     python bootstrap_ci.py
 
@@ -130,6 +131,14 @@ def main() -> None:
     diff_rand = np.empty(N_BOOT)
     diff_gc = np.empty(N_BOOT)
     diff_len = np.empty(N_BOOT)
+    # The paired baseline differences used to be reported design-level ONLY, under a heading
+    # saying they "must exclude zero for the headline separation to be defensible" - while this
+    # script's own docstring calls the cluster bootstrap the honest one. Compute both. The
+    # conclusion is unchanged (all three still exclude zero); the cluster interval is the wide
+    # one, and the summary line below now cites it.
+    cdiff_rand = np.empty(N_BOOT)
+    cdiff_gc = np.empty(N_BOOT)
+    cdiff_len = np.empty(N_BOOT)
 
     for b in range(N_BOOT):
         idx = rng.integers(0, n, n)  # design-level resample (with replacement)
@@ -145,7 +154,13 @@ def main() -> None:
         # cluster resample: draw strata with replacement, pool their rows
         chosen = rng.integers(0, len(strata_keys), len(strata_keys))
         pooled = np.concatenate([strata[strata_keys[c]] for c in chosen])
-        boot_auroc_cluster[b] = rank_sum_auroc(y[pooled], risk[pooled])
+        cf_c = rank_sum_auroc(y[pooled], risk[pooled])
+        boot_auroc_cluster[b] = cf_c
+        # same cluster resample scores CisFalcon and each trivial baseline (paired)
+        yc = y[pooled]
+        cdiff_rand[b] = cf_c - best_oriented_auroc(yc, randscore[pooled])
+        cdiff_gc[b] = cf_c - best_oriented_auroc(yc, gc[pooled])
+        cdiff_len[b] = cf_c - best_oriented_auroc(yc, length[pooled])
 
     def fmt(lo, hi, pct=False):
         return (
@@ -161,6 +176,9 @@ def main() -> None:
     dr_lo, dr_hi = ci(diff_rand)
     dg_lo, dg_hi = ci(diff_gc)
     dl_lo, dl_hi = ci(diff_len)
+    cr_lo, cr_hi = ci(cdiff_rand)
+    cg_lo, cg_hi = ci(cdiff_gc)
+    cl_lo, cl_hi = ci(cdiff_len)
 
     L = "=" * 74
     print(L)
@@ -179,18 +197,24 @@ def main() -> None:
     print(f"    95% CI                                  : {fmt(r_lo, r_hi, pct=True)}")
     print()
     print("  Paired difference vs best-oriented trivial baselines (must exclude 0):")
+    print("    (design-level CI first, then the wider cluster CI over the 24 strata)")
     print(
-        f"    vs random  (baseline AUROC {auroc_rand:.3f})     : +{auroc - auroc_rand:.3f}  95% CI {fmt(dr_lo, dr_hi)}"
+        f"    vs random  (baseline AUROC {auroc_rand:.3f})     : +{auroc - auroc_rand:.3f}\n"
+        f"        design  {fmt(dr_lo, dr_hi)}   cluster {fmt(cr_lo, cr_hi)}"
     )
     print(
-        f"    vs GC%     (baseline AUROC {auroc_gc:.3f})     : +{auroc - auroc_gc:.3f}  95% CI {fmt(dg_lo, dg_hi)}"
+        f"    vs GC%     (baseline AUROC {auroc_gc:.3f})     : +{auroc - auroc_gc:.3f}\n"
+        f"        design  {fmt(dg_lo, dg_hi)}   cluster {fmt(cg_lo, cg_hi)}"
     )
     print(
-        f"    vs length  (baseline AUROC {auroc_len:.3f})     : +{auroc - auroc_len:.3f}  95% CI {fmt(dl_lo, dl_hi)}"
+        f"    vs length  (baseline AUROC {auroc_len:.3f})     : +{auroc - auroc_len:.3f}\n"
+        f"        design  {fmt(dl_lo, dl_hi)}   cluster {fmt(cl_lo, cl_hi)}"
     )
     print(L)
-    excl = all(lo > 0 for lo in (dr_lo, dg_lo, dl_lo))
-    print(f"  Every baseline-difference CI excludes zero: {excl}")
+    # Cite the CLUSTER basis in the summary: it is the one the docstring calls honest, and it
+    # is the wider of the two, so "excludes zero" on it is the defensible claim.
+    excl = all(lo > 0 for lo in (cr_lo, cg_lo, cl_lo))
+    print(f"  Every baseline-difference CLUSTER CI excludes zero: {excl}")
     print(L)
 
     _write_figure(

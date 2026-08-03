@@ -19,8 +19,9 @@ significantly with measured effects in both cell types. The correlation is
 | Pooled    | 11,005 | 0.37 (0.34–0.39) | 0.24 (0.22–0.26) | 0.68 (0.66–0.70) |
 
 The n column counts ASSAY ROWS, not distinct variants. The Kircher resource measures the same SNV
-in more than one element, so 11,005 rows cover 5,065 distinct SNVs (HepG2 3,658; K562 1,407, each
-assayed exactly twice). Every duplicated key spans multiple elements and none spans multiple cells,
+in more than one element, so 11,005 rows cover 5,065 distinct SNVs (K562 1,407 variants, each
+assayed in exactly two elements; HepG2 3,658 variants assayed in one to three elements each).
+Every duplicated key spans multiple elements and none spans multiple cells,
 so these are one variant in different regulatory contexts rather than technical replicates. They
 are still not independent, so the p-values above are inflated. Collapsing to one row per SNV and
 averaging both sides: K562 r = 0.601 (n = 1,407, p = 1.3e-138) and HepG2 r = 0.254 (n = 3,658,

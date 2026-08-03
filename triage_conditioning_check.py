@@ -106,10 +106,21 @@ def main():
     # whatever ordering the CSV happens to have.
     print("\nSTRATUM-PRIOR-ONLY NULL (no per-item signal)")
     prior = d.groupby(["target_cell", "method"])["measured_fail"].transform("mean")
-    null_df = d.assign(pred_gap=-prior).sample(frac=1.0, random_state=0)
-    null_after = safest_half_failure_rate(null_df)
-    null_red = 100.0 * (1 - null_after / base)
-    print(f"  pooled reduction using ONLY the stratum prior: {null_red:.0f}%")
+    # Every design inside a stratum ties on the prior, because the prior IS the score, so the
+    # safer half is decided entirely by the tie-break and this figure MOVES WITH THE SEED.
+    # Reporting one shuffle as a point estimate is a number without its basis: it ran 90.1% to
+    # 90.8% across 12 seeds, and the 91% this used to print was seed 0 rounding up. The spread
+    # is the honest form; the conclusion (a sequence-free rule beats the pooled figure) is
+    # unchanged at either end of it.
+    null_reds = []
+    for _seed in range(12):
+        _nd = d.assign(pred_gap=-prior).sample(frac=1.0, random_state=_seed)
+        null_reds.append(100.0 * (1 - safest_half_failure_rate(_nd) / base))
+    null_red = sum(null_reds) / len(null_reds)
+    print(
+        f"  pooled reduction using ONLY the stratum prior: {null_red:.1f}% "
+        f"(range {min(null_reds):.1f}-{max(null_reds):.1f} over 12 tie-break seeds)"
+    )
 
     # ---- riskiest-2% enrichment ------------------------------------------
     def enrichment(df, frac=0.02):
@@ -132,14 +143,26 @@ def main():
 
     # ---- the decomposition the headline needs ----------------------------
     print("\nDECOMPOSITION OF THE 70% HEADLINE")
-    print(f"  pooled reduction (published headline)      {red:.0f}%")
-    print(f"  stratum-prior-only null (pooling alone)    {null_red:.0f}%")
-    print(f"  within-stratum macro (per-item signal)     {macro:.0f}%")
-    print(f"  headline minus within-stratum              {red - macro:.0f} points")
-    verdict = (
-        "SURVIVES conditioning (>=40%)" if macro >= 40 else "COLLAPSES toward the null"
+    # The difference used to be computed on the UNROUNDED values while the operands were
+    # displayed rounded, so the block printed 70, 41 and "28 points" and a reader doing the
+    # subtraction on screen got 29. Round the operands once and derive the difference from
+    # the rounded values, so the arithmetic reconciles AND the operands still match the 70 /
+    # 91 / 41 published everywhere else (printing 69.7 / 90.5 / 41.2 would fix the internal
+    # arithmetic by introducing a fresh mismatch against every other surface).
+    red_r, null_r, macro_r = round(red), round(null_red), round(macro)
+    print(f"  pooled reduction (published headline)      {red_r:.0f}%")
+    print(f"  stratum-prior-only null (pooling alone)    {null_r:.0f}%")
+    print(f"  within-stratum macro (per-item signal)     {macro_r:.0f}%")
+    print(f"  headline minus within-stratum              {red_r - macro_r:.0f} points")
+    # No binary verdict here. The previous version printed "SURVIVES conditioning (>=40%)"
+    # against a 40% cut that appears in no shipped document, was not pre-registered, and sat
+    # 1.2 points below the measured 41.2% - so the most quotable line of the output was a
+    # post-hoc pass/fail that a small data or filter change would flip. The three numbers
+    # above are the finding; they carry it without a threshold nobody committed to.
+    print(
+        f"  the per-item signal is the {macro_r:.0f}% macro, not the {red_r:.0f}% pooled headline;\n"
+        f"  a sequence-free stratum-prior rule reaches {null_r:.0f}% pooled with no sequence access"
     )
-    print(f"  verdict: per-item signal {verdict}")
 
 
 if __name__ == "__main__":

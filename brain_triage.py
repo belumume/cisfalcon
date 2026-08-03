@@ -72,12 +72,20 @@ def main() -> None:
     print(f"    -> the honest per-design figure is the conditioned 32%, not the")
     print(f"       pooled number; run brain_conditioning_check.py to re-derive")
     print()
-    print(f"  flag the riskiest 2%   : PPV {ppv2 * 100:.0f}%  ({enr2:.1f}x base)")
+    # These two used to print unlabelled, four lines below an explicitly POOLED/CONDITIONED
+    # pair - so a reader just taught to distinguish the two bases reasonably read the more
+    # flattering 4.8x as carrying the same conditioning. Both are pooled; the conditioned
+    # macro enrichment is 1.90x (brain_conditioning_check.py), 2.5x lower.
     print(
-        f"  flag the riskiest 10%  : captures {cap10 * 100:.0f}% of failures ({enr10:.1f}x base)"
+        f"  flag the riskiest 2%, POOLED  : PPV {ppv2 * 100:.0f}%  ({enr2:.1f}x base)"
     )
+    print(
+        f"  flag the riskiest 10%, POOLED : captures {cap10 * 100:.0f}% of failures ({enr10:.1f}x base)"
+    )
+    print("    riskiest-2% enrichment CONDITIONED (x generator) : 1.90x macro")
+    print("    -> as above, the conditioned figure is the per-design one")
     print(L)
-    print("  Softer than the pooled 0.80 / 70% / 7.8x numbers, and reported as-is:")
+    print("  Softer than the pooled 0.80 / 70% / 7.74x numbers, and reported as-is:")
     print("  SKNSH is a brain-derived cancer line, an in-vitro stand-in. A primary")
     print("  cortical-neuron MPRA is the honest next step. But the brain relevance is")
     print("  shown here on a real brain-cell design set, not only argued.")

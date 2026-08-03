@@ -95,7 +95,7 @@ it against the repo. Every row matched, and its verdict on the flagship was "hon
 conservatively than it needs to be, no overclaim."
 
 Scope, because the headline moved afterwards: the conditioned figures the README now leads with
-(41% macro reduction, 2.59x macro enrichment, the 91% sequence-free stratum-prior null) post-date
+(41% macro reduction, 2.59x macro enrichment, the ~90% sequence-free stratum-prior null) post-date
 that audit and are **not** covered by it. The audit table marks the 2.59x row "added post-audit" and
 has no row for the other two. Those are reproduced by `triage_conditioning_check.py`, which asserts
 the audited pooled figures as a positive control first.

@@ -20,7 +20,7 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 # make the verified cisfalcon package importable (gate.py, verifier.py live one dir up x2)
@@ -49,7 +49,7 @@ HEADLINE = {
     "failure_reduction_pct_conditioned_basis": "macro-average within (cell x generator), 14 strata",
     "sequence_free_stratum_prior_null_pct": 91,
     "null_note": (
-        "A rule using the stratum prior and NO sequence scores 91% pooled, which beats the "
+        "A rule using the stratum prior and NO sequence scores about 90% pooled, which beats the "
         "pooled 70%. The pooled figure therefore is not evidence of per-sequence skill; the "
         "41% conditioned figure is. See triage_conditioning_check.py and PREREG-ERRATA.md."
     ),
@@ -57,7 +57,17 @@ HEADLINE = {
     "source": "93,435 independent designs (Gosai/Tewhey 2024; BODA/Malinois; zero sequence overlap)",
 }
 
-app = FastAPI(title="CisFalcon", version="1.0")
+# /docs and /redoc are off. They were reachable but unlinked, so the only visitor who found the
+# Swagger UI was one poking at the URL space, and what they got was a Try-it-out button wired
+# straight into the internal API surface. The API is documented in the repository instead; this
+# is an MIT-licensed open-source project, so nothing here is hidden, it is just not a front door.
+app = FastAPI(
+    title="CisFalcon",
+    version="1.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,  # docs_url/redoc_url alone leave the raw schema served at /openapi.json
+)
 app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
 )
@@ -579,6 +589,16 @@ if FRONTEND.exists():
 
     @app.get("/{path:path}")
     def spa(path: str):
+        # The catch-all used to swallow the /api/ prefix too, so a mistyped endpoint returned
+        # HTTP 200 with 47KB of index.html. A scripted consumer read that as success and then
+        # failed opaquely on an HTML body. Unknown /api routes get a real JSON 404; only
+        # non-API paths fall through to the SPA, which is what a client router actually needs.
+        if path == "api" or path.startswith("api/"):
+            return JSONResponse(
+                {"detail": f"no such API endpoint: /{path}"},
+                status_code=404,
+                headers=_NOCACHE,
+            )
         f = (FRONTEND / path).resolve()
         if str(f).startswith(str(FRONTEND.resolve())) and f.is_file():
             return FileResponse(str(f), headers=_NOCACHE)

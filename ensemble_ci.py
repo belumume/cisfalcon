@@ -18,6 +18,8 @@ is already the best single predictor and the ensemble adds nothing measurable.
 
 import sys
 from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
 import numpy as np
 import pandas as pd
 
@@ -55,7 +57,9 @@ def rank01(x: np.ndarray) -> np.ndarray:
 
 def main() -> None:
     path = Path(
-        sys.argv[1] if len(sys.argv) > 1 else "data/gosai_designed/design_gaps.csv"
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else HERE / "data" / "gosai_designed" / "design_gaps.csv"
     )
     df = pd.read_csv(path)
     y = df["label"].values.astype(int)
@@ -114,7 +118,9 @@ def main() -> None:
     print(f"  paired 95% CI on (ensemble - best single head): [{lo:+.4f}, {hi:+.4f}]")
     if lo > 0:
         print(
-            "  VERDICT: ensemble genuinely lifts (CI excludes zero, positive). Re-lead it."
+            f"  VERDICT: ensemble lifts by {delta:+.4f} AUROC (CI excludes zero, positive).\n"
+            "           This CI is design-level, so it is narrower than the cluster basis;\n"
+            "           see bootstrap_ci.py for both."
         )
     elif hi < 0:
         print(

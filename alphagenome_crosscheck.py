@@ -33,6 +33,7 @@ import csv
 import json
 import os
 import random
+import sys
 import time
 from pathlib import Path
 
@@ -47,7 +48,15 @@ random.seed(1234)
 HERE = Path(__file__).resolve().parent
 BENCH = HERE / "data" / "gosai_designed" / "designed_benchmark.csv"
 SCORED = HERE / "data" / "gosai_designed" / "designed_scored.csv"
-OUT = HERE / "data" / "gosai_designed" / "alphagenome_crosscheck.json"
+# Never overwrite the committed evidence from a routine run. Same guard as
+# closed_loop_powered.py and agent_ablation.py: a reproduce command must not be able to
+# destroy the artifact it reproduces. --overwrite-committed opts in deliberately.
+COMMITTED = HERE / "data" / "gosai_designed" / "alphagenome_crosscheck.json"
+OUT = (
+    COMMITTED
+    if "--overwrite-committed" in sys.argv
+    else HERE / "data" / "gosai_designed" / "alphagenome_crosscheck.local.json"
+)
 
 
 def load_sample():

@@ -171,10 +171,18 @@ def main():
     print(f"wrote {CSV_OUT}")
 
     # ---- figure -----------------------------------------------------------
-    import matplotlib
+    # Every printed number and the CSV have already landed above. matplotlib is optional
+    # here for the same reason it is in bootstrap_ci.py and triage_curve.py: an unguarded
+    # import turned a complete reproduction into exit 1 plus a traceback, which any && chain
+    # or CI step reads as "the reproduction failed".
+    try:
+        import matplotlib
 
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except Exception as e:  # figure is a bonus, never block the numbers
+        print(f"  (figure skipped: {e})")
+        return
 
     fig, ax = plt.subplots(figsize=(9, 4.6))
     labels = [

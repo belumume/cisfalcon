@@ -9,14 +9,14 @@ new wet-lab. Pure analysis of the committed designed_scored.csv.
     python findings_failure_modes.py   ->   docs/failure_modes.png + prints the finding
 """
 
-import matplotlib
+from pathlib import Path
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
-d = pd.read_csv("data/gosai_designed/designed_scored.csv")
+HERE = Path(__file__).resolve().parent
+
+d = pd.read_csv(HERE / "data" / "gosai_designed" / "designed_scored.csv")
 
 # fix AUROC orientation: a failing design (fires off-target) has a LOW specificity gap,
 # so rank failure risk by -pred_gap. Verify the pooled value matches the committed 0.8013.
@@ -61,6 +61,18 @@ c = (
 print("\n=== per target cell ===")
 for cell, r in c.iterrows():
     print(f"  {CELLS.get(cell, cell):18s} fail={r.fr * 100:5.1f}%")
+
+# The table above is the finding; the figure is a bonus. matplotlib used to be imported at
+# module top level, so an environment without it produced NO output at all rather than a
+# degraded run. Same try/except the sibling scripts use (bootstrap_ci.py, triage_curve.py).
+try:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+except Exception as e:  # figure is a bonus, never block the numbers
+    print(f"\n(figure skipped: {e})")
+    raise SystemExit(0)
 
 # figure: two panels
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 4.3))
@@ -136,5 +148,5 @@ fig.text(
     ha="center",
 )
 plt.subplots_adjust(left=0.16, right=0.98, top=0.90, bottom=0.20, wspace=0.55)
-plt.savefig("docs/failure_modes.png", dpi=150, facecolor=INK)
+plt.savefig(HERE / "docs" / "failure_modes.png", dpi=150, facecolor=INK)
 print("\nwrote docs/failure_modes.png")

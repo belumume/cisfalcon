@@ -1,0 +1,36 @@
+# Dependencies for the REVIEWER path: the no-GPU, no-API-key scripts that reproduce every
+# published number from the committed data.
+#
+#     python -m pip install -r requirements.txt
+#     python reproduce_flagship.py
+#
+# This is NOT the deployment environment. webapp/backend/requirements.txt is the Docker/webapp
+# env; it pins tensorflow==2.14.0 and numpy<2.0, neither of which the reviewer scripts need.
+#
+# Verified across the numpy 1->2 and pandas 2->3 major boundaries: every advertised script
+# runs clean on numpy 2.2.2 / pandas 3.0.3 and on numpy 2.5.1 / pandas 3.0.5.
+#
+# The one-click Colab notebook (reproduce_flagship.ipynb) needs NONE of this - it is pure
+# numpy + urllib and installs nothing.
+
+numpy>=1.24
+pandas>=2.0
+
+# Figures only. bootstrap_ci.py, economics_table.py, findings_failure_modes.py and
+# triage_curve.py all degrade gracefully without it: the numbers print and the figure is
+# skipped, exit 0. Install it to regenerate docs/*.png.
+matplotlib>=3.7
+
+# Required (not optional) by fit_calibration.py, findings_failure_modes.py and
+# make_reliability_figure.py.
+scikit-learn>=1.3
+
+# Required by satmut/correlate.py (Pearson/Spearman p-values).
+scipy>=1.10
+
+# NOT included, and deliberately so:
+#   tensorflow==2.14.0  - only gate.py / verifier.py / demo.py, which also need the six model
+#                         weight files (python fetch_models.py). See README's repository guide.
+#   anthropic           - only the agent scripts, which need ANTHROPIC_API_KEY and paid credit.
+#   alphagenome         - only alphagenome_crosscheck.py, which needs ALPHA_GENOME_API_KEY.
+#                         alphagenome_matched.py re-derives the same number offline with no key.

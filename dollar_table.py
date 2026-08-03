@@ -2,9 +2,12 @@
 honest triage value, and a Malinois-baseline availability check."""
 
 import os, glob
+from pathlib import Path
 import numpy as np, pandas as pd
 
-df = pd.read_csv("data/gosai_designed/designed_scored.csv")
+HERE = Path(__file__).resolve().parent
+
+df = pd.read_csv(HERE / "data" / "gosai_designed" / "designed_scored.csv")
 score = -df["pred_gap"].values
 fail = df["measured_fail"].values.astype(int)
 n = len(df)
@@ -21,7 +24,13 @@ print(
     f"n={n}  base fail={base:.4f}  (~{base * 100:.1f} wasted syntheses per 100 designs if uncaught)"
 )
 print(
-    "\nTRIAGE dollar table (scrutinize/redesign the flagged riskiest BEFORE synthesis):"
+    "\nTRIAGE dollar table, POOLED basis (scrutinize/redesign the flagged riskiest BEFORE synthesis):"
+)
+print(
+    "  Every figure below is POOLED across a mixed batch. The project disowns the pooled basis\n"
+    "  as evidence of per-design signal: a sequence-free stratum-prior rule beats it. The\n"
+    "  conditioned money numbers (2.59x macro enrichment, $458-$1,796 net) are in\n"
+    "  economics_table.py, and that conditioned column is the one to quote."
 )
 order = np.argsort(-score)
 ys = fail[order]
@@ -37,7 +46,9 @@ for topk in [0.02, 0.05, 0.10, 0.20]:
         f"({fails_caught:.1f}/100); redesign-first avoids ${recall[i] * base * 100 * LO:.0f}-{recall[i] * base * 100 * HI:.0f} per 100 designs"
     )
 
-print("\nSAFEST-FIRST framing (limited synthesis budget -> make lowest-risk first):")
+print(
+    "\nSAFEST-FIRST framing, POOLED basis (limited synthesis budget -> make lowest-risk first):"
+)
 safe = np.argsort(score)
 for frac in [0.5, 0.7, 0.9]:
     m = int(frac * n)
@@ -46,13 +57,19 @@ for frac in [0.5, 0.7, 0.9]:
         f"  synthesize safest {frac * 100:.0f}%: failure rate {fr * 100:.2f}% (vs {base * 100:.2f}% random) "
         f"= {(1 - fr / base) * 100:.0f}% fewer failures in what you make"
     )
+print(
+    "  Conditioned within (cell x generator), the safest-half reduction is 41% macro, not 70%\n"
+    "  (triage_conditioning_check.py). A sequence-free stratum-prior rule reaches about 90% pooled."
+)
 
 print("\n=== Malinois self-prediction availability (killer comparator) ===")
 files = [
     os.path.basename(c)
-    for c in glob.glob("data/gosai_designed/**/*", recursive=True)
+    for c in glob.glob(
+        str(HERE / "data" / "gosai_designed" / "**" / "*"), recursive=True
+    )
     if os.path.isfile(c)
 ]
 print("gosai_designed files:", files)
-b = pd.read_csv("data/gosai_designed/designed_benchmark.csv", nrows=2)
+b = pd.read_csv(HERE / "data" / "gosai_designed" / "designed_benchmark.csv", nrows=2)
 print("benchmark cols (any Malinois pred?):", list(b.columns))

@@ -31,6 +31,7 @@ This script regenerates both splits from the committed CSV alone. No GPU, no dow
 import argparse
 import hashlib
 import pathlib
+import sys
 
 import numpy as np
 import pandas as pd
@@ -38,6 +39,10 @@ import pandas as pd
 HERE = pathlib.Path(__file__).resolve().parent
 CSV = HERE / "data" / "gosai_designed" / "designed_benchmark.csv"
 OUT = HERE / "data" / "gosai_designed" / "designed_splits.csv"
+# Pinned reference for the split assignment. BENCHMARK.md tells submitters to quote the
+# printed sha256 so the partition is checkable; without a committed reference value there
+# was nothing to check it AGAINST. Regenerate deliberately if the partition ever changes.
+EXPECTED_SHA256 = "5628e8ca09d0d33ef49e50d8d699409e3127a2169edf3c87ce1a1c9143fea331"
 
 SEED = 0
 TEST_FRAC = 0.30
@@ -91,7 +96,7 @@ def summarize(df: pd.DataFrame, sp: pd.DataFrame) -> None:
         )
 
 
-def main() -> None:
+def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "--write", action="store_true", help=f"write {OUT.name} beside the benchmark"
@@ -103,17 +108,32 @@ def main() -> None:
     summarize(df, sp)
 
     body = sp.to_csv(index=False, lineterminator="\n").encode("utf-8")
-    print(f"\n  split assignment sha256: {hashlib.sha256(body).hexdigest()}")
-    print(
-        "  (same on every platform; re-run to confirm before reporting a leaderboard number)"
-    )
+    digest = hashlib.sha256(body).hexdigest()
+    print(f"\n  split assignment sha256: {digest}")
+    # The script used to print the digest with the caption "same on every platform" and no
+    # reference value anywhere in the repo, so a submitter whose environment produced a
+    # DIFFERENT partition had nothing to compare against and no way to notice. Assert it.
+    if digest == EXPECTED_SHA256:
+        print(
+            f"  matches the pinned reference ({EXPECTED_SHA256[:16]}...): partition is correct"
+        )
+    else:
+        print(
+            f"\n  MISMATCH: expected {EXPECTED_SHA256}\n"
+            f"            got      {digest}\n"
+            "  This environment produced a DIFFERENT partition from the pinned reference, so any\n"
+            "  leaderboard number computed here is not comparable. Report this rather than the number.",
+            file=sys.stderr,
+        )
+        return 1
 
     if a.write:
         OUT.write_bytes(body)
         print(f"\n  wrote {OUT.relative_to(HERE)} ({len(sp):,} rows)")
     else:
         print(f"\n  (not written; pass --write to emit {OUT.name})")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

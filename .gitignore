@@ -55,3 +55,14 @@ data/gosai_designed/*.local.json
 .claude/
 .audit-findings-pass2/
 .audit-findings-pass3/
+
+# Browser demo (webdemo/): everything the build generates. The page is assembled from the
+# served frontend by webdemo/build.py, and the 120MB of converted weights come from Zenodo,
+# so neither is committed; a clone stays small and the copy can never drift from the original.
+webdemo/models/
+webdemo/index.html
+webdemo/app.js
+webdemo/styles.css
+webdemo/jaspar/
+webdemo/data/
+node_modules

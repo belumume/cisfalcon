@@ -1,0 +1,87 @@
+/* What the static build adds to the served frontend's stylesheet: the weight-loading
+   indicator, the key panel for the agent layer, and the usage cost chip. Kept in its own file
+   so styles.css is copied from webapp/backend/static and never edited. */
+
+.boot-bar {
+  position: fixed; top: 0; left: 0; height: 2px; width: 2%;
+  background: var(--ink); opacity: .55; z-index: 60;
+  transition: width .25s linear, opacity .4s ease;
+}
+.boot-chip {
+  /* Bottom right, clear of the rail's status card on the left. The cost chip takes this
+     corner too, but only after a diagnosis, by which time this one has faded out. */
+  position: fixed; bottom: 14px; right: 14px; z-index: 60;
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 11px; border: 1px solid var(--line-2); border-radius: 2px;
+  background: var(--paper); color: var(--sec);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .02em;
+  transition: opacity .5s ease;
+}
+.boot-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--amber); box-shadow: 0 0 6px var(--amber-2);
+  animation: boot-pulse 1.4s ease-in-out infinite;
+}
+.boot-chip.ok .boot-dot { background: var(--green-2); box-shadow: 0 0 6px var(--green-2); animation: none; }
+.boot-chip.bad { color: var(--red); border-color: rgba(193, 59, 55, .4); }
+.boot-chip.bad .boot-dot { background: var(--red-dot); box-shadow: none; animation: none; }
+.boot-bar.gone, .boot-chip.gone { opacity: 0; pointer-events: none; }
+@keyframes boot-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .boot-dot { animation: none; } }
+
+/* ---------- the visitor's own API key, and what it costs ---------- */
+.keyask {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20, 23, 27, .42); padding: 20px;
+}
+.keyask-card {
+  width: min(520px, 100%); max-height: 90vh; overflow: auto;
+  background: var(--paper); border: 1px solid var(--line-2); border-radius: 3px;
+  padding: 22px 24px 18px; box-shadow: 0 18px 50px rgba(20, 23, 27, .22);
+}
+.keyask-card .cap {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .11em;
+  text-transform: uppercase; color: var(--mut); margin-bottom: 10px;
+}
+.keyask-card h3 { margin: 0 0 10px; font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+.keyask-card p { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--sec); }
+.keyask-card p.keyask-sec { color: var(--mut-3); font-size: 12.5px; }
+.keyask-card code { font-family: var(--mono); font-size: 11.5px; color: var(--teal); }
+.keyask-lbl {
+  display: block; margin: 14px 0 5px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--mut);
+}
+.keyask-card input[type="password"] {
+  width: 100%; padding: 9px 11px; font-family: var(--mono); font-size: 13px;
+  color: var(--ink); background: var(--paper-2);
+  border: 1px solid var(--line-2); border-radius: 2px;
+}
+.keyask-card input[type="password"]:focus { outline: none; border-color: var(--teal); }
+.keyask-remember {
+  display: flex; align-items: center; gap: 7px; margin: 10px 0 0;
+  font-size: 12.5px; color: var(--mut-3);
+}
+.keyask-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+.keyask-go, .keyask-no {
+  padding: 8px 14px; font-size: 13px; border-radius: 2px; cursor: pointer;
+  border: 1px solid var(--ink); background: var(--ink); color: var(--stone);
+}
+.keyask-no { background: transparent; color: var(--sec); border-color: var(--line-2); }
+.keyask-go:hover { background: var(--ink-2); }
+.keyask-no:hover { color: var(--ink); }
+.keyask-row a { margin-left: auto; font-size: 12.5px; }
+.keyask-err { margin-top: 10px; min-height: 16px; font-size: 12.5px; color: var(--red); }
+
+.cost-chip {
+  position: fixed; bottom: 14px; right: 14px; z-index: 60;
+  padding: 7px 11px; border: 1px solid var(--line-2); border-radius: 2px;
+  background: var(--paper); color: var(--sec);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .02em;
+}
+.cost-forget {
+  border: none; background: none; padding: 0; cursor: pointer;
+  font-family: var(--mono); font-size: 11px; color: var(--teal); text-decoration: underline;
+}
+.cost-forget:hover { color: var(--ink); }

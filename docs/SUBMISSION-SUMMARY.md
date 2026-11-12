@@ -1,7 +1,8 @@
 # CisFalcon: a pre-synthesis failure-risk triage for AI-designed regulatory DNA
 
 **Built with Claude: Life Sciences (Builder track), solo, during the Jul 7 to 13 2026 window.**
-**Live tool: https://cisfalcon-lifesci.fly.dev/**
+**Live tool: https://belumume.github.io/cisfalcon/**
+(During the build window the tool was served from a paid container at cisfalcon-lifesci.fly.dev. That deployment was retired on 2026-11-12 and the gate now runs client-side on a free static page; `webdemo/README.md` records the change and `webdemo/parity.test.mjs` checks the two agree.)
 
 Corrections and added analyses dated after that window, including the within-tissue matched/paired
 retraction (2026-07-16) and the triage conditioning that produced the 41% / 2.59x / 91% figures this

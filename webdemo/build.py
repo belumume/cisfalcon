@@ -27,7 +27,11 @@ most-active cell or motif call moves, or any predicted log2FC drifts past its to
 Conversion needs tensorflowjs, which pins its own TensorFlow; keep it in its own virtualenv
 rather than beside the reviewer requirements, which deliberately exclude TensorFlow altogether:
 
-    python3.11 -m venv .tfjs && .tfjs/bin/pip install 'tensorflowjs==4.22.0' 'setuptools<81'
+    python3.11 -m venv .tfjs && .tfjs/bin/pip install 'tensorflowjs==4.22.0' \
+        'tensorflow==2.19.0' 'ydf==0.15.0' 'setuptools<81'
+
+The two extra pins matter: unpinned, pip pairs a protobuf-5 TensorFlow with a protobuf-6 ydf
+and the converter fails at import.
 """
 
 from __future__ import annotations

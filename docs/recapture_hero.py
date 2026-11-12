@@ -1,7 +1,7 @@
-"""Re-capture docs/hero_overview.png from the LIVE corrected page.
+"""Re-capture docs/hero_overview.png from the corrected page.
 
-The hero is a screenshot, so a stale hero is fixed by redeploying and re-shooting rather than
-by editing pixels. It rendered the disowned pooled 70% for as long as the deployed page did.
+The hero is a screenshot, so a stale hero is fixed by re-running the page and re-shooting
+rather than by editing pixels. It rendered the disowned pooled 70% for as long as the page did.
 
 Viewport matches the existing asset (1440x787) so the README's layout does not shift.
 Verifies afterwards that the corrected figures are present and the disowned ones are gone,
@@ -14,7 +14,9 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-URL = "https://cisfalcon-lifesci.fly.dev/"
+# The served frontend (`uvicorn webapp.backend.app:app --port 8080`). The browser build in
+# webdemo/ is this same page plus a loading chip, which does not belong in a still.
+URL = "http://127.0.0.1:8080/"
 OUT = Path(__file__).resolve().parent / "hero_overview.png"
 W, H = 1440, 787
 

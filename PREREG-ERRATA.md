@@ -114,6 +114,20 @@ claim a correction that has not shipped. `PREREG.md` itself is untouched by this
 > image was re-captured from the corrected page by `docs/recapture_hero.py`, which asserts the
 > corrected figures are present and the disowned ones absent before it writes the file.
 
+> **Status update, 2026-11-12.** The hosted container at cisfalcon-lifesci.fly.dev is retired, so
+> the URL named above no longer serves anything. The live tool is now a static page that runs the
+> gate in the visitor's own browser (`webdemo/`, published to
+> https://belumume.github.io/cisfalcon/), which costs nothing to host and so cannot lapse. The
+> three activity fold models are converted to float16 TensorFlow.js weights, which is not a
+> bit-identical arithmetic path, so the claim that the page still reproduces the published pipeline
+> is measured rather than asserted: `webdemo/parity.test.mjs` compares the browser's verdict,
+> most-active cell, flags, per-cell predicted activity, calibrated failure probability and motif
+> scan against the Python gate on a fixed design set, and the deploy fails if any of them moves.
+> The deterministic gate, the JASPAR motif scan and the deterministic closed loop all run on the
+> page with no key. The four-agent Claude layer has no server to hold a key, so it runs from the
+> browser on the visitor's own Anthropic key, billed to them, with the frozen `claude-opus-4-8`
+> adjudicator and `claude-sonnet-5` lenses unchanged.
+
 ---
 
 ## 2026-08-03 — Section 11 (closed-loop): the delta and its interval are on different scales

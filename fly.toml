@@ -1,3 +1,7 @@
+# Retired on 2026-11-12. The live tool is now a static page that runs the gate in the
+# visitor's own browser (webdemo/, published to https://belumume.github.io/cisfalcon/), so
+# there is no server to pay for. This file is kept only as the record of how the hosted
+# version was configured; do not deploy it.
 app = "cisfalcon-lifesci"
 primary_region = "iad"
 

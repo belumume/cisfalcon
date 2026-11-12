@@ -23,7 +23,11 @@ import json, os, sys, time, urllib.request
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "webapp", "backend"))
 import motifs  # pure JASPAR PWM logic, no TensorFlow
 
-BASE = os.environ.get("CISFALCON_BASE", "https://cisfalcon-lifesci.fly.dev")
+# The hosted container was retired on 2026-11-12 (the live tool is now a static page that runs
+# the gate in the browser, webdemo/). These agent scripts need the server API, so they default
+# to a local instance: run `python -m uvicorn app:app --port 8080` from webapp/backend first,
+# or point CISFALCON_BASE at your own deployment.
+BASE = os.environ.get("CISFALCON_BASE", "http://127.0.0.1:8080")
 PREDICT_URL = BASE + "/api/predict"
 REDESIGN_URL = BASE + "/api/redesign"
 OPTIMIZER_MODEL = "claude-opus-4-8"

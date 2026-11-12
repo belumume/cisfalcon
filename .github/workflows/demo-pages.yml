@@ -56,11 +56,15 @@ jobs:
           python -m pip install --quiet -r requirements.txt
           python webdemo/build.py --no-models
 
+      # tensorflowjs pins its own TensorFlow, so it gets its own virtualenv; the converter is
+      # a separate program, so putting that venv on PATH is all the build needs from it.
       - name: Fetch and convert the fold models
         if: steps.weights.outputs.cache-hit != 'true'
         run: |
-          python -m pip install --quiet "tensorflowjs==4.22.0" "setuptools<81"
-          python webdemo/build.py
+          PY="$(command -v python)"   # the interpreter with the reviewer requirements
+          python -m venv "$RUNNER_TEMP/tfjs"
+          "$RUNNER_TEMP/tfjs/bin/pip" install --quiet "tensorflowjs==4.22.0" "setuptools<81"
+          PATH="$RUNNER_TEMP/tfjs/bin:$PATH" "$PY" webdemo/build.py
 
       - uses: actions/setup-node@v4
         with:

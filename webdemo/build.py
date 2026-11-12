@@ -253,13 +253,15 @@ def sync_fonts() -> None:
     except OSError as e:
         # The faces and the stylesheet are committed, so a build with no network is still a
         # correct build; only a change to GOOGLE_FONTS would need the fetch to succeed.
-        have = sorted(out.glob("*.woff2"))
-        if (HERE / "fonts.css").exists() and len(have) == 7 * len(FONT_SUBSETS):
-            print(f"[sync]  {len(have)} font faces, reusing the committed copies ({e})")
-            return
+        css_path = HERE / "fonts.css"
+        if css_path.exists():
+            refs = set(re.findall(r"url\(fonts/([^)]+)\)", css_path.read_text()))
+            if refs and all((out / r).exists() for r in refs):
+                print(f"[sync]  {len(refs)} font files, reusing the committed copies ({e})")
+                return
         raise SystemExit(f"[FAIL] could not fetch the fonts and none are committed: {e}")
 
-    faces, subset = [], None
+    parsed, subset = [], None
     for block in re.split(r"(?=/\* )", css):
         m = re.match(r"/\* ([a-z-]+) \*/", block.strip())
         if m:
@@ -269,10 +271,25 @@ def sync_fonts() -> None:
         fam = re.search(r"font-family: '([^']+)'", block).group(1)
         wt = re.search(r"font-weight: (\d+)", block).group(1)
         url = re.search(r"url\((https://[^)]+\.woff2)\)", block).group(1)
-        name = f"{fam.lower().replace(' ', '-')}-{wt}-{subset}.woff2"
+        parsed.append((fam, wt, subset, url, block))
+
+    # Space Grotesk is a variable font: Google points all four weights at one file per subset
+    # and the browser picks the weight off its axis. Store each distinct file once, named for
+    # what it is, rather than four identical copies named as if they were four weights.
+    uses = {}
+    for _, _, _, url, _ in parsed:
+        uses[url] = uses.get(url, 0) + 1
+    faces, keep = [], set()
+    for fam, wt, sub, url, block in parsed:
+        slug = fam.lower().replace(" ", "-")
+        name = f"{slug}-{sub}.woff2" if uses[url] > 1 else f"{slug}-{wt}-{sub}.woff2"
+        keep.add(name)
         if not (out / name).exists():
             (out / name).write_bytes(urllib.request.urlopen(url, timeout=60).read())
         faces.append(block.replace(url, f"fonts/{name}").strip())
+    for stale in out.glob("*.woff2"):
+        if stale.name not in keep:
+            stale.unlink()
 
     want = 7 * len(FONT_SUBSETS)
     if len(faces) != want:
